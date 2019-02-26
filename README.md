@@ -5,3 +5,5 @@ This code corresponds to a case study in where we fix 100 mutant errors produced
 All mutants are inside "tofix" folder.
 Fixed models are generated in "fixed" folder.
 It is necessary to manually delete models in fixed to produce new models.
+
+Contact: abar@hvl.no
