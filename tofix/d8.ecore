@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="testmodel" nsURI="http://hu-berlin.de/sam/emfhbase/testmodel"
+    nsPrefix="tm">
+  <eClassifiers xsi:type="ecore:EClass" name="TestObject" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="regularContents" upperBound="-1"
+        eType="#//TestObject" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fragmentedContents" upperBound="-1"
+        eType="#//TestObject" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="_1Lh28ClCEemyg4RenUJI0Q"
+        upperBound="16" eType="#//TestObject" eKeys="#//TestObject/name">
+      <eAnnotations source="de.hub.emffrag">
+        <details key="fragments" value="true"/>
+        <contents/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="enumAttribute" eType="#//TestEnum"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestObjectIndex">
+    <eGenericSuperTypes eClassifier="ecore:EClass ../../../../de.hub.emffrag/metamodels/emffrag.ecore#//IndexedMap">
+      <eTypeArguments eClassifier="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eTypeArguments eClassifier="#//TestObject"/>
+    </eGenericSuperTypes>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestContainmentIndex">
+    <eGenericSuperTypes eClassifier="ecore:EClass ../../../../de.hub.emffrag/metamodels/emffrag.ecore#//ContainmentIndexedMap">
+      <eTypeArguments eClassifier="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eTypeArguments eClassifier="#//TestObject"/>
+    </eGenericSuperTypes>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="TestEnum">
+    <eLiterals name="literal2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestObjectWithIndexes" abstract="true"
+      eSuperTypes="#//TestObject">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="indexedContents" upperBound="-1"
+        eType="#//TestObject" containment="true">
+      <eAnnotations source="de.hub.emffrag">
+        <details key="indexes" value="true"/>
+        <details key="_1LgBwClCEemyg4RenUJI0Q" value="_1LgBwSlCEemyg4RenUJI0Q"/>
+        <contents/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+</ecore:EPackage>

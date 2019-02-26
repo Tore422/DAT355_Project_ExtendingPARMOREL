@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="testmodel" nsURI="http://hu-berlin.de/sam/emfhbase/testmodel"
+    nsPrefix="tm">
+  <eClassifiers xsi:type="ecore:EClass" name="_1LRYQClCEemyg4RenUJI0Q">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fragmentedContents" upperBound="-1"
+        eType="#//_1LRYQClCEemyg4RenUJI0Q" containment="true">
+      <eAnnotations source="de.hub.emffrag">
+        <details key="fragments" value="true"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_1LRYQSlCEemyg4RenUJI0Q" value="_1LRYQilCEemyg4RenUJI0Q"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="enumAttribute" eType="#//TestEnum"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestContainmentIndex" interface="true">
+    <eOperations name="_1LQKIilCEemyg4RenUJI0Q" unique="false" lowerBound="54" upperBound="9">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_1LRYQylCEemyg4RenUJI0Q" value="_1LRYRClCEemyg4RenUJI0Q"/>
+      </eAnnotations>
+    </eOperations>
+    <eGenericSuperTypes eClassifier="ecore:EClass ../../../../de.hub.emffrag/metamodels/emffrag.ecore#//ContainmentIndexedMap">
+      <eTypeArguments eClassifier="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eTypeArguments eClassifier="#//_1LRYQClCEemyg4RenUJI0Q"/>
+    </eGenericSuperTypes>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="TestEnum">
+    <eLiterals name="literal1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestObjectWithIndexes" eSuperTypes="#//_1LRYQClCEemyg4RenUJI0Q">
+    <eAnnotations>
+      <details key="_1LQKIClCEemyg4RenUJI0Q" value="_1LQKISlCEemyg4RenUJI0Q"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="indexedReferences" unique="false"
+        upperBound="-1" eType="#//_1LRYQClCEemyg4RenUJI0Q"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="indexedContents" upperBound="-1"
+        eType="#//_1LRYQClCEemyg4RenUJI0Q" containment="true">
+      <eAnnotations source="de.hub.emffrag">
+        <details key="indexes" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+</ecore:EPackage>

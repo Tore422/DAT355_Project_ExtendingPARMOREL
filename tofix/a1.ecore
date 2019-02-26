@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="el" nsURI="http://de.hub.el/EL/1.0" nsPrefix="el">
+  <eClassifiers xsi:type="ecore:EClass" name="ELClass" eSuperTypes="#//ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="methods" upperBound="-1"
+        eType="#//ELMethod" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superClases" upperBound="-1"
+        eType="#//ELClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="innerClasses" upperBound="-1"
+        eType="#//ELClass" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELVariable"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELMethod">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
+        eType="#//ELVariable" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="localVariables" upperBound="-1"
+        eType="#//ELVariable" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" eType="#//ELBlock"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELField" eSuperTypes="#//ELVariable"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlock">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statements" upperBound="-1"
+        eType="#//ELStatement" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELExpression" eSuperTypes="#//ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELLiteral" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOpCall" eSuperTypes="#//ELCall">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELOp"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELCall" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="callee" eType="#//ELMethod"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="thisArgument" eType="#//ELExpression">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_xXy3sCkjEem64-wWwjYVww" value="_xXy3sSkjEem64-wWwjYVww"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELAccess" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//ELVariable"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStatement" eSuperTypes="#//ELStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" upperBound="-1"
+        eType="#//ELBlock" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELBlockStarementKind"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOp">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ELOpKind">
+      <eAnnotations source="_xXyQoCkjEem64-wWwjYVww">
+        <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+          <details key="_xX1T8CkjEem64-wWwjYVww" value="_xX1T8SkjEem64-wWwjYVww"/>
+        </eAnnotations>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operands" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELDataType" eSuperTypes="#//ELClass">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_xX3JIikjEem64-wWwjYVww" value="_xX3JIykjEem64-wWwjYVww"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStarementKind">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="blocks" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expressions" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELModel" eSuperTypes="#//ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="packages" upperBound="-1"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ops" upperBound="-1" eType="#//ELOp"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ELOpKind">
+    <eLiterals name="infix" literal="infix"/>
+    <eLiterals name="suffix"/>
+    <eLiterals name="prefix"/>
+    <eLiterals name="syntax" literal="syntax">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+          <details key="_xX3JJCkjEem64-wWwjYVww" value="_xX3JJSkjEem64-wWwjYVww"/>
+        </eAnnotations>
+        <details key="_xX3JICkjEem64-wWwjYVww" value="_xX3JISkjEem64-wWwjYVww"/>
+      </eAnnotations>
+    </eLiterals>
+  </eClassifiers>
+</ecore:EPackage>

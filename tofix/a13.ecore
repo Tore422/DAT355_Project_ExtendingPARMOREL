@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="el" nsURI="http://de.hub.el/EL/1.0" nsPrefix="el">
+  <eClassifiers xsi:type="ecore:EClass" name="ELPackage">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classes" upperBound="-1"
+        eType="#//ELClass" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELClass">
+    <eAnnotations source="_xeElwB1lEemEvuQHSAd25g"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="methods" upperBound="-1"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fields" upperBound="-1"
+        eType="#//ELField" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superClases" upperBound="-1"
+        eType="#//ELClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="innerClasses" upperBound="-1"
+        eType="#//ELClass" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELField">
+    <eAnnotations>
+      <details key="_xd-fIB1lEemEvuQHSAd25g" value="_xd-fIR1lEemEvuQHSAd25g"/>
+      <details key="_xeD-sh1lEemEvuQHSAd25g" value="_xeD-sx1lEemEvuQHSAd25g"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlock">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statements" upperBound="-1"
+        eType="#//ELStatement" containment="true" eOpposite="#//ELCall/arguments"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELExpression" eSuperTypes="#//ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELLiteral" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOpCall" eSuperTypes="#//ELCall">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELOp"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELCall" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="arguments" upperBound="-1"
+        eType="#//ELExpression" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="callee"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="thisArgument" eType="#//ELExpression"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELAccess" eSuperTypes="#//ELExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStatement" eSuperTypes="#//ELStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" upperBound="-1"
+        eType="#//ELBlock" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELBlockStarementKind"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOp">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ELOpKind"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operands" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="precedence" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELDataType" eSuperTypes="#//ELClass"/>
+  <eClassifiers xsi:type="ecore:EClass" name="_xd9RAB1lEemEvuQHSAd25g">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ELClass"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="array" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStarementKind">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        changeable="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="blocks" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expressions" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELModel">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_xd9RAR1lEemEvuQHSAd25g" value="_xd9RAh1lEemEvuQHSAd25g"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="packages" upperBound="-1"
+        eType="#//ELPackage" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ops" upperBound="-1" eType="#//ELOp"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="blocks" upperBound="-1"
+        eType="#//ELBlockStarementKind" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ELOpKind">
+    <eLiterals name="_xeFz4B1lEemEvuQHSAd25g" literal="infix"/>
+    <eLiterals name="suffix"/>
+    <eLiterals name="prefix"/>
+    <eLiterals name="syntax" literal="syntax"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELAssignment" eSuperTypes="#//ELStatement">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_xeD-sB1lEemEvuQHSAd25g" value="_xeD-sR1lEemEvuQHSAd25g"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expr" eType="#//ELExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assignee"/>
+  </eClassifiers>
+  <eSubpackages name="_xeCwkB1lEemEvuQHSAd25g" nsURI="_xeCwkR1lEemEvuQHSAd25g" nsPrefix="_xeCwkh1lEemEvuQHSAd25g"/>
+</ecore:EPackage>

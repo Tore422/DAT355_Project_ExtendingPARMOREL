@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.change.edit.source_2.6.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.change.edit_2.6.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.change.source_2.11.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.change_2.11.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.edit.source_2.9.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.edit_2.9.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.editor.source_2.13.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.editor_2.13.0.v20170609-0928.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.source_2.13.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.xmi.source_2.13.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore.xmi_2.13.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.ecore_2.13.0.v20170609-0707.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/eclipse/java-oxygen/eclipse/plugins/org.eclipse.emf.common-2.12.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/Downloads/ecore-mutator-plugins-0.1.0/ecore-mutator-plugins-0.1.0/plugins/org.modelversioning.ecoremutator.test_1.0.0.201005091115.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/Downloads/ecore-mutator-plugins-0.1.0/ecore-mutator-plugins-0.1.0/plugins/org.modelversioning.ecoremutator_0.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/Downloads/PLUGINS/org.eclipse.core.runtime-3.2.0 - copia.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/Downloads/PLUGINS/org.eclipse.equinox.common-3.2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/angelaBR/Downloads/org.eclipse.emf.codegen-2.11.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

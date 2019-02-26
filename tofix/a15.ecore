@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="el" nsURI="http://de.hub.el/EL/1.0" nsPrefix="el">
+  <eClassifiers xsi:type="ecore:EClass" name="ELPackage" eSuperTypes="#//ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classes" upperBound="-1"
+        eType="#//ELClass" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELClass" eSuperTypes="#//ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="methods" upperBound="-1"
+        containment="true">
+      <eAnnotations source="_aBqpUCkkEemnfOEHfNg0_w">
+        <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+          <details key="_aCAnkCkkEemnfOEHfNg0_w" value="_aCAnkSkkEemnfOEHfNg0_w"/>
+        </eAnnotations>
+      </eAnnotations>
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aB6g8CkkEemnfOEHfNg0_w" value="_aB6g8SkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fields" upperBound="-1"
+        eType="#//ELField" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superClases" upperBound="-1"
+        eType="#//ELClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="innerClasses" upperBound="-1"
+        eType="#//ELClass" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELField"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlock">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statements" upperBound="-1"
+        eType="#//ELStatement" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELExpression" eSuperTypes="#//ELStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOpCall">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELOp">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aBylICkkEemnfOEHfNg0_w" value="_aBylISkkEemnfOEHfNg0_w"/>
+        <details key="_aB9kQCkkEemnfOEHfNg0_w" value="_aB9kQSkkEemnfOEHfNg0_w"/>
+        <details key="_aCAAgCkkEemnfOEHfNg0_w" value="_aCAAgSkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELAccess" eSuperTypes="#//ELExpression">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_aBjUkCkkEemnfOEHfNg0_w" value="_aBjUkSkkEemnfOEHfNg0_w"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aCDq4ikkEemnfOEHfNg0_w" value="_aCDq4ykkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStatement" eSuperTypes="#//ELStatement">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_aCCcwCkkEemnfOEHfNg0_w" value="_aCCcwSkkEemnfOEHfNg0_w"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="block" upperBound="-1"
+        eType="#//ELBlock" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ELBlockStarementKind"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expressions" upperBound="-1"
+        eType="#//ELExpression" containment="true">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aB4rwCkkEemnfOEHfNg0_w" value="_aB4rwSkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELOp">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aB_ZcCkkEemnfOEHfNg0_w" value="_aB_ZcSkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aCDq4CkkEemnfOEHfNg0_w" value="_aCDq4SkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operands" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="precedence" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELDataType" eSuperTypes="#//ELClass"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELBlockStarementKind">
+    <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+      <details key="_aCB1sCkkEemnfOEHfNg0_w" value="_aCB1sSkkEemnfOEHfNg0_w"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="syntax" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="blocks" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expressions" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELModel" eSuperTypes="#//ELNamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="packages" upperBound="-1"
+        eType="#//ELPackage" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="blocks" upperBound="-1"
+        eType="#//ELBlockStarementKind" containment="true">
+      <eAnnotations source="http://www.modelversioning.org/ecoremutator">
+        <details key="_aB7IACkkEemnfOEHfNg0_w" value="_aB7IASkkEemnfOEHfNg0_w"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+</ecore:EPackage>
