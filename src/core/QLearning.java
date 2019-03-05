@@ -7,8 +7,15 @@
 
 package core;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -18,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Random;
 
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -44,6 +52,7 @@ import org.eclipse.emf.ecore.impl.EReferenceImpl;
 import org.eclipse.emf.ecore.impl.ETypeParameterImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.URIConverter.Saveable;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -62,11 +71,12 @@ public class QLearning {
 	boolean repairs = false;
 	URI uri;
 	List<Error> original = new ArrayList<Error>();
+	List<Integer> processed = new ArrayList<Integer>();
 	Resource auxiliar;
 	Map<Integer, double[]> Q = new HashMap<Integer, double[]>();
 	Map<Integer, Integer> errorMap = new HashMap<Integer, Integer>();
 	Map<Integer, HashMap<Integer, Double>> nuQ = new HashMap<Integer, HashMap<Integer, Double>>();
-	Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> nuQ2 = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>>();
+	static Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> nuQ2 = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
 	static List<Action> actionsFound = new ArrayList<Action>();
 	Map<Integer, String> errorsNumber = new HashMap<Integer, String>();
@@ -760,7 +770,7 @@ public class QLearning {
 				if (nuQueue.size() != 0) {
 					next_state = nuQueue.get(index);
 
-					if (!nuQ2.containsKey(next_state.getCode())) {
+					if (!processed.contains(next_state.getCode())) {
 						nuQueue = errorsExtractor(auxModel2);
 						actionsExtractor(nuQueue);
 						auxModel2 = processModel(auxModel2);
@@ -963,7 +973,7 @@ public class QLearning {
 		// Each error
 
 		for (int i = 0; i < myErrors.size(); i++) {
-			if (!nuQ2.containsKey(myErrors.get(i).getCode())) {
+			if (!processed.contains(myErrors.get(i).getCode())) {
 				List<?> ca;
 				// iterates over the whole structure of the error
 				ca = (List<?>) myErrors.get(i).getWhere();
@@ -1023,6 +1033,7 @@ public class QLearning {
 
 				} // for error where structure
 			} // for errors
+			processed.add(myErrors.get(i).getCode());
 		}
 		return actionsReturned;
 
@@ -1137,7 +1148,28 @@ public class QLearning {
 	public static void copyFile(File from, File to) throws IOException {
 		Files.copy(from.toPath(), to.toPath());
 	}
+	
+	public static void save(Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> qtable, String path) throws NotSerializableException{
+	    try{
+	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
+	        oos.writeObject(qtable);
+	        oos.flush();
+	        oos.close();
+	    }catch(Exception e){
+	        e.printStackTrace();
+	    }
+	}
 
+	public static void load() throws NotSerializableException{
+	
+		try (ObjectInput objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream("././qtable.properties")))) {
+		    nuQ2 = (Map<Integer, HashMap<Integer, HashMap<Integer, Double>>>) objectInputStream.readObject();
+		} catch (Throwable cause) {
+		    cause.printStackTrace();
+		}
+	}
+	
+	
 	public static void main(String[] args) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, IOException, NoSuchMethodException, SecurityException {
 
@@ -1146,6 +1178,8 @@ public class QLearning {
 		// chooser.showOpenDialog((Frame) null);
 		// File[] files = chooser.getSelectedFiles();
 
+		load();
+		System.out.println(nuQ2.toString());
 		long startTimeT = System.currentTimeMillis();
 		long endTimeT = 0;
 		String root = "././tofix/";
@@ -1232,6 +1266,8 @@ public class QLearning {
 		endTimeT = System.currentTimeMillis();
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
+		System.out.println(nuQ2.toString());
+		save(nuQ2, "././qtable.properties");
 		System.exit(0);
 
 	}
