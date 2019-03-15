@@ -66,22 +66,16 @@ public class QLearning {
 	static Map<Integer, HashMap<Integer, Action>> actionsDictionary = new HashMap<Integer, HashMap<Integer, Action>>();
 	Date date = new Date(1993, 1, 31);
 	int total_reward = 0;
-	Map<Integer, HashMap<Integer, List<Action>>> actionSelected = new HashMap<Integer, HashMap<Integer, List<Action>>>();
-	List<Action> actionSelected2 = new ArrayList<Action>();
 	boolean repairs = false;
 	URI uri;
 	List<Error> original = new ArrayList<Error>();
 	List<Integer> processed = new ArrayList<Integer>();
-	Resource auxiliar;
 	Map<Integer, double[]> Q = new HashMap<Integer, double[]>();
 	Map<Integer, Integer> errorMap = new HashMap<Integer, Integer>();
-	Map<Integer, HashMap<Integer, Double>> nuQ = new HashMap<Integer, HashMap<Integer, Double>>();
 	static Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> nuQ2 = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Double>>>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
 	static List<Action> actionsFound = new ArrayList<Action>();
-	Map<Integer, String> errorsNumber = new HashMap<Integer, String>();
 	ResourceSet resourceSet = new ResourceSetImpl();
-	ResourceSet resourceSet2 = new ResourceSetImpl();
 	private double eps = 0.10;
 	int N_EPISODES = 15;
 	int MAX_EPISODE_STEPS = 20;
@@ -89,9 +83,8 @@ public class QLearning {
 	boolean invoked = false;
 	List<Error> nuQueue = new ArrayList<Error>();
 	NotificationChain msgs = new NotificationChainImpl();
-	List<String> errorsList = new ArrayList<String>();
 	Resource myMetaModel;
-	Resource myMetaModel2;
+	static int user;
 
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
@@ -112,8 +105,17 @@ public class QLearning {
 
 		// Initialize all available actions weights to 0
 		// for each error only available actions
-	
-		if (a.getMsg().contains("get") || a.getMsg().contains("delete")) {
+
+		if (user == 3) {
+			if (a.getMsg().contains("delete")) {
+				weight = -10.0;
+			}
+			else {
+				weight = 0.0;
+			}
+		}
+
+		if (a.getMsg().contains("get")) {
 			weight = -10.0;
 		} else {
 			weight = 0.0;
@@ -134,47 +136,44 @@ public class QLearning {
 			if (!actionsDictionary.containsKey(e.getCode())) {
 				hashaux.put(a.getCode(), a);
 				actionsDictionary.put(e.getCode(), hashaux);
-			}
-			else {
+			} else {
 				if (!actionsDictionary.get(e.getCode()).containsKey(a.getCode())) {
 					actionsDictionary.get(e.getCode()).put(a.getCode(), a);
 				}
+			}
 		}
-	}
-	// Error not in Q table
-	else {
-		// Hierarchy already present
-		if (nuQ2.get(e.getCode()).containsKey(num)) {
-			// Action no already present
-			if (!nuQ2.get(e.getCode()).get(num).containsKey(a.getCode())) {
-				nuQ2.get(e.getCode()).get(num).put(a.getCode(), weight);
+		// Error not in Q table
+		else {
+			// Hierarchy already present
+			if (nuQ2.get(e.getCode()).containsKey(num)) {
+				// Action no already present
+				if (!nuQ2.get(e.getCode()).get(num).containsKey(a.getCode())) {
+					nuQ2.get(e.getCode()).get(num).put(a.getCode(), weight);
+					if (!actionsDictionary.containsKey(e.getCode())) {
+						hashaux.put(a.getCode(), a);
+						actionsDictionary.put(e.getCode(), hashaux);
+					} else {
+						if (!actionsDictionary.get(e.getCode()).containsKey(a.getCode())) {
+							actionsDictionary.get(e.getCode()).put(a.getCode(), a);
+						}
+					}
+				}
+			}
+			// Hierar not in q
+			else {
+				d.put(a.getCode(), weight);
+				nuQ2.get(e.getCode()).put(num, d);
 				if (!actionsDictionary.containsKey(e.getCode())) {
 					hashaux.put(a.getCode(), a);
 					actionsDictionary.put(e.getCode(), hashaux);
-				}
-				else {
+				} else {
 					if (!actionsDictionary.get(e.getCode()).containsKey(a.getCode())) {
 						actionsDictionary.get(e.getCode()).put(a.getCode(), a);
 					}
-			}
-			}
-		}
-		// Hierar not in q
-		else {
-			d.put(a.getCode(), weight);
-			nuQ2.get(e.getCode()).put(num, d);
-			if (!actionsDictionary.containsKey(e.getCode())) {
-				hashaux.put(a.getCode(), a);
-				actionsDictionary.put(e.getCode(), hashaux);
-			}
-			else {
-				if (!actionsDictionary.get(e.getCode()).containsKey(a.getCode())) {
-					actionsDictionary.get(e.getCode()).put(a.getCode(), a);
 				}
-		}
-		}
+			}
 
-	}
+		}
 	}
 
 	// Returns key (action) with highest weight
@@ -218,27 +217,24 @@ public class QLearning {
 
 	}
 
-	boolean isInvokable(Error e, int j, Action a) {
+	boolean isInvokable(Error e, Class<? extends Object> class1, Action a) {
 		boolean yes = false;
 
-		if (j < e.getWhere().size()) {
-			Class c = e.getWhere().get(j).getClass();
-			Method[] methods = c.getMethods();
-			if (String.valueOf(a.getCode()).startsWith("9999")) {
+		Method[] methods = class1.getMethods();
+		if (String.valueOf(a.getCode()).startsWith("9999")) {
+			yes = true;
+		} else {
+			if (String.valueOf(a.getCode()).startsWith("888") && e.getCode() == 4 && class1 != EClassImpl.class) {
 				yes = true;
 			} else {
-				if (String.valueOf(a.getCode()).startsWith("888") && e.getCode() == 4 && c != EClassImpl.class) {
-					yes = true;
-				} else {
-					for (Method method : methods) {
-						if (a.getSerializableMethod().getMethod() != null) {
-							if (a.getSerializableMethod().getMethod().toString().contentEquals(method.toString())) {
-								yes = true;
-								break;
-							}
+				for (Method method : methods) {
+					if (a.getSerializableMethod().getMethod() != null) {
+						if (a.getSerializableMethod().getMethod().toString().contentEquals(method.toString())) {
+							yes = true;
+							break;
 						}
-					} // for
-				}
+					}
+				} // for
 			}
 		}
 		return yes;
@@ -259,7 +255,7 @@ public class QLearning {
 					// if package, look for origin in children
 					for (int i = 0; i < aux.size(); i++) {
 						if (err.getWhere().get(j) != null) {
-							if (isInvokable(err, j, aux.get(i))) {
+							if (isInvokable(err, err.getWhere().get(j).getClass(), aux.get(i))) {
 								if (err.getWhere().get(j).getClass() == EPackageImpl.class) {
 									for (int h = 0; h < err.getSons(); h++) {
 										actionMatcher(err, aux.get(i), auxModel, true, j + 1, h);
@@ -307,24 +303,28 @@ public class QLearning {
 		return false;
 	}
 
-	boolean checkIfSameElement(String a, String b) {
-		int index = a.indexOf("@");
-		int index2 = b.indexOf("@");
-		int index3 = a.indexOf(" ");
-		int index4 = b.indexOf(" ");
+	boolean checkIfSameElement(EObject o, EObject b) {
+		String one = o.toString();
+		String two = b.toString();
+		int index = one.indexOf("@");
+		int index2 = two.indexOf("@");
+		int index3 = one.indexOf(" ");
+		int index4 = two.indexOf(" ");
 
 		String a1, a2, b1, b2;
 		if (index != -1 || index2 != -1) {
-			a1 = a.substring(0, index);
-			a2 = a.substring(index3);
-			b1 = b.substring(0, index2);
-			b2 = b.substring(index4);
-			a = a1 + a2;
-			b = b1 + b2;
+			a1 = one.substring(0, index);
+			a2 = one.substring(index3);
+			b1 = two.substring(0, index2);
+			b2 = two.substring(index4);
+			one = a1 + a2;
+			two = b1 + b2;
 		}
 
-		if (a.contentEquals(b)) {
-			return true;
+		if (one.contentEquals(two)) {
+			if (o.eContents().size() == b.eContents().size()) {
+				return true;
+			}
 		}
 
 		return false;
@@ -418,11 +418,11 @@ public class QLearning {
 		return val;
 	}
 
-	void applyAction(EObject eobj, Error e, Action a, String o)
+	void applyAction(EObject eobj, Error e, Action a, EObject o)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		// Check if element is the correct one to fix
-		if (checkIfSameElement(o, eobj.toString())) {
+		if (checkIfSameElement(o, eobj)) {
 			if (String.valueOf(a.getCode()).startsWith("9999")) {
 				EcoreUtil.delete(eobj, true);
 				invoked = true;
@@ -437,13 +437,13 @@ public class QLearning {
 					a.setMsg("getETypeArguments().add(eg)");
 					return;
 				}
-				if (isInvokable(e, a.getHierarchy() - 1, a)) {
+				if (isInvokable(e, eobj.getClass(), a)) {
 					if (a.getSerializableMethod().getMethod().getParameterCount() > 0) {
 						Object[] values = argsDefaults(argsTypeExtractor(a.getSerializableMethod().getMethod(), e));
 						// if input needs a date
 						if (values.length != 0 && eobj instanceof EAttributeImpl
-								&& a.getSerializableMethod().getMethod().getName().contains("DefaultValue") && e.getCode() != 40
-								&& ((ETypedElement) eobj).getEType() != null
+								&& a.getSerializableMethod().getMethod().getName().contains("DefaultValue")
+								&& e.getCode() != 40 && ((ETypedElement) eobj).getEType() != null
 								&& ((ETypedElement) eobj).getEType().toString().contains("Date")) {
 
 							a.getSerializableMethod().getMethod().invoke(eobj, date);
@@ -484,19 +484,20 @@ public class QLearning {
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
 			SecurityException {
 		EPackage epa = (EPackage) auxModel2.getContents().get(0);
-		String o = " ";
+		EObject o = null;
 		boolean found = true;
 		invoked = false;
 		repairs = false;
 		EEnumLiteralImpl ob = null;
 
 		// if applicable either on father or son
+	
 		if (e.getWhere().get(hierar - 1) != null) {
-			o = e.getWhere().get(hierar - 1).toString();
+			o = (EObject) e.getWhere().get(hierar - 1);
 			found = true;
 			if (o == null && e.getWhere().get(hierar - 1).getClass() == EEnumLiteralImpl.class) {
 				ob = (EEnumLiteralImpl) e.getWhere().get(hierar - 1);
-				o = "null";
+				o = null;
 			}
 		} else {
 			found = false;
@@ -598,7 +599,7 @@ public class QLearning {
 								} // o is not null
 								else {
 									if (auxe == ob) {
-										applyAction(auxe, e, a, ob.toString());
+										applyAction(auxe, e, a, ob);
 										if (invoked)
 											break;
 									}
@@ -613,13 +614,13 @@ public class QLearning {
 
 		List<Action> actionsR;
 		List<Error> newErrors = null;
+
 		if (found)
 			newErrors = errorsExtractor(auxModel2);
 
 		if (light && found) {
 			// check error was solved
 			if (!errorChecker(newErrors, e, hierar - 1)) {
-
 				Action n = new Action(a.getCode(), a.getMsg(), a.getSerializableMethod(), hierar, sons);
 				qTable(e, n);
 				repairs = true;
@@ -721,7 +722,6 @@ public class QLearning {
 		// FILTER ACTIONS AND INITIALICES QTABLE
 		auxModel2 = processModel(auxModel2);
 		// START with initial model its errors and actions
-	
 
 		while (episode < N_EPISODES) {
 			index = 0;
@@ -740,7 +740,7 @@ public class QLearning {
 				nuQueue.clear();
 				nuQueue = actionMatcher(state, action, auxModel2, false, action.getHierarchy(),
 						action.getSubHierarchy());
-				reward = rewardCalculator(state, action);
+				reward = rewardCalculator(state, action, user);
 				// Insert stuff into sequence
 				s.setId(episode);
 				List<ErrorAction> ea = s.getSeq();
@@ -768,15 +768,12 @@ public class QLearning {
 						actionsExtractor(nuQueue);
 						auxModel2 = processModel(auxModel2);
 						System.out.println("NEW ERROR: " + next_state.toString());
-						System.out.println("ACTIONS UPDATED:");
-						System.out.println("Size:" + actionSelected.size());
-						System.out.println(actionSelected.toString());
+						if (user == 3) {
+							reward = reward - 750;
+						}
 					}
 
 					next_state = nuQueue.get(index);
-					if(next_state.getCode()==28) {
-						System.out.println("a");
-					}
 					Action a = bestAction(next_state);
 
 					if (a.getSubHierarchy() != -1) {
@@ -852,22 +849,65 @@ public class QLearning {
 
 		System.out.println("-----------------ALL SEQUENCES FOUND-------------------");
 		System.out.println("SIZE: " + solvingMap.size());
-		// System.out.println(solvingMap.toString());
+	//	System.out.println(solvingMap.toString());
 		System.out.println("DISCARDED SEQUENCES: " + discarded);
 		System.out.println();
 		System.out.println("********************************************************");
 		System.out.println("--------::::B E S T   S E Q U E N C E   I S::::---------");
-		Sequence sx = bestSequence(solvingMap);
+		Sequence sx = bestSequence(solvingMap, user);
 		System.out.println(sx.toString());
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if (sx.getSeq().size() != 0) {
-			sx.getModel().save(null);
+			updateSequencesWeights(sx);
+			//sx.getModel().save(null);
 		}
 
 		System.out.println("********************************************************");
+
+	}
+
+	void updateSequencesWeights(Sequence s) {
+		int num;
+		for(int i=0; i<s.getSeq().size(); i++) {
+			if (s.getSeq().get(i).getAction().getSubHierarchy() > -1) {
+				num = Integer.valueOf(String.valueOf(s.getSeq().get(i).getAction().getHierarchy()) + String.valueOf(s.getSeq().get(i).getAction().getSubHierarchy()));
+			} else {
+				num = s.getSeq().get(i).getAction().getHierarchy();
+			}
+			nuQ2.get(s.getSeq().get(i).getError().getCode()).get(num).put(s.getSeq().get(i).getAction().getCode(),
+					nuQ2.get(s.getSeq().get(i).getError().getCode()).get(num).get(s.getSeq().get(i).getAction().getCode()) + 150);
+		}
+	}
+	
+	void rewardSmallorBig(List<Sequence> sm, int user) {
+		// TODO Auto-generated method stub
+		int min = 9999;
+		int max = 0;
+		Sequence aux = new Sequence();
+
+		switch (user) {
+		case 1:
+			for (Sequence s : sm) {
+				if (s.getSeq().size() < min) {
+					min = s.getSeq().size();
+					aux = s;
+				}
+			}
+			aux.setWeight(aux.getWeight() + 1000);
+			break;
+		case 2:
+			for (Sequence s : sm) {
+				if (s.getSeq().size() > max) {
+					max = s.getSeq().size();
+					aux = s;
+				}
+			}
+			aux.setWeight(aux.getWeight() + 1000);
+			break;
+		}
 
 	}
 
@@ -932,8 +972,9 @@ public class QLearning {
 		return value;
 	}
 
-	Sequence bestSequence(List<Sequence> sm) {
-		double max = 0;
+	Sequence bestSequence(List<Sequence> sm, int user) {
+		double max = -1;
+		rewardSmallorBig(sm, user);
 		Sequence maxS = new Sequence();
 		for (Sequence s : sm) {
 			if (s.getWeight() > max) {
@@ -944,22 +985,47 @@ public class QLearning {
 		return maxS;
 	}
 
-	int rewardCalculator(Error state, Action action) {
+	// Action rewards
+	int rewardCalculator(Error state, Action action, int user) {
 		// TODO these rewards are just for examples
-		int reward;
-		if (action.getMsg().contains("get") || action.getMsg().contains("delete")) {
-			reward = -200;
-		} else {
+		int reward = 0;
+		switch (user) {
+		//error hierarchy high, sequence short
+		case 1:
 			if (action.getHierarchy() == 1) {
-				reward = 400;
+				if (action.getSubHierarchy() == 0) {
+					reward += 300;
+				} else {
+					reward += 200;
+				}
 			} else if (action.getHierarchy() == 2) {
-				reward = 300;
+				reward += 150;
 			} else if (action.getHierarchy() > 2) {
-				reward = 100;
+				reward += 100;
 			} else {
-				reward = -50;
+				reward -= 50;
 			}
+	
+			break;
+		//error hierarchy low, sequence long
+		case 2:
+			if (action.getHierarchy() == 1) {
+				reward += 5;
+			} else if (action.getHierarchy() >= 2) {
+				reward += 200;
+			}
+			break;
+			//avoid deletion, not trigger new errors
+		case 3:
+			if (action.getMsg().contains("delete")) {
+				reward -= 250;
+			}
+			else {
+				reward += 100;
+			}
+		break;
 		}
+	
 		return reward;
 	}
 
@@ -995,10 +1061,12 @@ public class QLearning {
 										&& !method.getName().contentEquals("notifyAll")
 										&& !method.getName().contentEquals("eVirtualGet")
 										&& !method.getName().contentEquals("eVirtualUnset")
-										&& !method.getName().contentEquals("eDynamicGet")) {
+										&& !method.getName().contentEquals("eDynamicGet")
+										&& !method.getName().contentEquals("dynamicSet")) {
 
 									if (!actionsReturned.containsKey(method.hashCode())) {
-										Action a = new Action(method.hashCode(), method.getName(), new SerializableMethod(method), j + 1, 0);
+										Action a = new Action(method.hashCode(), method.getName(),
+												new SerializableMethod(method), j + 1, 0);
 										// if the action was not already present
 										actionsReturned.put(method.hashCode(), a);
 										actionsFound.add(a);
@@ -1018,7 +1086,8 @@ public class QLearning {
 							for (Method method : methods) {
 								if (method.getName().contentEquals("getEClassifiers")) {
 
-									Action a = new Action(method.hashCode(), method.getName(), new SerializableMethod(method), 0, 0);
+									Action a = new Action(method.hashCode(), method.getName(),
+											new SerializableMethod(method), 0, 0);
 									// if the action was not already present
 									actionsReturned.put(method.hashCode(), a);
 									actionsFound.add(a);
@@ -1193,17 +1262,16 @@ public class QLearning {
 		// chooser.showOpenDialog((Frame) null);
 		// File[] files = chooser.getSelectedFiles();
 
-		load();
-		System.out.println(nuQ2.toString());
-		System.out.println(actionsDictionary.toString());
+		// load();
+		// System.out.println(nuQ2.toString());
+		// System.out.println(actionsDictionary.toString());
 		long startTimeT = System.currentTimeMillis();
 		long endTimeT = 0;
 		String root = "././tofix/";
 		String root2 = "././fixed/";
-
 		File folder = new File(root);
 		File[] listOfFiles = folder.listFiles();
-
+		user = 1;
 		QLearning ql = new QLearning();
 
 		for (int i = 0; i < listOfFiles.length; i++) {
@@ -1283,9 +1351,9 @@ public class QLearning {
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
 		System.out.println(nuQ2.toString());
-		System.out.println(actionsDictionary.toString());
-		save(nuQ2, "././qtable.properties");
-		save2(actionsDictionary, "././actions.properties");
+		// System.out.println(actionsDictionary.toString());
+		// save(nuQ2, "././qtable.properties");
+		// save2(actionsDictionary, "././actions.properties");
 		System.exit(0);
 
 	}
