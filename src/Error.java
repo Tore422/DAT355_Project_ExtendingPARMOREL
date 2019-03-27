@@ -31,7 +31,9 @@ public class Error {
 	
 	@Override
 	public String toString() {
-		return "Error " + code + ", msg=" + msg + ", sons=" + sons+", where= "+where +System.getProperty("line.separator");
+	//	return "Error " + code + ", msg=" + msg + ", sons=" + sons+", where= "+where +System.getProperty("line.separator");
+		return "Error " + code + ", msg=" + msg + System.getProperty("line.separator");
+
 	}
 	public int getCode() {
 		return code;

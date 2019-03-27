@@ -37,8 +37,8 @@ public class ErrorAction {
 
 	@Override
 	public String toString() {
-		return "ErrorAction [error=" + error.getCode() + " " + error.getMsg() + ", action=" + action.getCode() + " "
-				+ action.getMsg() + " " + action.getHierarchy() + " " + action.getSubHierarchy() + "]"
+		return "ErrorAction [Error: " + error.getCode() + " " + error.getMsg() +", Action: "
+				+ action.getMsg() + ", Error hierarchy: " + action.getHierarchy() + ", " + action.getSubHierarchy() + "]"
 				+ System.getProperty("line.separator");
 	}
 

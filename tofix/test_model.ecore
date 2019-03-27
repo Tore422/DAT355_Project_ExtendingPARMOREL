@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="phase2" nsURI="http://www.example.org/phase2" nsPrefix="phase2">
+  <eClassifiers xsi:type="ecore:EClass" name="Tool">
+    <eOperations name="798 %&quot;!!_!!"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tool" lowerBound="4" upperBound="4"
+        eType="#//Tool.1" containment="true" eOpposite="#//Tool.1/tool"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Tool" eSuperTypes="#//Tool.1">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="colour"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tool" upperBound="2" eType="#//Tool"
+        eOpposite="#//Tool/tool"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="colour"/>
+  </eClassifiers>
+</ecore:EPackage>
