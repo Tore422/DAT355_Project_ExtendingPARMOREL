@@ -1522,7 +1522,7 @@ public class QLearning {
 		endTimeT = System.currentTimeMillis();
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
-		//save(ql.getNewXp(), "././knowledge.properties");
+		save(ql.getNewXp(), "././knowledge.properties");
 		System.exit(0);
 
 	}
