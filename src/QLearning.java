@@ -72,6 +72,7 @@ public class QLearning {
 	Map<Integer, double[]> Q = new HashMap<Integer, double[]>();
 	Map<Integer, Integer> errorMap = new HashMap<Integer, Integer>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
+	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	static List<Action> actionsFound = new ArrayList<Action>();
 	ResourceSet resourceSet = new ResourceSetImpl();
 	static double randomfactor = 0.25;
@@ -83,10 +84,11 @@ public class QLearning {
 	NotificationChain msgs = new NotificationChainImpl();
 	Resource myMetaModel;
 	static int user;
-	static Knowledge newXp = new Knowledge();
-	static Knowledge oldXp = new Knowledge();
+	static Experience newXp = new Experience();
+	static Experience oldXp = new Experience();
 	static double factor = 0.0;
 	Sequence sx;
+	static List<Integer> preferences = new ArrayList<Integer>();
 
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
@@ -98,15 +100,15 @@ public class QLearning {
 
 	double[] alphas = linspace(1.0, MIN_ALPHA, N_EPISODES);
 
-	static Knowledge getNewXp() {
+	static Experience getNewXp() {
 		return newXp;
 	}
 
-	static Knowledge getOldXp() {
+	static Experience getOldXp() {
 		return oldXp;
 	}
 
-	static void setOldXp(Knowledge oldXp) {
+	static void setOldXp(Experience oldXp) {
 		QLearning.oldXp = oldXp;
 	}
 
@@ -128,7 +130,7 @@ public class QLearning {
 		// Initialize all available actions weights to 0
 		// for each error only available actions
 
-		if (getNewXp().getTags().contains(4)) {
+		if (preferences.contains(4)) {
 			if (a.getMsg().contains("delete")) {
 				weight = -10.0;
 			} else {
@@ -779,7 +781,7 @@ public class QLearning {
 		original.addAll(nuQueue);
 		errorMap.clear();
 		errorMap = extractDuplicates(original);
-		System.out.println("PREFERENCES: " + getNewXp().getTags().toString());
+		System.out.println("PREFERENCES: " + preferences.toString());
 		// FILTER ACTIONS AND INITIALICES QTABLE
 		auxModel2 = processModel(auxModel2);
 		// START with initial model its errors and actions
@@ -825,21 +827,26 @@ public class QLearning {
 
 				// check how the action has modified number of errors
 				// high modification
-				if (getNewXp().getTags().contains(6)) {
+				if (preferences.contains(6)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
 						reward = reward + (100 * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 6, (100 * (sizeBefore - nuQueue.size())));
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
 							reward = reward - 150;
+							addTagMap(state, code, action, 6, -150);
 					}
 				}
 				// low modification
-				if (getNewXp().getTags().contains(5)) {
+				if (preferences.contains(5)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
 						reward = reward - (100 * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 5, -(100 * (sizeBefore - nuQueue.size())));
+
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
 							reward = reward + 150;
+							addTagMap(state, code, action, 5, 150);
 					}
 				}
 
@@ -856,11 +863,11 @@ public class QLearning {
 					if (!originalCodes.contains(next_state.getCode())) {
 				//		System.out.println("NEW ERROR: " + next_state.toString());
 						// high modification
-						if (getNewXp().getTags().contains(6)) {
+						if (preferences.contains(6)) {
 							reward = reward + 100;
 						}
 						// low modification
-						if (getNewXp().getTags().contains(5)) {
+						if (preferences.contains(5)) {
 							reward = reward - 100;
 						}
 					}
@@ -990,12 +997,38 @@ public class QLearning {
 					getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag, 500);
 				} else {
-
 					getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag,
 									getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
 											.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
 											.get(tag) + 500);
+				}
+			}
+			
+			if(tagMap.containsKey(s.getSeq().get(i).getError().getCode())) {
+				if(tagMap.get(s.getSeq().get(i).getError().getCode()).containsKey(num)) {
+					if(tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).containsKey(s.getSeq().get(i).getAction().getCode())) {
+						for( Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+								get(s.getSeq().get(i).getAction().getCode()).keySet()) {
+							
+							if (!getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+									.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(key)) {
+
+								getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key, tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+												get(s.getSeq().get(i).getAction().getCode()).get(key));
+							} else {
+								getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key,
+												
+												getNewXp().getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
+														.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
+														.get(key) + 
+														tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+														get(s.getSeq().get(i).getAction().getCode()).get(key));
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1007,7 +1040,7 @@ public class QLearning {
 		int max = 0;
 		Sequence aux = null;
 
-		if (getNewXp().getTags().contains(0)) {
+		if (preferences.contains(0)) {
 			for (Sequence s : sm) {
 				if (s.getSeq().size() < min && s.getWeight() > 0) {
 					min = s.getSeq().size();
@@ -1023,7 +1056,7 @@ public class QLearning {
 			updateSequencesWeights(aux, 0);
 		}
 
-		if (getNewXp().getTags().contains(1)) {
+		if (preferences.contains(1)) {
 			for (Sequence s : sm) {
 				if (s.getSeq().size() > max && s.getWeight() > 0) {
 					max = s.getSeq().size();
@@ -1118,41 +1151,91 @@ public class QLearning {
 	// Action rewards
 	int rewardCalculator(Error state, Action action) {
 		int reward = 0;
+		int num;
 
-		if (getNewXp().getTags().contains(2)) {
+		List<Integer> tagsFound = new ArrayList<Integer>();
+		
+		if (action.getSubHierarchy() > -1) {
+			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
+		} else {
+			num = action.getHierarchy();
+		}
+		
+		if (preferences.contains(2)) {
 			if (action.getHierarchy() == 1) {
 				reward += 150;
+				addTagMap(state, num, action, 2, 150);
 			} else if (action.getHierarchy() == 2) {
 				reward += 100;
+				addTagMap(state, num, action, 2, 100);
 			} else if (action.getHierarchy() > 2) {
 				reward -= 110;
+				addTagMap(state, num, action, 2, -110);
 			}
 		}
-		if (getNewXp().getTags().contains(3)) {
+		if (preferences.contains(3)) {
 			if (action.getHierarchy() == 1) {
 				reward -= 110;
+				addTagMap(state, num, action, 3, -110);
 			}
 			if (action.getHierarchy() == 2) {
 				reward += 100;
+				addTagMap(state, num, action, 3, 100);
 			}
 			if (action.getHierarchy() > 2) {
 				reward += 150;
+				addTagMap(state, num, action, 3, 150);
 			}
 		}
-		if (getNewXp().getTags().contains(4)) {
+		
+		if (preferences.contains(4)) {
 			if (action.getMsg().contains("delete")) {
 				reward -= 1000;
+				addTagMap(state, num, action, 4, -1000);
 			} else {
 				reward += 100;
+				addTagMap(state, num, action, 4, 100);
 			}
 		}
-		if (!getNewXp().getTags().contains(2) && !getNewXp().getTags().contains(3)
-				&& !getNewXp().getTags().contains(4)) {
+		
+		if (!preferences.contains(2) && !preferences.contains(3)
+				&& !preferences.contains(4)) {
 			reward += 30;
 		}
+		
+				
+		
 		return reward;
 	}
 
+	void addTagMap(Error state, int num, Action action, int tag, int r) {
+		HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> hashaux = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>();
+		HashMap<Integer, HashMap<Integer, Integer>> hashaux2 = new HashMap<Integer, HashMap<Integer, Integer>>();
+		HashMap<Integer, Integer> hashaux3 = new HashMap<Integer, Integer>();
+
+		if(!tagMap.containsKey(state.getCode())) {
+			hashaux3.put(tag, r);
+			hashaux2.put(action.getCode(), hashaux3);
+			hashaux.put(num, hashaux2);
+			tagMap.put(state.getCode(), hashaux);
+		}
+		if(!tagMap.get(state.getCode()).containsKey(num)) {
+			hashaux3.put(tag, r);
+			hashaux2.put(action.getCode(), hashaux3);
+			tagMap.get(state.getCode()).put(num, hashaux2);
+		}
+		if(!tagMap.get(state.getCode()).get(num).containsKey(action.getCode())) {
+			hashaux3.put(tag, r);
+			tagMap.get(state.getCode()).get(num).put(action.getCode(), hashaux3);
+		}
+		if (!tagMap.get(state.getCode()).get(num).get(action.getCode()).containsKey(tag)) {
+			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r);
+		} 
+		else {
+			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r +
+					tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
+		}
+	}
 	Map<Integer, Action> actionsExtractor(List<Error> myErrors) {
 		actionsFound.clear();
 		actionsReturned.clear();
@@ -1326,7 +1409,7 @@ public class QLearning {
 		Files.copy(from.toPath(), to.toPath());
 	}
 
-	static void save(Knowledge xp, String path) throws NotSerializableException {
+	static void save(Experience xp, String path) throws NotSerializableException {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
 			oos.writeObject(xp);
@@ -1341,7 +1424,7 @@ public class QLearning {
 
 		try (ObjectInput objectInputStream = new ObjectInputStream(
 				new BufferedInputStream(new FileInputStream("././knowledge.properties")))) {
-			setOldXp((Knowledge) objectInputStream.readObject());
+			setOldXp((Experience) objectInputStream.readObject());
 		} catch (Throwable cause) {
 			cause.printStackTrace();
 		}
@@ -1351,31 +1434,31 @@ public class QLearning {
 		switch (user) {
 		//ECMFA paper preferences
 		case 0:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 2, 4 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 2, 4 }));
 			break;
 		// error hierarchy high, sequence short
 		case 1:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 2 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 2 }));
 			break;
 		// error hierarchy low, sequence long, high modification
 		case 2:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 3, 6 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 3, 6 }));
 			break;
 		// avoid deletion
 		case 3:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 4 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 4 }));
 			break;
 		// short sequence, low modification
 		case 4:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 4, 5 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 4, 5 }));
 			break;
 		// long sequence, low modification, avoid deletion
 		case 5:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 5 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 5 }));
 			break;
 		// error hierarchy high
 		case 6:
-			getNewXp().setTags(new ArrayList<Integer>(Arrays.asList(new Integer[] { 2 })));
+			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 2 }));
 			break;
 		}
 	}
@@ -1395,13 +1478,12 @@ public class QLearning {
 	}
 
 	static void insertTags() {
-		int num;
 		for (Integer key : getNewXp().getActionsDictionary().keySet()) { // error
 			for (Integer key2 : getNewXp().getActionsDictionary().get(key).keySet()) { // where
 				for (Integer keyact : getNewXp().getActionsDictionary().get(key).get(key2).keySet()) { // action
 					for (Integer key3 : getNewXp().getActionsDictionary().get(key).get(key2).get(keyact)
 							.getTagsDictionary().keySet()) { // tag
-						if (getNewXp().getTags().contains(key3)) {
+						if (preferences.contains(key3)) {
 							double value = getNewXp().getActionsDictionary().get(key).get(key2).get(keyact)
 									.getTagsDictionary().get(key3);
 							value *= 0.2;

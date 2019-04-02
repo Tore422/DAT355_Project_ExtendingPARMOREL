@@ -153,7 +153,6 @@ public class GUI extends JPanel {
 					importButtonPressed();
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 						| NoSuchMethodException | SecurityException | IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -165,7 +164,6 @@ public class GUI extends JPanel {
 					repairButtonPressed();
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 						| NoSuchMethodException | SecurityException | IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -176,7 +174,6 @@ public class GUI extends JPanel {
 				try {
 					exportButtonPressed();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -217,16 +214,16 @@ public class GUI extends JPanel {
 	void repairButtonPressed() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, IOException {
 		if (groupSeq.getSelection() != null) {
-			ql.getNewXp().getTags().add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
+			ql.preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
 		}
 		if (groupHierar.getSelection() != null) {
-			ql.getNewXp().getTags().add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
+			ql.preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
 		}
 		if (groupMod.getSelection() != null) {
-			ql.getNewXp().getTags().add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
+			ql.preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
 		}
 		if (tag4.isSelected()) {
-			ql.getNewXp().getTags().add(Integer.parseInt(tag4.getActionCommand()));
+			ql.preferences.add(Integer.parseInt(tag4.getActionCommand()));
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
