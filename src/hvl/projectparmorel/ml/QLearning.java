@@ -99,13 +99,15 @@ public class QLearning {
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardModificationOfTheOriginalModel;
 	public QLearning() {
-		weightRewardShorterSequencesOfActions = 2000;
-		weightRewardLongerSequencesOfActions = 2000;
-		weightRewardRepairingHighInErrorHierarchies = 150;
-		weightRewardRepairingLowInErrorHierarchies = 150;
-		weightPunishDeletion = 1000;
-		weightPunishModificationOfTheOriginalModel = 150;
-		weightRewardModificationOfTheOriginalModel = 150;
+		Preferences prefs = new Preferences();
+		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
+		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
+		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
+		weightRewardRepairingLowInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
+		weightPunishDeletion = prefs.getWeightPunishDeletion();
+		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
+		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
+		prefs.saveToFile();
 	}
 	
 	public static double[] linspace(double min, double max, int points) {

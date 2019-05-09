@@ -1,4 +1,5 @@
 package hvl.projectparmorel.ml;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,9 +38,8 @@ public class Preferences {
 		weights[4] = 1000;
 		weights[5] = 150;
 		weights[6] = 150;
-		
+
 		readSettingsFromFile();
-		System.out.println("Read from file!");
 	}
 
 	public void setRewardPreference(String name, int weight) {
@@ -77,17 +77,19 @@ public class Preferences {
 			DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
 			Document document = documentBuilder.parse(xmlFilePath);
 			document.getDocumentElement().normalize();
-			
+
 			NodeList nodeList = document.getElementsByTagName("preference");
-			
-			for (int i = 0; i <nodeList.getLength(); i++) {
+
+			for (int i = 0; i < nodeList.getLength(); i++) {
 				Node settingNode = nodeList.item(i);
-				if(settingNode.getNodeType() == Node.ELEMENT_NODE) {
+				if (settingNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element setting = (Element) settingNode;
 					int settingNumber = nameToSettningNumber(setting.getAttribute("name"));
 					weights[settingNumber] = Integer.parseInt(setting.getAttribute("weight"));
-					preferences.add(settingNumber);
-				}	
+					boolean preferenceSelected = Boolean.getBoolean(setting.getAttribute("preferenceSelected"));
+					if (preferenceSelected)
+						preferences.add(settingNumber);
+				}
 			}
 
 		} catch (ParserConfigurationException pce) {
@@ -109,11 +111,10 @@ public class Preferences {
 			Element root = document.createElement("settings");
 			document.appendChild(root);
 
-			// preference element
-			Element preference = document.createElement("preference");
-			root.appendChild(preference);
-
 			for (int pref = 0; pref < weights.length; pref++) {
+				// preference element
+				Element preference = document.createElement("preference");
+				root.appendChild(preference);
 				Attr name = document.createAttribute("name");
 				name.setValue(numberToSettningName(pref));
 				preference.setAttributeNode(name);
@@ -121,6 +122,15 @@ public class Preferences {
 				Attr weight = document.createAttribute("weight");
 				weight.setValue(weights[pref] + "");
 				preference.setAttributeNode(weight);
+
+				Attr selectedPref = document.createAttribute("preferenceSelected");
+				if (preferences.contains(pref)) {
+					selectedPref.setValue("true");
+				} else {
+					selectedPref.setValue("false");
+				}
+
+				preference.setAttributeNode(selectedPref);
 			}
 
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -175,6 +185,14 @@ public class Preferences {
 			return 6;
 		default:
 			throw new IllegalArgumentException("Number not within the specified rewards.");
+		}
+	}
+
+	public void deselectPreference(int pref) {
+		for (int i = 0; i < preferences.size(); i++) {
+			if (preferences.get(i) == pref) {
+				preferences.remove(i);
+			}
 		}
 	}
 
