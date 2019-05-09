@@ -24,3 +24,8 @@ hs_err_pid*
 
 # Mac Specific Files
 .DS_Store
+/bin/
+
+# Files specific to this project
+# Fixed models
+fixed/*
