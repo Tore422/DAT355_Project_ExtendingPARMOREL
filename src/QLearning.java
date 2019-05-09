@@ -90,6 +90,23 @@ public class QLearning {
 	Sequence sx;
 	static List<Integer> preferences = new ArrayList<Integer>();
 
+	private int weightRewardShorterSequencesOfActions;
+	private int weightRewardLongerSequencesOfActions;
+	private int weightRewardRepairingHighInErrorHierarchies;
+	private int weightRewardRepairingLowInErrorHierarchies;
+	private int weightPunishDeletion;
+	private int weightPunishModificationOfTheOriginalModel;
+	private int weightRewardModificationOfTheOriginalModel;
+	public QLearning() {
+		weightRewardShorterSequencesOfActions = 2000;
+		weightRewardLongerSequencesOfActions = 2000;
+		weightRewardRepairingHighInErrorHierarchies = 150;
+		weightRewardRepairingLowInErrorHierarchies = 150;
+		weightPunishDeletion = 1000;
+		weightPunishModificationOfTheOriginalModel = 150;
+		weightRewardModificationOfTheOriginalModel = 150;
+	}
+	
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
 		for (int i = 0; i < points; i++) {
@@ -132,7 +149,7 @@ public class QLearning {
 
 		if (preferences.contains(4)) {
 			if (a.getMsg().contains("delete")) {
-				weight = -10.0;
+				weight = -(double) weightPunishDeletion/100;
 			} else {
 				weight = 0.0;
 			}
@@ -829,24 +846,24 @@ public class QLearning {
 				// high modification
 				if (preferences.contains(6)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward + (100 * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 6, (100 * (sizeBefore - nuQueue.size())));
+						reward = reward + (2/3*weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 6, (2/3*weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
-							reward = reward - 150;
-							addTagMap(state, code, action, 6, -150);
+							reward = reward - weightRewardModificationOfTheOriginalModel;
+							addTagMap(state, code, action, 6, -weightRewardModificationOfTheOriginalModel);
 					}
 				}
 				// low modification
 				if (preferences.contains(5)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward - (100 * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 5, -(100 * (sizeBefore - nuQueue.size())));
+						reward = reward - (2/3*weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 5, -(2/3*weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
 
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
-							reward = reward + 150;
-							addTagMap(state, code, action, 5, 150);
+							reward = reward + weightPunishModificationOfTheOriginalModel;
+							addTagMap(state, code, action, 5, weightPunishModificationOfTheOriginalModel);
 					}
 				}
 
@@ -864,11 +881,11 @@ public class QLearning {
 				//		System.out.println("NEW ERROR: " + next_state.toString());
 						// high modification
 						if (preferences.contains(6)) {
-							reward = reward + 100;
+							reward = reward + 2/3*weightRewardModificationOfTheOriginalModel;
 						}
 						// low modification
 						if (preferences.contains(5)) {
-							reward = reward - 100;
+							reward = reward - 2/3*weightPunishModificationOfTheOriginalModel;
 						}
 					}
 
@@ -1052,7 +1069,7 @@ public class QLearning {
 					}
 				}
 			}
-			aux.setWeight(aux.getWeight() + 2000);
+			aux.setWeight(aux.getWeight() + weightRewardShorterSequencesOfActions);
 			updateSequencesWeights(aux, 0);
 		}
 
@@ -1068,7 +1085,7 @@ public class QLearning {
 					}
 				}
 			}
-			aux.setWeight(aux.getWeight() + 2000);
+			aux.setWeight(aux.getWeight() + weightRewardLongerSequencesOfActions);
 			updateSequencesWeights(aux, 1);
 		}
 	}
@@ -1163,38 +1180,38 @@ public class QLearning {
 		
 		if (preferences.contains(2)) {
 			if (action.getHierarchy() == 1) {
-				reward += 150;
-				addTagMap(state, num, action, 2, 150);
+				reward += weightRewardRepairingHighInErrorHierarchies;
+				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies);
 			} else if (action.getHierarchy() == 2) {
-				reward += 100;
-				addTagMap(state, num, action, 2, 100);
+				reward += weightRewardRepairingHighInErrorHierarchies*2/3;
+				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies*2/3);
 			} else if (action.getHierarchy() > 2) {
-				reward -= 110;
-				addTagMap(state, num, action, 2, -110);
+				reward -= -74/100*weightRewardRepairingHighInErrorHierarchies;
+				addTagMap(state, num, action, 2, -74/100*weightRewardRepairingHighInErrorHierarchies);
 			}
 		}
 		if (preferences.contains(3)) {
 			if (action.getHierarchy() == 1) {
-				reward -= 110;
-				addTagMap(state, num, action, 3, -110);
+				reward -= 74/100*weightRewardRepairingLowInErrorHierarchies;
+				addTagMap(state, num, action, 3, -74/100*weightRewardRepairingLowInErrorHierarchies);
 			}
 			if (action.getHierarchy() == 2) {
-				reward += 100;
-				addTagMap(state, num, action, 3, 100);
+				reward += weightRewardRepairingLowInErrorHierarchies*2/3;
+				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies*2/3);
 			}
 			if (action.getHierarchy() > 2) {
-				reward += 150;
-				addTagMap(state, num, action, 3, 150);
+				reward += weightRewardRepairingLowInErrorHierarchies;
+				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies);
 			}
 		}
 		
 		if (preferences.contains(4)) {
 			if (action.getMsg().contains("delete")) {
-				reward -= 1000;
-				addTagMap(state, num, action, 4, -1000);
+				reward -= weightPunishDeletion;
+				addTagMap(state, num, action, 4, -weightPunishDeletion);
 			} else {
-				reward += 100;
-				addTagMap(state, num, action, 4, 100);
+				reward += weightPunishDeletion / 10;
+				addTagMap(state, num, action, 4, weightPunishDeletion / 10);
 			}
 		}
 		

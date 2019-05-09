@@ -2,11 +2,13 @@
 /ActionExp.class
 /Error.class
 /ErrorAction.class
+/Experience.class
 /GUI$1.class
 /GUI$2.class
 /GUI$3.class
 /GUI.class
-/Knowledge.class
+/PreferenceOptions.class
+/Preferences.class
 /QLearning.class
 /Sequence.class
 /SerializableMethod.class
