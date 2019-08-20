@@ -1,4 +1,4 @@
-package hvl.projectparmorel.ml;
+package hvl.projectparmorel.runnable;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -13,6 +13,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+
+import hvl.projectparmorel.ml.Error;
+import hvl.projectparmorel.ml.QLearning;
 
 public class GUI extends JPanel {
 
@@ -215,23 +218,23 @@ public class GUI extends JPanel {
 	void repairButtonPressed() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, IOException {
 		if (groupSeq.getSelection() != null) {
-			ql.preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
+			QLearning.preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
 		}
 		if (groupHierar.getSelection() != null) {
-			ql.preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
+			QLearning.preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
 		}
 		if (groupMod.getSelection() != null) {
-			ql.preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
+			QLearning.preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
 		}
 		if (tag4.isSelected()) {
-			ql.preferences.add(Integer.parseInt(tag4.getActionCommand()));
+			QLearning.preferences.add(Integer.parseInt(tag4.getActionCommand()));
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
-		ql.loadKnowledge();
+		QLearning.loadKnowledge();
 		ql.actionsExtractor(errors);
 		ql.modelFixer(auxModel);
-		ql.save(ql.getNewXp(), "././knowledge.properties");
+		QLearning.save(QLearning.getNewXp(), "././knowledge.properties");
 	
 
 		frame.getContentPane().removeAll();

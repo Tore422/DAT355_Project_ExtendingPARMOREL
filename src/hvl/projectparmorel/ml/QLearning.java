@@ -66,7 +66,7 @@ public class QLearning {
 	Date date = new Date(1993, 1, 31);
 	int total_reward = 0;
 	boolean repairs = false;
-	URI uri;
+	public URI uri;
 	List<Error> original = new ArrayList<Error>();
 	List<Integer> processed = new ArrayList<Integer>();
 	List<Integer> originalCodes = new ArrayList<Integer>();
@@ -75,21 +75,21 @@ public class QLearning {
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
 	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	static List<Action> actionsFound = new ArrayList<Action>();
-	ResourceSet resourceSet = new ResourceSetImpl();
+	public ResourceSet resourceSet = new ResourceSetImpl();
 	static double randomfactor = 0.25;
 	static int N_EPISODES = 25;
 	int MAX_EPISODE_STEPS = 20;
 	boolean done = false;
 	boolean invoked = false;
-	List<Error> nuQueue = new ArrayList<Error>();
+	public List<Error> nuQueue = new ArrayList<Error>();
 	NotificationChain msgs = new NotificationChainImpl();
-	Resource myMetaModel;
+	public Resource myMetaModel;
 	static int user;
 	static Experience newXp = new Experience();
 	static Experience oldXp = new Experience();
 	static double factor = 0.0;
 	Sequence sx;
-	static List<Integer> preferences = new ArrayList<Integer>();
+	public static List<Integer> preferences = new ArrayList<Integer>();
 
 	private int weightRewardShorterSequencesOfActions;
 	private int weightRewardLongerSequencesOfActions;
@@ -120,7 +120,7 @@ public class QLearning {
 
 	double[] alphas = linspace(1.0, MIN_ALPHA, N_EPISODES);
 
-	static Experience getNewXp() {
+	public static Experience getNewXp() {
 		return newXp;
 	}
 
@@ -777,7 +777,7 @@ public class QLearning {
 
 	}
 
-	void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
+	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
 		int val;
 		int discarded = 0;
@@ -1256,7 +1256,7 @@ public class QLearning {
 					tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
 		}
 	}
-	Map<Integer, Action> actionsExtractor(List<Error> myErrors) {
+	public Map<Integer, Action> actionsExtractor(List<Error> myErrors) {
 		actionsFound.clear();
 		actionsReturned.clear();
 		// Each error
@@ -1319,7 +1319,7 @@ public class QLearning {
 
 	}
 
-	List<Error> errorsExtractor(Resource myMM) throws IllegalAccessException, IllegalArgumentException,
+	public List<Error> errorsExtractor(Resource myMM) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException {
 		List<Error> errorsReturned = new ArrayList<Error>();
 		// Validate
@@ -1429,7 +1429,7 @@ public class QLearning {
 		Files.copy(from.toPath(), to.toPath());
 	}
 
-	static void save(Experience xp, String path) throws NotSerializableException {
+	public static void save(Experience xp, String path) throws NotSerializableException {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
 			oos.writeObject(xp);
