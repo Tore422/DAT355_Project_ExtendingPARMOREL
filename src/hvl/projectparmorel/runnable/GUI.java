@@ -231,10 +231,9 @@ public class GUI extends JPanel {
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
-		QLearning.loadKnowledge();
 		ql.actionsExtractor(errors);
 		ql.modelFixer(auxModel);
-		QLearning.save(QLearning.getNewXp(), "././knowledge.properties");
+		QLearning.save(ql.getKnowledge().getExperience(), "././knowledge.properties");
 	
 
 		frame.getContentPane().removeAll();

@@ -26,8 +26,6 @@ public class Main {
 		QLearning.user = 0;
 		QLearning.createTags(QLearning.user);
 
-		// if there is previous knowledge
-		QLearning.loadKnowledge();
 		long startTimeT = System.currentTimeMillis();
 		long endTimeT = 0;
 		String root = "././mutants/";
@@ -111,7 +109,7 @@ public class Main {
 		endTimeT = System.currentTimeMillis();
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
-		QLearning.save(QLearning.getNewXp(), "././knowledge.properties");
+		QLearning.save(ql.getKnowledge().getExperience(), "././knowledge.properties");
 		System.exit(0);
 	}
 }
