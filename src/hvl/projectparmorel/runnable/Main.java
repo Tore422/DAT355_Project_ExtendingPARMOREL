@@ -109,7 +109,7 @@ public class Main {
 		endTimeT = System.currentTimeMillis();
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
-		QLearning.save(ql.getKnowledge().getExperience(), "././knowledge.properties");
+		ql.saveKnowledge();
 		System.exit(0);
 	}
 }

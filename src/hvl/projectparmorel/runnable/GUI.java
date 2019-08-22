@@ -233,8 +233,7 @@ public class GUI extends JPanel {
 		long endTime = 0;
 		ql.actionsExtractor(errors);
 		ql.modelFixer(auxModel);
-		QLearning.save(ql.getKnowledge().getExperience(), "././knowledge.properties");
-	
+		ql.saveKnowledge();	
 
 		frame.getContentPane().removeAll();
 		frame.getContentPane().add(secondGUI());

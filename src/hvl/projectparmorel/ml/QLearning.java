@@ -115,6 +115,13 @@ public class QLearning {
 		prefs.saveToFile();
 	}
 	
+	/**
+	 * Saves the knowledge
+	 */
+	public void saveKnowledge() {
+		knowledge.save();
+	}
+	
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
 		for (int i = 0; i < points; i++) {
@@ -1431,16 +1438,7 @@ public class QLearning {
 		Files.copy(from.toPath(), to.toPath());
 	}
 
-	public static void save(Experience xp, String path) throws NotSerializableException {
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path));
-			oos.writeObject(xp);
-			oos.flush();
-			oos.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	public static void createTags(int user) {
 		switch (user) {

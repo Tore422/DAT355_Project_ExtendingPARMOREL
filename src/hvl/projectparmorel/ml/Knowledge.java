@@ -2,9 +2,12 @@ package hvl.projectparmorel.ml;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +119,20 @@ public class Knowledge {
 					}
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Saves the experience
+	 */
+	public void save() {
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(knowledgeFilePath));
+			oos.writeObject(experience);
+			oos.flush();
+			oos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
