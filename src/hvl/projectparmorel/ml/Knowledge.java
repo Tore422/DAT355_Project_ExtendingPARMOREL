@@ -40,7 +40,6 @@ public class Knowledge {
 			newExperience.setActionsDictionary(oldExperience.getActionsDictionary());
 			newExperience.influenceQTableFromActionTable();
 			// if tags coincide, introduce in qtable rewards*coef 0,2
-//			insertTags(newExperience);
 		}
 		return newExperience;
 	}
@@ -96,32 +95,6 @@ public class Knowledge {
 			}
 		}
 		return qTable;
-	}
-
-	// TODO: Refractor! Move inside experience?
-	private void insertTags(ExperienceMap experience) {
-		
-		
-		for (Integer key : experience.getActionsDictionary().keySet()) { // error
-			for (Integer key2 : experience.getActionsDictionary().get(key).keySet()) { // where
-				for (Integer keyact : experience.getActionsDictionary().get(key).get(key2).keySet()) { // action
-					for (Integer key3 : experience.getActionsDictionary().get(key).get(key2).get(keyact).getTagsDictionary()
-							.keySet()) { // tag
-						if (preferences.contains(key3)) {
-							double value = experience.getActionsDictionary().get(key).get(key2).get(keyact)
-									.getTagsDictionary().get(key3);
-							value *= 0.2;
-							value = experience.getqTable().get(key).get(key2).get(keyact) + value;
-							experience.getqTable().get(key).get(key2).put(keyact, value);
-							
-							// Due to the transfer we wont need as many episodes of randomness
-							QLearning.N_EPISODES = 12;
-							QLearning.randomfactor = 0.15;
-						}
-					}
-				}
-			}
-		}
 	}
 	
 	/**
