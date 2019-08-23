@@ -176,7 +176,7 @@ public class QLearning {
 
 		// If error not present
 
-		Experience experience = knowledge.getExperience();
+		ExperienceMap experience = knowledge.getExperience();
 		if (!experience.getqTable().containsKey(e.getCode())) {
 			d.put(a.getCode(), weight);
 			dx.put(num, d);
@@ -253,7 +253,7 @@ public class QLearning {
 		int maxi = 0;
 		Double max = -99999.0;
 		Integer pairKey = 0;
-		Experience experience = knowledge.getExperience();
+		ExperienceMap experience = knowledge.getExperience();
 		Map<Integer, Double> mp = new HashMap<Integer, Double>();
 		for (int i = 0; i < err.getWhere().size() - 1; i++) {
 			if (sons != -1 && i == 0) {
@@ -320,7 +320,7 @@ public class QLearning {
 		Resource auxModel = resourceSet.createResource(uri);
 		auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
 		List<Action> aux = actionsFound;
-		Experience experience = knowledge.getExperience();
+		ExperienceMap experience = knowledge.getExperience();
 		
 		for (int x = 0; x < nuQueue.size(); x++) {
 			Error err = nuQueue.get(x);
@@ -410,7 +410,7 @@ public class QLearning {
 		int count = 0;
 		Integer val = 0;
 		Integer act = 0;
-		Experience experience = knowledge.getExperience();
+		ExperienceMap experience = knowledge.getExperience();
 		if (Math.random() < randomfactor) {
 			boolean set = false;
 				// how many error locations
@@ -825,7 +825,7 @@ public class QLearning {
 			step = 0;
 			doni = false;
 			Sequence s = new Sequence();
-			Experience experience = knowledge.getExperience();
+			ExperienceMap experience = knowledge.getExperience();
 			while (step < MAX_EPISODE_STEPS) {
 				action = chooseActionHash(state);
 
@@ -1005,7 +1005,7 @@ public class QLearning {
 	}
 
 	void updateSequencesWeights(Sequence s, int tag) {
-		Experience experience = knowledge.getExperience();
+		ExperienceMap experience = knowledge.getExperience();
 		int num;
 		for (int i = 0; i < s.getSeq().size(); i++) {
 			if (s.getSeq().get(i).getAction().getSubHierarchy() > -1) {

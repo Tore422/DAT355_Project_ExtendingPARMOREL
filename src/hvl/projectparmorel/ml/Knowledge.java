@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class Knowledge {
 	private String knowledgeFilePath = "././knowledge.properties";
-	private Experience experience;
+	private ExperienceMap experience;
 	
 	private static List<Integer> preferences;
 	
@@ -30,16 +30,17 @@ public class Knowledge {
 	/**
 	 * Loads the knowledge
 	 */
-	private Experience loadKnowledge() {
-		Experience newExperience = new Experience();
-		Experience oldXp = loadKnowledgeFromFile();
-		if (oldXp.getActionsDictionary().size() > 0) {
+	private ExperienceMap loadKnowledge() {
+		ExperienceMap newExperience = new ExperienceMap();
+		ExperienceMap oldExperience = loadKnowledgeFromFile();
+		if (oldExperience.getActionsDictionary().size() > 0) {
 			// copy structure of qtable with values to 0
-			newExperience.setqTable(normalizeQTable(oldXp.getqTable()));
+			newExperience.setqTable(normalizeQTable(oldExperience.getqTable()));
 			// copy actions dictionary (actions + old rewards)
-			newExperience.setActionsDictionary(oldXp.getActionsDictionary());
+			newExperience.setActionsDictionary(oldExperience.getActionsDictionary());
+			newExperience.influenceQTableFromActionTable();
 			// if tags coincide, introduce in qtable rewards*coef 0,2
-			insertTags(newExperience);
+//			insertTags(newExperience);
 		}
 		return newExperience;
 	}
@@ -49,8 +50,8 @@ public class Knowledge {
 	 * 
 	 * @return Experience from file if it exists. Otherwise, it returns a new Experience.
 	 */
-	private Experience loadKnowledgeFromFile() {
-		Experience oldExperience = new Experience();
+	private ExperienceMap loadKnowledgeFromFile() {
+		ExperienceMap oldExperience = new ExperienceMap();
 
 		FileInputStream knowledgeFile = null;
 		BufferedInputStream inputStream = null;
@@ -60,7 +61,7 @@ public class Knowledge {
 			inputStream = new BufferedInputStream(knowledgeFile);
 			objectInputStream = new ObjectInputStream(inputStream);
 
-			oldExperience = ((Experience) objectInputStream.readObject());
+			oldExperience = ((ExperienceMap) objectInputStream.readObject());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -98,7 +99,9 @@ public class Knowledge {
 	}
 
 	// TODO: Refractor! Move inside experience?
-	private void insertTags(Experience experience) {
+	private void insertTags(ExperienceMap experience) {
+		
+		
 		for (Integer key : experience.getActionsDictionary().keySet()) { // error
 			for (Integer key2 : experience.getActionsDictionary().get(key).keySet()) { // where
 				for (Integer keyact : experience.getActionsDictionary().get(key).get(key2).keySet()) { // action
@@ -129,7 +132,7 @@ public class Knowledge {
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(knowledgeFilePath));
 			oos.writeObject(experience);
 			oos.flush();
-			oos.close();
+			oos.close(); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -140,7 +143,7 @@ public class Knowledge {
 	 * 
 	 * @return the experience
 	 */
-	public Experience getExperience() {
+	public ExperienceMap getExperience() {
 		return experience;
 	}
 }
