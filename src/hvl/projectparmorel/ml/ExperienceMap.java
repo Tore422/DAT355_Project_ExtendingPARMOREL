@@ -2,6 +2,7 @@ package hvl.projectparmorel.ml;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class ExperienceMap implements Serializable {
 		return errors.get(errorCode);
 	}
 	
-	public void influenceQTableFromActionTable() {
+	public void influenceQTableFromActionTable(List<Integer> preferences) {
 //		Collection<Context> allContexts = getContextsForAllErrorCodes();
 //		for(Context context : allContexts) {
 //			Collection<ActionExp> actions = context.getAllActions();
@@ -53,9 +54,11 @@ public class ExperienceMap implements Serializable {
 					
 					Map<Integer, Integer> tagsDictionary = action.getTagsDictionary();
 					for(Integer tagId : allTagIds) {
-						double value = tagsDictionary.get(tagId) * 0.2;
-						value += qTable.get(errorCode).get(contextId).get(actionId);
-						qTable.get(errorCode).get(contextId).put(actionId, value);
+						if(preferences.contains(tagId)) {
+							double value = tagsDictionary.get(tagId) * 0.2;
+							value += qTable.get(errorCode).get(contextId).get(actionId);
+							qTable.get(errorCode).get(contextId).put(actionId, value);
+						}
 					}
 					     
 				}

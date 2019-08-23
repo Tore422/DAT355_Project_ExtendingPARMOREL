@@ -20,10 +20,10 @@ public class Knowledge {
 	private String knowledgeFilePath = "././knowledge.properties";
 	private ExperienceMap experience;
 	
-	private static List<Integer> preferences;
+	private List<Integer> preferences;
 	
 	public Knowledge(List<Integer> preferences) {
-		Knowledge.preferences = preferences;
+		this.preferences = preferences;
 		experience = loadKnowledge();
 	}
 	
@@ -38,7 +38,7 @@ public class Knowledge {
 			newExperience.setqTable(normalizeQTable(oldExperience.getqTable()));
 			// copy actions dictionary (actions + old rewards)
 			newExperience.setActionsDictionary(oldExperience.getActionsDictionary());
-			newExperience.influenceQTableFromActionTable();
+			newExperience.influenceQTableFromActionTable(preferences);
 			// if tags coincide, introduce in qtable rewards*coef 0,2
 		}
 		return newExperience;
