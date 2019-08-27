@@ -87,8 +87,8 @@ public class Knowledge {
 	 */
 	private Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> normalizeQTable(
 			Map<Integer, HashMap<Integer, HashMap<Integer, Double>>> qTable) {
-		for (Integer key : qTable.keySet()) {
-			for (Integer key2 : qTable.get(key).keySet()) {
+		for (Integer key : qTable.keySet()) { //Error (Score)
+			for (Integer key2 : qTable.get(key).keySet()) { //Context
 				for (Integer key3 : qTable.get(key).get(key2).keySet()) {
 					qTable.get(key).get(key2).put(key3, 0.0);
 				}
