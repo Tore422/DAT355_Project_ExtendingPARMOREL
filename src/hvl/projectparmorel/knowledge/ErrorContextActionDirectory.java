@@ -3,7 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.util.List;
 import java.util.Set;
 
-abstract class ErrorContextActionDirectory<T> {
+public abstract class ErrorContextActionDirectory<T> {
 	public ErrorContextActionDirectory() {
 		
 	}
