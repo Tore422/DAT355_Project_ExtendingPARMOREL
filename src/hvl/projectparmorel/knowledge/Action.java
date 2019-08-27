@@ -6,4 +6,8 @@ class Action {
 	public Action() {
 		tagDictionary = new TagDictionary();
 	}
+	
+	protected TagDictionary getTagDictionary() {
+		return tagDictionary;
+	}
 }
