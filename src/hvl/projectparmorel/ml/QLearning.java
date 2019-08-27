@@ -50,13 +50,17 @@ import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.knowledge.ActionDirectory;
+import hvl.projectparmorel.knowledge.QTable;
+
 /**
  * Western Norway University of Applied Sciences
  * Bergen, Norway
  * @author Angela Barriga Rodriguez abar@hvl.no, Magnus Marthinsen
  */
 public class QLearning {
-	private Knowledge knowledge;
+//	private Knowledge knowledge;
+	private hvl.projectparmorel.knowledge.Knowledge knowledge;
 	
 	protected static int N_EPISODES = 25;
 	protected static double randomfactor = 0.25;
@@ -104,7 +108,7 @@ public class QLearning {
 	
 	public QLearning() {
 		Preferences prefs = new Preferences();
-		knowledge = new Knowledge(preferences);
+		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); //preferences);
 		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
 		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
 		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
@@ -119,7 +123,7 @@ public class QLearning {
 	 * Saves the knowledge
 	 */
 	public void saveKnowledge() {
-		knowledge.save();
+//		knowledge.save();
 	}
 	
 	public static double[] linspace(double min, double max, int points) {
@@ -144,7 +148,7 @@ public class QLearning {
 		this.sx = sx;
 	}
 
-	void qTable(Error e, Action a) {
+	void qTable(Error error, Action action) {
 		int num;
 		double weight = 0.0;
 		HashMap<Integer, Double> d = new HashMap<Integer, Double>();
@@ -155,90 +159,107 @@ public class QLearning {
 		// for each error only available actions
 
 		if (preferences.contains(4)) {
-			if (a.getMsg().contains("delete")) {
+			if (action.getMsg().contains("delete")) {
 				weight = -(double) weightPunishDeletion/100;
 			} else {
 				weight = 0.0;
 			}
 		}
 
-		if (a.getMsg().contains("get")) {
+		if (action.getMsg().contains("get")) {
 			weight = -10.0;
 		} else {
 			weight = 0.0;
 		}
 
-		if (a.getSubHierarchy() > -1) {
-			num = Integer.valueOf(String.valueOf(a.getHierarchy()) + String.valueOf(a.getSubHierarchy()));
+		if (action.getSubHierarchy() > -1) {
+			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
 		} else {
-			num = a.getHierarchy();
+			num = action.getHierarchy();
 		}
 
 		// If error not present
 
-		ExperienceMap experience = knowledge.getExperience();
-		if (!experience.getqTable().containsKey(e.getCode())) {
-			d.put(a.getCode(), weight);
-			dx.put(num, d);
-			experience.getqTable().put(e.getCode(), dx);
-			if (!experience.getActionsDictionary().containsKey(e.getCode())) {
-				hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
-				hashcontainer.put(num, hashaux);
-				experience.getActionsDictionary().put(e.getCode(), hashcontainer);
+//		ExperienceMap experience = knowledge.getExperience();
+		QTable qTable = knowledge.getQTable();
+		ActionDirectory actionDirectory = knowledge.getActionDirectory();
+//		if (!getNewXp().getqTable().containsKey(e.getCode())) {
+		if (!qTable.containsErrorCode(error.getCode())) {
+			qTable.insertNewErrorCode(error.getCode(), num, action.getCode(), weight);
+//			d.put(a.getCode(), weight);
+//			dx.put(num, d);
+//			experience.getqTable().put(e.getCode(), dx);
+//			if (!experience.getActionsDictionary().containsKey(error.getCode())) {
+			if(!actionDirectory.containsErrorCode(error.getCode())) {
+				actionDirectory.insertNewErrorCode(error.getCode(), num, action);
+//				hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//				hashcontainer.put(num, hashaux);
+//				experience.getActionsDictionary().put(error.getCode(), hashcontainer);
 			} else {
-				if (!experience.getActionsDictionary().get(e.getCode()).containsKey(num)) {
-					hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
-					experience.getActionsDictionary().get(e.getCode()).put(num, hashaux);
+				if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
+					actionDirectory.addContextToError(error.getCode(), num, action);
+				} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
+					actionDirectory.addAction(error.getCode(), num, action);
 				}
-
-				else if (!experience.getActionsDictionary().get(e.getCode()).get(num).containsKey(a.getCode())) {
-					experience.getActionsDictionary().get(e.getCode()).get(num).put(a.getCode(),
-							new ActionExp(a, new HashMap<Integer, Integer>()));
-				}
+//				if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
+//					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//					experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
+//				}
+				
+//				else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
+//					experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
+//							new ActionExp(action, new HashMap<Integer, Integer>()));
+//				}
 			}
 		}
 		// Error not in Q table
 		else {
 			// Hierarchy already present
-			if (experience.getqTable().get(e.getCode()).containsKey(num)) {
+			if (qTable.containsContextIdForError(error.getCode(), num)){
+				
+//			if (experience.getqTable().get(error.getCode()).containsKey(num)) {
 				// Action no already present
-				if (!experience.getqTable().get(e.getCode()).get(num).containsKey(a.getCode())) {
-					experience.getqTable().get(e.getCode()).get(num).put(a.getCode(), weight);
-					if (!experience.getActionsDictionary().containsKey(e.getCode())) {
-						hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
+				if(qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
+					
+				}
+				
+				if (!experience.getqTable().get(error.getCode()).get(num).containsKey(action.getCode())) {
+					experience.getqTable().get(error.getCode()).get(num).put(action.getCode(), weight);
+					if (!experience.getActionsDictionary().containsKey(error.getCode())) {
+						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 						hashcontainer.put(num, hashaux);
-						experience.getActionsDictionary().put(e.getCode(), hashcontainer);
+						experience.getActionsDictionary().put(error.getCode(), hashcontainer);
 					} else {
-						if (!experience.getActionsDictionary().get(e.getCode()).containsKey(num)) {
-							hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
-							experience.getActionsDictionary().get(e.getCode()).put(num, hashaux);
+						if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
+							hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+							experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
 						}
 
-						else if (!experience.getActionsDictionary().get(e.getCode()).get(num)
-								.containsKey(a.getCode())) {
-							experience.getActionsDictionary().get(e.getCode()).get(num).put(a.getCode(),
-									new ActionExp(a, new HashMap<Integer, Integer>()));
+						else if (!experience.getActionsDictionary().get(error.getCode()).get(num)
+								.containsKey(action.getCode())) {
+							experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
+									new ActionExp(action, new HashMap<Integer, Integer>()));
 						}
 					}
 				}
 			}
 			// Hierar not in q
 			else {
-				d.put(a.getCode(), weight);
-				experience.getqTable().get(e.getCode()).put(num, d);
-				if (!experience.getActionsDictionary().containsKey(e.getCode())) {
-					hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
+				d.put(action.getCode(), weight);
+				experience.getqTable().get(error.getCode()).put(num, d);
+				if (!experience.getActionsDictionary().containsKey(error.getCode())) {
+					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 					hashcontainer.put(num, hashaux);
-					experience.getActionsDictionary().put(e.getCode(), hashcontainer);
+					experience.getActionsDictionary().put(error.getCode(), hashcontainer);
 				} else {
-					if (!experience.getActionsDictionary().get(e.getCode()).containsKey(num)) {
-						hashaux.put(a.getCode(), new ActionExp(a, new HashMap<Integer, Integer>()));
-						experience.getActionsDictionary().get(e.getCode()).put(num, hashaux);
+					if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
+						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+						experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
 					}
 
-					else if (!experience.getActionsDictionary().get(e.getCode()).get(num).containsKey(a.getCode())) {
-						experience.getActionsDictionary().get(e.getCode()).get(num).put(a.getCode(),
-								new ActionExp(a, new HashMap<Integer, Integer>()));
+					else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
+						experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
+								new ActionExp(action, new HashMap<Integer, Integer>()));
 					}
 				}
 			}

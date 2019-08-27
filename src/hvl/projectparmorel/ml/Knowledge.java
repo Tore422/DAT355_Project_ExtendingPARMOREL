@@ -88,7 +88,7 @@ public class Knowledge {
 	 * @return QTable with all zero values.
 	 */
 	private void normalizeQTable() {
-		experience.getQTable().setAllValuesTo(0.0);
+//		experience.getQTable().setAllValuesTo(0.0);
 	}
 
 	/**

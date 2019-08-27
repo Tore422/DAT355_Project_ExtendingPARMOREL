@@ -14,6 +14,11 @@ class ActionMap<T> {
 		actions = new HashMap<>();
 	}
 
+	protected ActionMap(Integer actionId, T value) {
+		actions = new HashMap<>();
+		actions.put(actionId, value);
+	}
+
 	/**
 	 * Clears all the values, setting them to the provided value.
 	 * 
@@ -60,5 +65,25 @@ class ActionMap<T> {
 	 */
 	private T getElementForActionId(Integer actionId) {
 		return actions.get(actionId);
+	}
+
+	/**
+	 * Checks that the action map contains a given action id.
+	 * 
+	 * @param actionId
+	 * @return true if the action ID exists, false otherwise.
+	 */
+	protected boolean containsAction(int actionId) {
+		return actions.containsKey(actionId);
+	}
+
+	/**
+	 * Adds a new action to the action map.
+	 * 
+	 * @param actionId
+	 * @param value
+	 */
+	protected void addValue(int actionId, T value) {
+		actions.put(actionId, value);
 	}
 }

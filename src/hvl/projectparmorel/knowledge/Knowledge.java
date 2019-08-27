@@ -1,7 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represents the algorithms knowledge.
@@ -10,12 +9,13 @@ import java.util.Set;
  * @author Magnus Marthinsen
  */
 public class Knowledge {
-	ErrorContextActionDirectory<Double> qTable;
-	ErrorContextActionDirectory<Action> preferenceScores;
+	
+	ActionDirectory actionDirectory;
+	QTable qTable;
 	
 	public Knowledge() {
-		qTable = new HashErrorContextActionDirectory<>();
-		preferenceScores = new HashErrorContextActionDirectory<>();
+		actionDirectory = new ActionDirectory();
+		qTable = new QTable();
 	}
 	
 	/**
@@ -26,14 +26,26 @@ public class Knowledge {
 	 * @param the preferences to influence. Only these preferences will be affected.
 	 */
 	public void influenceQTableFromPreferenceScores(List<Integer> preferences) {
-		qTable.influenceWeightsByPreferedScores(preferenceScores, preferences);
+		ErrorContextActionDirectory<Double> qTableDirectory = qTable.getQTableDirectory();
+		ErrorContextActionDirectory<Action> preferenceScores = actionDirectory.getActionDirectory();
+		qTableDirectory.influenceWeightsByPreferedScores(preferenceScores, preferences);
 	}
 	
-	public ErrorContextActionDirectory<Double> getQTable(){
+	/**
+	 * Gets the QTable
+	 * 
+	 * @return the QTable
+	 */
+	public QTable getQTable(){
 		return qTable;
 	}
 	
-	public ErrorContextActionDirectory<Action> getPreferenceScores(){
-		return preferenceScores;
+	/**
+	 * Gets the action directory
+	 * 
+	 * @return the action directory
+	 */
+	public ActionDirectory getActionDirectory(){
+		return actionDirectory;
 	}
 }

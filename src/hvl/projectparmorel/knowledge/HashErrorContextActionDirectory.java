@@ -28,9 +28,23 @@ public class HashErrorContextActionDirectory<T> extends ErrorContextActionDirect
 	}
 
 	@Override
+	public void insertNewErrorCode(Integer errorCode, Integer contextId, Integer actionId, T value) {
+		errors.insertNewErrorCode(errorCode, contextId, actionId, value);
+	}
+	
+	@Override
+	protected void addContextToError(Integer errorCode, Integer contextId, int actionId, T value) {
+		errors.insertNewContext(errorCode, contextId, actionId, value);
+	}
+	
+	@Override
+	protected void addValue(int errorCode, int contextId, int actionId, T value) {
+		errors.insertNewAction(errorCode, contextId, actionId, value);
+		
+	}
+	
+	@Override
 	protected ErrorMap<T> getErrorMap() {
 		return errors;
 	}
-
-
 }
