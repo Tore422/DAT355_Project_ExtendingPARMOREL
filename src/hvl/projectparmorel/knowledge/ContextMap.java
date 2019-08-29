@@ -100,10 +100,10 @@ class ContextMap<T extends Comparable<T>> {
 			T optimalAction = actions.get(optimalContextId).getValue(optimalActionId);
 
 			for (int i = 1; i < contextIds.length; i++) {
-				Integer optimalActionIdForContext = actions.get(i).getHihgestValueKey();
-				T action = actions.get(i).getValue(optimalActionIdForContext);
+				Integer optimalActionIdForContext = actions.get(contextIds[i]).getHihgestValueKey();
+				T action = actions.get(contextIds[i]).getValue(optimalActionIdForContext);
 				if (action.compareTo(optimalAction) > 0) {
-					optimalContextId = i;
+					optimalContextId = contextIds[i];
 					optimalActionId = optimalActionIdForContext;
 					optimalAction = action;
 				}
