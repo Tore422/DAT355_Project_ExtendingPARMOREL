@@ -3,6 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 class ActionMap<T extends Comparable<T>> {
@@ -130,5 +131,18 @@ class ActionMap<T extends Comparable<T>> {
 	 */
 	protected T getValue(Integer actionId) {
 		return actions.get(actionId);
+	}
+
+	/**
+	 * Gets a random value
+	 * 
+	 * @return a random value
+	 */
+	protected T getRandomValue() {
+		Random randomGenerator = new Random();
+		Integer[] actionIds = new Integer[actions.keySet().size()];
+		actionIds = actions.keySet().toArray(actionIds);
+		int randomActionIndex = randomGenerator.nextInt(actionIds.length);
+		return actions.get(actionIds[randomActionIndex]);
 	}
 }

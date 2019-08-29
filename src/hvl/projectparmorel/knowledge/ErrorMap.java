@@ -3,7 +3,6 @@ package hvl.projectparmorel.knowledge;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 class ErrorMap<T extends Comparable<T>> {
@@ -182,16 +181,13 @@ class ErrorMap<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Gets a random value for the specified error in the specified context
+	 * Gets a random context.
 	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @return a random value
+	 * @param errorCode 
+	 * @return a random context
 	 */
-	protected T getRandomValueForErrorInContext(int contextId) {
-		Random randomGenerator = new Random();
-		ContextMap<T> randomContext = contexts.get(contextId);
-		int randomActionId = randomGenerator.nextInt(randomContext.getNumberOfActionsInContext(contextId));
-		return randomContext.getValue(contextId, randomActionId);
+	protected T getRandomActionInRandomContextForError(int errorCode) {
+		ContextMap<T> contextsForError = contexts.get(errorCode);
+		return contextsForError.getRandomValueInRandomContext();
 	}
 }

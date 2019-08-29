@@ -3,6 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 class ContextMap<T extends Comparable<T>> {
@@ -172,5 +173,19 @@ class ContextMap<T extends Comparable<T>> {
 	 */
 	protected int getNumberOfActionsInContext(Integer contextId) {
 		return actions.keySet().size();
+	}
+
+
+	/**
+	 * Gets a random action in a random context
+	 * 
+	 * @return a random value
+	 */
+	protected T getRandomValueInRandomContext() {
+		Random randomGenerator = new Random();
+		Integer[] contextIds = new Integer[actions.keySet().size()];
+		contextIds = actions.keySet().toArray(contextIds);
+		int randomContextIndex = randomGenerator.nextInt(contextIds.length);
+		return actions.get(contextIds[randomContextIndex]).getRandomValue();
 	}
 }
