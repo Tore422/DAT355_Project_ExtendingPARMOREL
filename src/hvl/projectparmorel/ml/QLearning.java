@@ -1349,7 +1349,8 @@ public class QLearning {
 		// Each error
 
 		for (int i = 0; i < myErrors.size(); i++) {
-			if (!knowledge.getExperience().getActionsDictionary().containsKey(myErrors.get(i).getCode())) {
+			if (!knowledge.getActionDirectory().containsErrorCode(myErrors.get(i).getCode())) {
+//			if (!knowledge.getExperience().getActionsDictionary().containsKey(myErrors.get(i).getCode())) {
 				List<?> ca;
 				// iterates over the whole structure of the error
 				ca = (List<?>) myErrors.get(i).getWhere();
@@ -1551,12 +1552,12 @@ public class QLearning {
 		}
 	}
 	
-	/**
-	 * Gets the knowledge
-	 * 
-	 * @return the knowledge
-	 */
-	public Knowledge getKnowledge() {
-		return knowledge;
-	}
+//	/**
+//	 * Gets the knowledge
+//	 * 
+//	 * @return the knowledge
+//	 */
+//	public Knowledge getKnowledge() {
+//		return knowledge;
+//	}
 }
