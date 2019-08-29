@@ -95,4 +95,16 @@ public class QTable {
 		return qTable.getOptimalActionIndexForErrorCode(errorCode);
 		
 	}
+
+	/**
+	 * Gets the weight for the specified action for the specified context for the specified error.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the weight
+	 */
+	public double getWeight(Integer errorCode, Integer contextId, Integer actionId) {
+		return qTable.getValue(errorCode, contextId, actionId);
+	}
 }

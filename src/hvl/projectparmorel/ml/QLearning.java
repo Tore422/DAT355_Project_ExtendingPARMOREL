@@ -832,6 +832,8 @@ public class QLearning {
 
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
+		QTable qTable = knowledge.getQTable();
+		
 		int val;
 		int discarded = 0;
 		int episode = 0;
@@ -870,7 +872,7 @@ public class QLearning {
 			step = 0;
 			doni = false;
 			Sequence s = new Sequence();
-			ExperienceMap experience = knowledge.getExperience();
+//			ExperienceMap experience = knowledge.getExperience();
 			while (step < MAX_EPISODE_STEPS) {
 				action = chooseActionHash(state);
 
@@ -926,8 +928,9 @@ public class QLearning {
 				if (nuQueue.size() != 0) {
 					next_state = nuQueue.get(index);
 
-					if (!processed.contains(next_state.getCode())
-							|| !experience.getqTable().containsKey(next_state.getCode())) {
+					if(!processed.contains(next_state.getCode()) || !qTable.containsErrorCode(next_state.getCode())){
+//					if (!processed.contains(next_state.getCode())
+//							|| !experience.getqTable().containsKey(next_state.getCode())) {
 						nuQueue = errorsExtractor(auxModel2);
 						actionsExtractor(nuQueue);
 						auxModel2 = processModel(auxModel2);
@@ -953,14 +956,19 @@ public class QLearning {
 					} else {
 						code2 = a.getHierarchy();
 					}
-
-					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
+					double value = qTable.getWeight(state.getCode(), code, action.getCode())
 							+ alpha * (reward
-									+ gamma * experience.getqTable().get(next_state.getCode()).get(code2)
-											.get(a.getCode())
-									- experience.getqTable().get(state.getCode()).get(code).get(action.getCode()));
+									+ gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
+									- qTable.getWeight(state.getCode(), code, action.getCode());
+							
+//					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
+//							+ alpha * (reward
+//									+ gamma * experience.getqTable().get(next_state.getCode()).get(code2)
+//											.get(a.getCode())
+//									- experience.getqTable().get(state.getCode()).get(code).get(action.getCode()));
 
-					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
+					qTable.setWeight(state.getCode(), code, action.getCode(), value);
+//					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					state = next_state;
 					sizeBefore = nuQueue.size();
 				} // it has reached the end
@@ -968,11 +976,15 @@ public class QLearning {
 				else {
 					end_reward = 1;
 
-					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
+					double value = qTable.getWeight(state.getCode(), code, action.getCode())
 							+ alpha * (reward + gamma * end_reward)
-							- experience.getqTable().get(state.getCode()).get(code).get(action.getCode());
-
-					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
+							- qTable.getWeight(state.getCode(), code, action.getCode());
+					
+//					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
+//							+ alpha * (reward + gamma * end_reward)
+//							- experience.getqTable().get(state.getCode()).get(code).get(action.getCode());
+					qTable.setWeight(state.getCode(), code, action.getCode(), value);
+//					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					doni = true;
 				}
 
