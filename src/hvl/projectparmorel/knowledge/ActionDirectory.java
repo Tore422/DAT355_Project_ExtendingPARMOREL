@@ -111,4 +111,31 @@ public class ActionDirectory {
 		Action randomAction = preferenceScores.getRandomValueForError(errorCode);
 		return new hvl.projectparmorel.ml.Action(randomAction.code, randomAction.msg, randomAction.method, randomAction.hierarchy, randomAction.subHierarchy);
 	}
+
+	/**
+	 * Gets the tag dictionary for the specified action
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the tag dictionary for the action
+	 */
+	public hvl.projectparmorel.ml.TagDictionary getTagDictionaryForAction(Integer errorCode, Integer contextId, Integer actionId) {
+		Action action = getAction(errorCode, contextId, actionId);
+		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getTagDictionary());
+	}
+
+	/**
+	 * Sets the value for the specified tag for the specified action in the specified context for the specified error.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @param tag
+	 * @param value
+	 */
+	public void setTagValueInTagDictionary(Integer errorCode, Integer contextId, Integer actionId, int tag, int value) {
+		Action action = getAction(errorCode, contextId, actionId);
+		action.getTagDictionary().set(tag, value);
+	}
 }

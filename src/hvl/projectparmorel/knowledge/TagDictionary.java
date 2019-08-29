@@ -36,5 +36,15 @@ public class TagDictionary {
 	public int getTagFor(Integer tagId) {
 		return tagDictionary.get(tagId);
 	}
+
+	/**
+	 * Inserts the value for the specified tag id
+	 * 
+	 * @param tagId
+	 * @param value
+	 */
+	protected void set(int tagId, int value) {
+		tagDictionary.put(tagId, value);
+	}
 }
 

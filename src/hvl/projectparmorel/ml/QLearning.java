@@ -1062,7 +1062,9 @@ public class QLearning {
 	}
 
 	void updateSequencesWeights(Sequence s, int tag) {
-		ExperienceMap experience = knowledge.getExperience();
+//		ExperienceMap experience = knowledge.getExperience();
+		QTable qTable = knowledge.getQTable();
+		ActionDirectory actionDirectory = knowledge.getActionDirectory();
 		int num;
 		for (int i = 0; i < s.getSeq().size(); i++) {
 			if (s.getSeq().get(i).getAction().getSubHierarchy() > -1) {
@@ -1071,23 +1073,34 @@ public class QLearning {
 			} else {
 				num = s.getSeq().get(i).getAction().getHierarchy();
 			}
-			experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num).put(
-					s.getSeq().get(i).getAction().getCode(),
-					experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num)
-							.get(s.getSeq().get(i).getAction().getCode()) + 300);
+			int errorCode = s.getSeq().get(i).getError().getCode();
+			int actionId = s.getSeq().get(i).getAction().getCode();
+			double oldWeight = qTable.getWeight(errorCode, num, actionId);
+			
+			qTable.setWeight(errorCode, num, actionId, oldWeight + 300);
+//			experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num).put(
+//					s.getSeq().get(i).getAction().getCode(),
+//					experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num)
+//							.get(s.getSeq().get(i).getAction().getCode()) + 300);
 
 			if (tag > -1) {
-				if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-						.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(tag)) {
+				
+				if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().containsKey(tag)) {
+					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, 500);
+//					actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().put(tag, 500);
+//				if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//						.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(tag)) {
 
-					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag, 500);
+//					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag, 500);
 				} else {
-					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag,
-									experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
-											.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
-											.get(tag) + 500);
+					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().get(tag);
+					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, oldTagValue + 500);
+//					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag,
+//									experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
+//											.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
+//											.get(tag) + 500);
 				}
 			}
 			
@@ -1096,22 +1109,30 @@ public class QLearning {
 					if(tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).containsKey(s.getSeq().get(i).getAction().getCode())) {
 						for( Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
 								get(s.getSeq().get(i).getAction().getCode()).keySet()) {
+							if(!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().containsKey(key)) {
+//							if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//									.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(key)) {
+								int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+										get(s.getSeq().get(i).getAction().getCode()).get(key);
+								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
 							
-							if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-									.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(key)) {
-
-								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key, tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-												get(s.getSeq().get(i).getAction().getCode()).get(key));
+//								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key, tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+//												get(s.getSeq().get(i).getAction().getCode()).get(key));
 							} else {
-								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key,
-												
-												experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
-														.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
-														.get(key) + 
-														tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-														get(s.getSeq().get(i).getAction().getCode()).get(key));
+								int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().get(key) + 
+										tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+										get(s.getSeq().get(i).getAction().getCode()).get(key);
+								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
+								
+//								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
+//										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key,
+//												
+//												experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
+//														.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
+//														.get(key) + 
+//														tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
+//														get(s.getSeq().get(i).getAction().getCode()).get(key));
 							}
 						}
 					}
