@@ -108,13 +108,13 @@ class ActionMap<T extends Comparable<T>> {
 		Integer[] actionIds = new Integer[actionIdSet.size()];
 		actionIds = actionIdSet.toArray(actionIds);
 		if(actionIds.length > 0) {
-			Integer optimalActionId = 0;
+			Integer optimalActionId = actionIds[0];
 			
 			for(int i = 1; i < actionIds.length; i++) {
 				T optimalAction = actions.get(optimalActionId);
 				T action = actions.get(actionIds[i]);
 				if(action.compareTo(optimalAction) > 0) {
-					optimalActionId = i;
+					optimalActionId = actionIds[i];
 				}
 			}
 			return optimalActionId;

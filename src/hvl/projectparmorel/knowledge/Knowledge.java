@@ -2,8 +2,6 @@ package hvl.projectparmorel.knowledge;
 
 import java.util.List;
 
-import hvl.projectparmorel.ml.SerializableMethod;
-
 /**
  * Represents the algorithms knowledge.
  * 

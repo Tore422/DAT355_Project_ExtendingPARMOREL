@@ -56,7 +56,8 @@ import hvl.projectparmorel.knowledge.QTable;
 /**
  * Western Norway University of Applied Sciences
  * Bergen, Norway
- * @author Angela Barriga Rodriguez abar@hvl.no, Magnus Marthinsen
+ * @author Angela Barriga Rodriguez abar@hvl.no
+ * @author Magnus Marthinsen
  */
 public class QLearning {
 //	private Knowledge knowledge;
@@ -151,10 +152,10 @@ public class QLearning {
 	void qTable(Error error, Action action) {
 		int num;
 		double weight = 0.0;
-		HashMap<Integer, Double> d = new HashMap<Integer, Double>();
-		HashMap<Integer, HashMap<Integer, Double>> dx = new HashMap<Integer, HashMap<Integer, Double>>();
-		HashMap<Integer, ActionExp> hashaux = new HashMap<Integer, ActionExp>();
-		HashMap<Integer, HashMap<Integer, ActionExp>> hashcontainer = new HashMap<Integer, HashMap<Integer, ActionExp>>();
+//		HashMap<Integer, Double> d = new HashMap<Integer, Double>();
+//		HashMap<Integer, HashMap<Integer, Double>> dx = new HashMap<Integer, HashMap<Integer, Double>>();
+//		HashMap<Integer, ActionExp> hashaux = new HashMap<Integer, ActionExp>();
+//		HashMap<Integer, HashMap<Integer, ActionExp>> hashcontainer = new HashMap<Integer, HashMap<Integer, ActionExp>>();
 		// Initialize all available actions weights to 0
 		// for each error only available actions
 
