@@ -1,6 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class HashErrorContextActionDirectory<T extends Comparable<T>> extends ErrorContextActionDirectory<T> {
@@ -61,5 +62,12 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	@Override
 	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
 		return errors.getValue(errorCode, contextId, actionId);
+	}
+
+	@Override
+	protected T getRandomValueForError(int errorCode) {
+		Random randomGenerator = new Random();
+		int randomContext = randomGenerator.nextInt(errors.getNumberOfContextsForError(errorCode));
+		return errors.getRandomValueForErrorInContext(randomContext);
 	}
 }

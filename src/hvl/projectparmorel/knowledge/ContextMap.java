@@ -154,4 +154,23 @@ class ContextMap<T extends Comparable<T>> {
 	protected T getValue(Integer contextId, Integer actionId) {
 		return actions.get(contextId).getValue(actionId);
 	}
+
+	/**
+	 * Gets the number of contexts
+	 * 
+	 * @return the number of contexts
+	 */
+	protected int getNumberOfContexts() {
+		return actions.keySet().size();
+	}
+	
+	/**
+	 * Returns the number of actions stored in the current context.
+	 * 
+	 * @param contextId
+	 * @return the number of actions stored.
+	 */
+	protected int getNumberOfActionsInContext(Integer contextId) {
+		return actions.keySet().size();
+	}
 }

@@ -93,4 +93,12 @@ public abstract class ErrorContextActionDirectory<T extends Comparable<T>> {
 	 * @return the corresponding action
 	 */
 	protected abstract T getValue(Integer errorCode, Integer contextId, Integer actionId);
+
+	/**
+	 * Gets a random action for the specified error
+	 * 
+	 * @param errorCode
+	 * @return a random action
+	 */
+	protected abstract T getRandomValueForError(int errorCode);
 }

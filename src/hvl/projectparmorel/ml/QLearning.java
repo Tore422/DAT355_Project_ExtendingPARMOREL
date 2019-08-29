@@ -362,11 +362,12 @@ public class QLearning {
 		Resource auxModel = resourceSet.createResource(uri);
 		auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
 		List<Action> aux = actionsFound;
-		ExperienceMap experience = knowledge.getExperience();
+//		ExperienceMap experience = knowledge.getExperience();
 		
 		for (int x = 0; x < nuQueue.size(); x++) {
 			Error err = nuQueue.get(x);
-			if (!experience.getActionsDictionary().containsKey(err.getCode())) {
+			if(!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
+//			if (!experience.getActionsDictionary().containsKey(err.getCode())) {
 				for (int j = 0; j < err.getWhere().size(); j++) {
 					// if package, look for origin in children
 					for (int i = 0; i < aux.size(); i++) {
@@ -412,7 +413,8 @@ public class QLearning {
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(r.getContents().get(0));
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
 			for (Diagnostic child : diagnostic.getChildren()) {
-				if (!knowledge.getExperience().getqTable().containsKey(child.getCode())) {
+				if(!knowledge.getQTable().containsErrorCode(child.getCode())) {
+//				if (!knowledge.getExperience().getqTable().containsKey(child.getCode())) {
 					return true;
 				}
 			}
@@ -452,36 +454,37 @@ public class QLearning {
 		int count = 0;
 		Integer val = 0;
 		Integer act = 0;
-		ExperienceMap experience = knowledge.getExperience();
+//		ExperienceMap experience = knowledge.getExperience();
 		if (Math.random() < randomfactor) {
-			boolean set = false;
-				// how many error locations
-				int x = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).size());
-				for (Integer key : experience.getActionsDictionary().get(err.getCode()).keySet()) {
-					if (count == x) {
-						val = key;
-						break;
-					}
-					count++;
-				}
-				// how many actions in that location
-				int y = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).get(val).size());
-				count = 0;
-				for (Integer key2 : experience.getActionsDictionary().get(err.getCode()).get(val).keySet()) {
-					if (count == y) {
-						act = key2;
-						break;
-					}
-					count++;
-				}
-				a = experience.getActionsDictionary().get(err.getCode()).get(val).get(act).getAction();
+			return knowledge.getActionDirectory().getRandomActionForError(err.getCode());
+			
+//			boolean set = false;
+//				// how many error locations
+////				int x = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).size());
+//				int x = new Random().nextInt(knowledge.getActionDirectory().getNumberOfContextsForError(err.getCode()));
+//				for (Integer key : experience.getActionsDictionary().get(err.getCode()).keySet()) {
+//					if (count == x) {
+//						val = key;
+//						break;
+//					}
+//					count++;
+//				}
+//				// how many actions in that location
+//				int y = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).get(val).size());
+//				count = 0;
+//				for (Integer key2 : experience.getActionsDictionary().get(err.getCode()).get(val).keySet()) {
+//					if (count == y) {
+//						act = key2;
+//						break;
+//					}
+//					count++;
+//				}
+//				a = experience.getActionsDictionary().get(err.getCode()).get(val).get(act).getAction();
 
 			
 		} else {
-			a = bestAction(err);
+			return bestAction(err);
 		}
-
-		return a;
 	}
 
 	// extract types of parameters given a method

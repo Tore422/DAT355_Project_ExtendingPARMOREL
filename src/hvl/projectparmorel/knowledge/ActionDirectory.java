@@ -100,4 +100,15 @@ public class ActionDirectory {
 	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
 		return preferenceScores.getValue(errorCode, contextId, actionId);
 	}
+
+	/**
+	 * Gets a random action for the specified error
+	 * 
+	 * @param errorCode
+	 * @return a random action
+	 */
+	public hvl.projectparmorel.ml.Action getRandomActionForError(int errorCode) {
+		Action randomAction = preferenceScores.getRandomValueForError(errorCode);
+		return new hvl.projectparmorel.ml.Action(randomAction.code, randomAction.msg, randomAction.method, randomAction.hierarchy, randomAction.subHierarchy);
+	}
 }
