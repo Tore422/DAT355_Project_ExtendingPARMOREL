@@ -16,20 +16,6 @@ public class ActionDirectory {
 	public boolean containsErrorCode(Integer errorCode) {
 		return preferenceScores.getErrorMap().containsErrorCode(errorCode);
 	}
-
-	/**
-	 * Checks that the provided context id is stored in the Context Map for the given error.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @return true if the context ID exists in the map, false otherwise.
-	 */
-	public boolean errorContainsContext(Integer errorCode, Integer contextId) {
-		if(!containsErrorCode(errorCode)) {
-			throw new IllegalArgumentException("No data exists on this error code.");
-		}
-		return preferenceScores.getErrorMap().containsContextIdForErrorCode(errorCode, contextId);
-	}
 	
 	/**
 	 * Checks that the provided action Id exists for the specified error code and contect id

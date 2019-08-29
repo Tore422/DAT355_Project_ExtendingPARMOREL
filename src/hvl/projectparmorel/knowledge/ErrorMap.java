@@ -72,17 +72,6 @@ class ErrorMap<T extends Comparable<T>> {
 	}
 	
 	/**
-	 * Checks that the provided context id is stored in the Context Map for the given error.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @return true if the context ID exists in the map, false otherwise.
-	 */
-	protected boolean containsContextIdForErrorCode(Integer errorCode, Integer contextId) {
-		return contexts.get(errorCode).containsContextId(contextId);
-	}
-
-	/**
 	 * Checks that the provided action id is stored for the given error and context.
 	 * 
 	 * @param errorCode
