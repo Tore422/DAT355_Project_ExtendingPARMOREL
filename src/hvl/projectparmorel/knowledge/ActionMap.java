@@ -33,7 +33,8 @@ class ActionMap<T extends Comparable<T>> {
 	}
 
 	/**
-	 * Influences the weights in the QTable from the action map if the action is in the preferences.
+	 * Influences the weights in the QTable from the action map if the action is in
+	 * the preferences.
 	 * 
 	 * @param actionMapForContext
 	 * @param preferences
@@ -41,32 +42,22 @@ class ActionMap<T extends Comparable<T>> {
 	@SuppressWarnings("unchecked")
 	protected void influenceWeightsByPreferedScores(ActionMap<Action> actionMapForContext, List<Integer> preferences) {
 		for (Integer actionId : actions.keySet()) {
-			Action action = actionMapForContext.getElementForActionId(actionId);
+			Action action = actionMapForContext.getValue(actionId);
 			TagDictionary tagDictionary = action.getTagDictionary();
 			for (Integer tagId : tagDictionary.getAllTagIds()) {
 				if (preferences.contains(tagId)) {
-					Double value = tagDictionary.getTagFor(tagId) * 0.2;					
+					Double value = tagDictionary.getTagFor(tagId) * 0.2;
 					value += (double) actions.get(actionId);
-					
-					if(actions.values().toArray()[0] instanceof Double) {
+
+					if (actions.values().toArray()[0] instanceof Double) {
 						actions.put(actionId, (T) value);
 					} else {
 						throw new IllegalStateException("The QTable must be parametrized with Double.");
 					}
-					
+
 				}
 			}
 		}
-	}
-
-	/**
-	 * Get element for the corresponding action Id.
-	 * 
-	 * @param actionId, the id for the action
-	 * @return the corresponding element
-	 */
-	private T getElementForActionId(Integer actionId) {
-		return actions.get(actionId);
 	}
 
 	/**
@@ -75,62 +66,33 @@ class ActionMap<T extends Comparable<T>> {
 	 * @param actionId
 	 * @return true if the action ID exists, false otherwise.
 	 */
-	protected boolean containsAction(int actionId) {
+	protected boolean containsValue(int actionId) {
 		return actions.containsKey(actionId);
 	}
 
 	/**
-	 * Adds a new action to the action map.
+	 * Gets the key for highest value
 	 * 
-	 * @param actionId
-	 * @param value
-	 */
-	protected void addValue(int actionId, T value) {
-		actions.put(actionId, value);
-	}
-
-	/**
-	 * Sets the value for the specified action ID
-	 * 
-	 * @param actionId
-	 * @param value
-	 */
-	protected void updateValue(int actionId, T value) {
-		actions.replace(actionId, value);
-	}
-
-	/**
-	 * Gets the key for highest value 
-	 * 
-	 * @return the highest value in the action map. If two are equal, one of them is returned. If the set is empty, null is returned.
+	 * @return the highest value in the action map. If two are equal, one of them is
+	 *         returned. If the set is empty, null is returned.
 	 */
 	protected Integer getHihgestValueKey() {
 		Set<Integer> actionIdSet = actions.keySet();
 		Integer[] actionIds = new Integer[actionIdSet.size()];
 		actionIds = actionIdSet.toArray(actionIds);
-		if(actionIds.length > 0) {
+		if (actionIds.length > 0) {
 			Integer optimalActionId = actionIds[0];
-			
-			for(int i = 1; i < actionIds.length; i++) {
+
+			for (int i = 1; i < actionIds.length; i++) {
 				T optimalAction = actions.get(optimalActionId);
 				T action = actions.get(actionIds[i]);
-				if(action.compareTo(optimalAction) > 0) {
+				if (action.compareTo(optimalAction) > 0) {
 					optimalActionId = actionIds[i];
 				}
 			}
 			return optimalActionId;
 		}
 		return null;
-	}
-
-	/**
-	 * Gets the value for the specified action ID
-	 * 
-	 * @param actionId
-	 * @return the value for the specified aciton ID
-	 */
-	protected T getValue(Integer actionId) {
-		return actions.get(actionId);
 	}
 
 	/**
@@ -144,5 +106,26 @@ class ActionMap<T extends Comparable<T>> {
 		actionIds = actions.keySet().toArray(actionIds);
 		int randomActionIndex = randomGenerator.nextInt(actionIds.length);
 		return actions.get(actionIds[randomActionIndex]);
+	}
+	
+	/**
+	 * Sets the value for the specified action. If the action is not in the
+	 * hierarchy, it will be added.
+	 * 
+	 * @param actionId
+	 * @param value
+	 */
+	protected void setValue(Integer actionId, T value) {
+		actions.put(actionId, value);
+	}
+	
+	/**
+	 * Gets the value for the specified action
+	 * 
+	 * @param actionId
+	 * @return the value for the specified action
+	 */
+	protected T getValue(Integer actionId) {
+		return actions.get(actionId);
 	}
 }

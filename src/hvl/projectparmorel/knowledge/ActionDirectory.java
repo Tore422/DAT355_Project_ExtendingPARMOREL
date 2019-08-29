@@ -8,29 +8,6 @@ public class ActionDirectory {
 	}
 	
 	/**
-	 * Inserts a new entry in the qTable.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @param weight
-	 */
-	public void insertNewErrorCode(Integer errorCode, Integer contextId, hvl.projectparmorel.ml.Action action) {
-		preferenceScores.insertNewErrorCode(errorCode, contextId, action.getCode(), new Action(action));
-	}
-	
-	/**
-	 * Inserts a new context for the specified error code.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param action
-	 */
-	public void addContextToError(Integer errorCode, Integer contextId, hvl.projectparmorel.ml.Action action) {
-		preferenceScores.addContextToError(errorCode, contextId, action.getCode(), new Action(action));
-	}
-	
-	/**
 	 * Checks that the provided error code is stored in the ErrorMap.
 	 * 
 	 * @param errorCode to check
@@ -63,21 +40,7 @@ public class ActionDirectory {
 	 * @return true if the action ID exists for the specified error code and context ID, false otherwise.
 	 */
 	public boolean containsActionForErrorAndContext(int errorCode, int contextId, int actionId) {
-		if(!errorContainsContext(errorCode, contextId)) {
-			throw new IllegalArgumentException("No data exists on this context ID.");
-		}
-		return preferenceScores.getErrorMap().containsActionIdForErrorCodeAndContextId(errorCode, contextId, actionId);
-	}
-	
-	/**
-	 * Adds action to the specified error code and context ID.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param action
-	 */
-	public void addAction(int errorCode, int contextId, hvl.projectparmorel.ml.Action action) {
-		preferenceScores.addValue(errorCode, contextId, action.getCode(), new Action(action));
+		return preferenceScores.containsValueForErrorAndContext(errorCode, contextId, actionId);
 	}
 	
 	/**
@@ -87,18 +50,6 @@ public class ActionDirectory {
 	 */
 	protected ErrorContextActionDirectory<Action> getActionDirectory(){
 		return preferenceScores;
-	}
-
-	/**
-	 * Gets the value for the specified error code, context id and action id.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @return the corresponding value
-	 */
-	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
-		return preferenceScores.getValue(errorCode, contextId, actionId);
 	}
 
 	/**
@@ -137,5 +88,28 @@ public class ActionDirectory {
 	public void setTagValueInTagDictionary(Integer errorCode, Integer contextId, Integer actionId, int tag, int value) {
 		Action action = getAction(errorCode, contextId, actionId);
 		action.getTagDictionary().set(tag, value);
+	}
+	
+	/**
+	 * Adds action to the specified error code and context ID.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param action
+	 */
+	public void setAction(int errorCode, int contextId, hvl.projectparmorel.ml.Action action) {
+		preferenceScores.setValue(errorCode, contextId, action.getCode(), new Action(action));
+	}
+	
+	/**
+	 * Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
+		return preferenceScores.getValue(errorCode, contextId, actionId);
 	}
 }

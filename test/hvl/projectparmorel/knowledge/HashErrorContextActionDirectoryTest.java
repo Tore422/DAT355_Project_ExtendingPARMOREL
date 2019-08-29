@@ -12,7 +12,7 @@ class HashErrorContextActionDirectoryTest {
 	@BeforeEach
 	public void setUp() {
 		directory = new HashErrorContextActionDirectory<>();
-		directory.insertNewErrorCode(0, 0, 24, 10);
+		directory.setValue(0, 0, 24, 10);
 	}
 	
 	@Test

@@ -10,6 +10,11 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 		super();
 		errors = new ErrorMap<>();
 	}
+	
+	@Override
+	public void setValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
+		errors.setValue(errorCode, contextId, actionId, value);
+	}
 
 	@Override
 	public void setAllValuesTo(T value) {
@@ -26,31 +31,10 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 			List<Integer> preferences) {
 		errors.influenceWeightsByPreferedScores(preferenceScores.getErrorMap(), preferences);
 	}
-
-	@Override
-	public void insertNewErrorCode(Integer errorCode, Integer contextId, Integer actionId, T value) {
-		errors.insertNewErrorCode(errorCode, contextId, actionId, value);
-	}
-	
-	@Override
-	protected void addContextToError(Integer errorCode, Integer contextId, Integer actionId, T value) {
-		errors.insertNewContext(errorCode, contextId, actionId, value);
-	}
-	
-	@Override
-	protected void addValue(int errorCode, int contextId, int actionId, T value) {
-		errors.insertNewAction(errorCode, contextId, actionId, value);
-		
-	}
 	
 	@Override
 	protected ErrorMap<T> getErrorMap() {
 		return errors;
-	}
-
-	@Override
-	protected void updateValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
-		errors.updateValue(errorCode, contextId, actionId, value);
 	}
 
 	@Override
@@ -67,4 +51,10 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	protected T getRandomValueForError(int errorCode) {
 		return errors.getRandomActionInRandomContextForError(errorCode);
 	}
+
+	@Override
+	protected boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId) {
+		return errors.containsValueForErrorCodeAndContextId(errorCode, contextId, actionId);
+	}
+
 }

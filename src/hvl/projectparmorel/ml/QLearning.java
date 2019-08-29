@@ -54,15 +54,15 @@ import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
 
 /**
- * Western Norway University of Applied Sciences
- * Bergen, Norway
+ * Western Norway University of Applied Sciences Bergen, Norway
+ * 
  * @author Angela Barriga Rodriguez abar@hvl.no
  * @author Magnus Marthinsen
  */
 public class QLearning {
 //	private Knowledge knowledge;
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
-	
+
 	protected static int N_EPISODES = 25;
 	protected static double randomfactor = 0.25;
 
@@ -83,8 +83,7 @@ public class QLearning {
 	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	static List<Action> actionsFound = new ArrayList<Action>();
 	public ResourceSet resourceSet = new ResourceSetImpl();
-	
-	
+
 	int MAX_EPISODE_STEPS = 20;
 	boolean done = false;
 	boolean invoked = false;
@@ -92,9 +91,9 @@ public class QLearning {
 	NotificationChain msgs = new NotificationChainImpl();
 	public Resource myMetaModel;
 	public static int user;
-	
+
 //	static Experience newXp = new Experience();
-	
+
 	static double factor = 0.0;
 	Sequence sx;
 	public static List<Integer> preferences = new ArrayList<Integer>();
@@ -106,10 +105,10 @@ public class QLearning {
 	private int weightPunishDeletion;
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardModificationOfTheOriginalModel;
-	
+
 	public QLearning() {
 		Preferences prefs = new Preferences();
-		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); //preferences);
+		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
 		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
 		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
 		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
@@ -119,14 +118,14 @@ public class QLearning {
 		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
 	}
-	
+
 	/**
 	 * Saves the knowledge
 	 */
 	public void saveKnowledge() {
 //		knowledge.save();
 	}
-	
+
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
 		for (int i = 0; i < points; i++) {
@@ -161,7 +160,7 @@ public class QLearning {
 
 		if (preferences.contains(4)) {
 			if (action.getMsg().contains("delete")) {
-				weight = -(double) weightPunishDeletion/100;
+				weight = -(double) weightPunishDeletion / 100;
 			} else {
 				weight = 0.0;
 			}
@@ -184,60 +183,47 @@ public class QLearning {
 //		ExperienceMap experience = knowledge.getExperience();
 		QTable qTable = knowledge.getQTable();
 		ActionDirectory actionDirectory = knowledge.getActionDirectory();
+		
+		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
+			qTable.setWeight(error.getCode(), num, action.getCode(), weight);
+			
+			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
+				actionDirectory.setAction(error.getCode(), num, action);
+			}
+		}
+		
 //		if (!getNewXp().getqTable().containsKey(e.getCode())) {
-		if (!qTable.containsErrorCode(error.getCode())) {
-			qTable.insertNewErrorCode(error.getCode(), num, action.getCode(), weight);
+		
 //			d.put(a.getCode(), weight);
 //			dx.put(num, d);
 //			experience.getqTable().put(e.getCode(), dx);
 //			if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-			if(!actionDirectory.containsErrorCode(error.getCode())) {
-				actionDirectory.insertNewErrorCode(error.getCode(), num, action);
+			
 //				hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //				hashcontainer.put(num, hashaux);
 //				experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-			} else {
-				if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
-					actionDirectory.addContextToError(error.getCode(), num, action);
-				} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
-					actionDirectory.addAction(error.getCode(), num, action);
-				}
 //				if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
 //					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //					experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
 //				}
-				
+
 //				else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
 //					experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
 //							new ActionExp(action, new HashMap<Integer, Integer>()));
 //				}
-			}
-		}
 		// Error not in Q table
-		else {
 			// Hierarchy already present
-			if (qTable.containsContextIdForError(error.getCode(), num)){
-				
+
 //			if (experience.getqTable().get(error.getCode()).containsKey(num)) {
 				// Action no already present
-				if(!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
-					qTable.setWeight(error.getCode(), num, action.getCode(), weight);
-				
+
 //				if (!experience.getqTable().get(error.getCode()).get(num).containsKey(action.getCode())) {
 //					experience.getqTable().get(error.getCode()).get(num).put(action.getCode(), weight);
-					
-					if(!actionDirectory.containsErrorCode(error.getCode())) {
-						actionDirectory.insertNewErrorCode(error.getCode(), num, action);
+
 //					if (!experience.getActionsDictionary().containsKey(error.getCode())) {
 //						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //						hashcontainer.put(num, hashaux);
 //						experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-					} else {
-						if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
-							actionDirectory.addContextToError(error.getCode(), num, action);
-						} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
-							actionDirectory.addAction(error.getCode(), num, action);
-						}
 //						if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
 //							hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //							experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
@@ -248,45 +234,28 @@ public class QLearning {
 //							experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
 //									new ActionExp(action, new HashMap<Integer, Integer>()));
 //						}
-					}
-				}
-			}
 			// Hierar not in q
-			else {
-				qTable.setWeight(error.getCode(), num, action.getCode(), weight);
 //				d.put(action.getCode(), weight);
 //				experience.getqTable().get(error.getCode()).put(num, d);
-				if(!actionDirectory.containsErrorCode(error.getCode())) {
-					actionDirectory.insertNewErrorCode(error.getCode(), num, action);
-//				}
+
 //				if (!experience.getActionsDictionary().containsKey(error.getCode())) {
 //					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //					hashcontainer.put(num, hashaux);
 //					experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-				} else {
-					if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
 //					if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-						actionDirectory.addContextToError(error.getCode(), num, action);
 //						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
 //						experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
-					} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
-						actionDirectory.addAction(error.getCode(), num, action);
-					}
 //
 //					else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
 //						experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
 //								new ActionExp(action, new HashMap<Integer, Integer>()));
 //					}
-				}
-			}
-
-		}
 	}
 
 	// Returns key (action) with highest weight
 	Action bestAction(Error err) {
 		return knowledge.getOptimalActionForErrorCode(err.getCode());
-		
+
 //		
 //		int sons = err.getSons();
 //		int code = 0;
@@ -364,10 +333,10 @@ public class QLearning {
 		auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
 		List<Action> aux = actionsFound;
 //		ExperienceMap experience = knowledge.getExperience();
-		
+
 		for (int x = 0; x < nuQueue.size(); x++) {
 			Error err = nuQueue.get(x);
-			if(!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
+			if (!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
 //			if (!experience.getActionsDictionary().containsKey(err.getCode())) {
 				for (int j = 0; j < err.getWhere().size(); j++) {
 					// if package, look for origin in children
@@ -414,7 +383,7 @@ public class QLearning {
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(r.getContents().get(0));
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
 			for (Diagnostic child : diagnostic.getChildren()) {
-				if(!knowledge.getQTable().containsErrorCode(child.getCode())) {
+				if (!knowledge.getQTable().containsErrorCode(child.getCode())) {
 //				if (!knowledge.getExperience().getqTable().containsKey(child.getCode())) {
 					return true;
 				}
@@ -458,7 +427,7 @@ public class QLearning {
 //		ExperienceMap experience = knowledge.getExperience();
 		if (Math.random() < randomfactor) {
 			return knowledge.getActionDirectory().getRandomActionForError(err.getCode());
-			
+
 //			boolean set = false;
 //				// how many error locations
 ////				int x = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).size());
@@ -482,7 +451,6 @@ public class QLearning {
 //				}
 //				a = experience.getActionsDictionary().get(err.getCode()).get(val).get(act).getAction();
 
-			
 		} else {
 			return bestAction(err);
 		}
@@ -834,7 +802,7 @@ public class QLearning {
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
 		QTable qTable = knowledge.getQTable();
-		
+
 		int val;
 		int discarded = 0;
 		int episode = 0;
@@ -905,31 +873,35 @@ public class QLearning {
 				// high modification
 				if (preferences.contains(6)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward + (2/3*weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 6, (2/3*weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
+						reward = reward
+								+ (2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 6,
+								(2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
 							reward = reward - weightRewardModificationOfTheOriginalModel;
-							addTagMap(state, code, action, 6, -weightRewardModificationOfTheOriginalModel);
+						addTagMap(state, code, action, 6, -weightRewardModificationOfTheOriginalModel);
 					}
 				}
 				// low modification
 				if (preferences.contains(5)) {
 					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward - (2/3*weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 5, -(2/3*weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
+						reward = reward
+								- (2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
+						addTagMap(state, code, action, 5,
+								-(2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
 
 					} else {
 						if ((sizeBefore - nuQueue.size()) != 0)
 							reward = reward + weightPunishModificationOfTheOriginalModel;
-							addTagMap(state, code, action, 5, weightPunishModificationOfTheOriginalModel);
+						addTagMap(state, code, action, 5, weightPunishModificationOfTheOriginalModel);
 					}
 				}
 
 				if (nuQueue.size() != 0) {
 					next_state = nuQueue.get(index);
 
-					if(!processed.contains(next_state.getCode()) || !qTable.containsErrorCode(next_state.getCode())){
+					if (!processed.contains(next_state.getCode()) || !qTable.containsErrorCode(next_state.getCode())) {
 //					if (!processed.contains(next_state.getCode())
 //							|| !experience.getqTable().containsKey(next_state.getCode())) {
 						nuQueue = errorsExtractor(auxModel2);
@@ -938,14 +910,14 @@ public class QLearning {
 					}
 					// if new error introduced
 					if (!originalCodes.contains(next_state.getCode())) {
-				//		System.out.println("NEW ERROR: " + next_state.toString());
+						// System.out.println("NEW ERROR: " + next_state.toString());
 						// high modification
 						if (preferences.contains(6)) {
-							reward = reward + 2/3*weightRewardModificationOfTheOriginalModel;
+							reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;
 						}
 						// low modification
 						if (preferences.contains(5)) {
-							reward = reward - 2/3*weightPunishModificationOfTheOriginalModel;
+							reward = reward - 2 / 3 * weightPunishModificationOfTheOriginalModel;
 						}
 					}
 
@@ -958,10 +930,9 @@ public class QLearning {
 						code2 = a.getHierarchy();
 					}
 					double value = qTable.getWeight(state.getCode(), code, action.getCode())
-							+ alpha * (reward
-									+ gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
-									- qTable.getWeight(state.getCode(), code, action.getCode());
-							
+							+ alpha * (reward + gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
+							- qTable.getWeight(state.getCode(), code, action.getCode());
+
 //					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
 //							+ alpha * (reward
 //									+ gamma * experience.getqTable().get(next_state.getCode()).get(code2)
@@ -980,7 +951,7 @@ public class QLearning {
 					double value = qTable.getWeight(state.getCode(), code, action.getCode())
 							+ alpha * (reward + gamma * end_reward)
 							- qTable.getWeight(state.getCode(), code, action.getCode());
-					
+
 //					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
 //							+ alpha * (reward + gamma * end_reward)
 //							- experience.getqTable().get(state.getCode()).get(code).get(action.getCode());
@@ -1042,7 +1013,7 @@ public class QLearning {
 
 		System.out.println("-----------------ALL SEQUENCES FOUND-------------------");
 		System.out.println("SIZE: " + solvingMap.size());
-	//	System.out.println(solvingMap.toString());
+		// System.out.println(solvingMap.toString());
 		System.out.println("DISCARDED SEQUENCES: " + discarded);
 		System.out.println();
 		System.out.println("********************************************************");
@@ -1077,7 +1048,7 @@ public class QLearning {
 			int errorCode = s.getSeq().get(i).getError().getCode();
 			int actionId = s.getSeq().get(i).getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, num, actionId);
-			
+
 			qTable.setWeight(errorCode, num, actionId, oldWeight + 300);
 //			experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num).put(
 //					s.getSeq().get(i).getAction().getCode(),
@@ -1085,8 +1056,9 @@ public class QLearning {
 //							.get(s.getSeq().get(i).getAction().getCode()) + 300);
 
 			if (tag > -1) {
-				
-				if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().containsKey(tag)) {
+
+				if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
+						.containsKey(tag)) {
 					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, 500);
 //					actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().put(tag, 500);
 //				if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
@@ -1095,7 +1067,8 @@ public class QLearning {
 //					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 //							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag, 500);
 				} else {
-					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().get(tag);
+					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
+							.getTagDictionary().get(tag);
 					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, oldTagValue + 500);
 //					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 //							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag,
@@ -1104,28 +1077,31 @@ public class QLearning {
 //											.get(tag) + 500);
 				}
 			}
-			
-			if(tagMap.containsKey(s.getSeq().get(i).getError().getCode())) {
-				if(tagMap.get(s.getSeq().get(i).getError().getCode()).containsKey(num)) {
-					if(tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).containsKey(s.getSeq().get(i).getAction().getCode())) {
-						for( Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-								get(s.getSeq().get(i).getAction().getCode()).keySet()) {
-							if(!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().containsKey(key)) {
+
+			if (tagMap.containsKey(s.getSeq().get(i).getError().getCode())) {
+				if (tagMap.get(s.getSeq().get(i).getError().getCode()).containsKey(num)) {
+					if (tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
+							.containsKey(s.getSeq().get(i).getAction().getCode())) {
+						for (Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
+								.get(s.getSeq().get(i).getAction().getCode()).keySet()) {
+							if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
+									.containsKey(key)) {
 //							if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 //									.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(key)) {
-								int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-										get(s.getSeq().get(i).getAction().getCode()).get(key);
+								int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
+										.get(s.getSeq().get(i).getAction().getCode()).get(key);
 								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-							
+
 //								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 //										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key, tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
 //												get(s.getSeq().get(i).getAction().getCode()).get(key));
 							} else {
-								int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().get(key) + 
-										tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-										get(s.getSeq().get(i).getAction().getCode()).get(key);
+								int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
+										.getTagDictionary().get(key)
+										+ tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
+												.get(s.getSeq().get(i).getAction().getCode()).get(key);
 								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-								
+
 //								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
 //										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key,
 //												
@@ -1153,9 +1129,8 @@ public class QLearning {
 				if (s.getSeq().size() < min && s.getWeight() > 0) {
 					min = s.getSeq().size();
 					aux = s;
-				}
-				else if(s.getSeq().size() == min) {
-					if(s.getWeight() > aux.getWeight()) {
+				} else if (s.getSeq().size() == min) {
+					if (s.getWeight() > aux.getWeight()) {
 						aux = s;
 					}
 				}
@@ -1169,9 +1144,8 @@ public class QLearning {
 				if (s.getSeq().size() > max && s.getWeight() > 0) {
 					max = s.getSeq().size();
 					aux = s;
-				}
-				else if(s.getSeq().size() == max) {
-					if(s.getWeight() > aux.getWeight()) {
+				} else if (s.getSeq().size() == max) {
+					if (s.getWeight() > aux.getWeight()) {
 						aux = s;
 					}
 				}
@@ -1262,40 +1236,40 @@ public class QLearning {
 		int num;
 
 		List<Integer> tagsFound = new ArrayList<Integer>();
-		
+
 		if (action.getSubHierarchy() > -1) {
 			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
 		} else {
 			num = action.getHierarchy();
 		}
-		
+
 		if (preferences.contains(2)) {
 			if (action.getHierarchy() == 1) {
 				reward += weightRewardRepairingHighInErrorHierarchies;
 				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies);
 			} else if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingHighInErrorHierarchies*2/3;
-				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies*2/3);
+				reward += weightRewardRepairingHighInErrorHierarchies * 2 / 3;
+				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies * 2 / 3);
 			} else if (action.getHierarchy() > 2) {
-				reward -= -74/100*weightRewardRepairingHighInErrorHierarchies;
-				addTagMap(state, num, action, 2, -74/100*weightRewardRepairingHighInErrorHierarchies);
+				reward -= -74 / 100 * weightRewardRepairingHighInErrorHierarchies;
+				addTagMap(state, num, action, 2, -74 / 100 * weightRewardRepairingHighInErrorHierarchies);
 			}
 		}
 		if (preferences.contains(3)) {
 			if (action.getHierarchy() == 1) {
-				reward -= 74/100*weightRewardRepairingLowInErrorHierarchies;
-				addTagMap(state, num, action, 3, -74/100*weightRewardRepairingLowInErrorHierarchies);
+				reward -= 74 / 100 * weightRewardRepairingLowInErrorHierarchies;
+				addTagMap(state, num, action, 3, -74 / 100 * weightRewardRepairingLowInErrorHierarchies);
 			}
 			if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingLowInErrorHierarchies*2/3;
-				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies*2/3);
+				reward += weightRewardRepairingLowInErrorHierarchies * 2 / 3;
+				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies * 2 / 3);
 			}
 			if (action.getHierarchy() > 2) {
 				reward += weightRewardRepairingLowInErrorHierarchies;
 				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies);
 			}
 		}
-		
+
 		if (preferences.contains(4)) {
 			if (action.getMsg().contains("delete")) {
 				reward -= weightPunishDeletion;
@@ -1305,14 +1279,11 @@ public class QLearning {
 				addTagMap(state, num, action, 4, weightPunishDeletion / 10);
 			}
 		}
-		
-		if (!preferences.contains(2) && !preferences.contains(3)
-				&& !preferences.contains(4)) {
+
+		if (!preferences.contains(2) && !preferences.contains(3) && !preferences.contains(4)) {
 			reward += 30;
 		}
-		
-				
-		
+
 		return reward;
 	}
 
@@ -1321,29 +1292,29 @@ public class QLearning {
 		HashMap<Integer, HashMap<Integer, Integer>> hashaux2 = new HashMap<Integer, HashMap<Integer, Integer>>();
 		HashMap<Integer, Integer> hashaux3 = new HashMap<Integer, Integer>();
 
-		if(!tagMap.containsKey(state.getCode())) {
+		if (!tagMap.containsKey(state.getCode())) {
 			hashaux3.put(tag, r);
 			hashaux2.put(action.getCode(), hashaux3);
 			hashaux.put(num, hashaux2);
 			tagMap.put(state.getCode(), hashaux);
 		}
-		if(!tagMap.get(state.getCode()).containsKey(num)) {
+		if (!tagMap.get(state.getCode()).containsKey(num)) {
 			hashaux3.put(tag, r);
 			hashaux2.put(action.getCode(), hashaux3);
 			tagMap.get(state.getCode()).put(num, hashaux2);
 		}
-		if(!tagMap.get(state.getCode()).get(num).containsKey(action.getCode())) {
+		if (!tagMap.get(state.getCode()).get(num).containsKey(action.getCode())) {
 			hashaux3.put(tag, r);
 			tagMap.get(state.getCode()).get(num).put(action.getCode(), hashaux3);
 		}
 		if (!tagMap.get(state.getCode()).get(num).get(action.getCode()).containsKey(tag)) {
 			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r);
-		} 
-		else {
-			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r +
-					tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
+		} else {
+			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag,
+					r + tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
 		}
 	}
+
 	public Map<Integer, Action> actionsExtractor(List<Error> myErrors) {
 		actionsFound.clear();
 		actionsReturned.clear();
@@ -1518,11 +1489,9 @@ public class QLearning {
 		Files.copy(from.toPath(), to.toPath());
 	}
 
-	
-
 	public static void createTags(int user) {
 		switch (user) {
-		//ECMFA paper preferences
+		// ECMFA paper preferences
 		case 0:
 			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 2, 4 }));
 			break;
@@ -1552,7 +1521,7 @@ public class QLearning {
 			break;
 		}
 	}
-	
+
 //	/**
 //	 * Gets the knowledge
 //	 * 

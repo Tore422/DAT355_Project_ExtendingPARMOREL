@@ -14,7 +14,7 @@ class ErrorMap<T extends Comparable<T>> {
 	protected ErrorMap() {
 		contexts = new HashMap<>();
 	}
-
+	
 	/**
 	 * Clears all the values, setting them to the provided value.
 	 * 
@@ -88,61 +88,15 @@ class ErrorMap<T extends Comparable<T>> {
 	 * @param errorCode
 	 * @param contextId
 	 * @param actionId
-	 * @return true if the action ID exists for the specified errorCode and contextId, false otherwise.
+	 * @return true if the action ID if found for the specified errorCode and contextId, false otherwise.
 	 */
-	protected boolean containsActionIdForErrorCodeAndContextId(int errorCode, int contextId, int actionId) {
-		return contexts.get(errorCode).containsActionIdForContext(contextId, actionId);
-	}
-	
-	/**
-	 * Inserts a new entry in the map.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @param weight
-	 */
-	protected void insertNewErrorCode(Integer errorCode, Integer contextId, Integer actionId, T value) {
-		contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
-	}
-
-	/**
-	 * Inserts a new context for the specified error
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @param value
-	 */
-	public void insertNewContext(Integer errorCode, Integer contextId, Integer actionId, T value) {
-		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
-		contextForErrorCode.insertNewContext(contextId, actionId, value);	
-	}
-
-	/**
-	 * Inserts a new action for the specified error code and context id.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param action
-	 */
-	protected void insertNewAction(int errorCode, int contextId, int actionId, T value) {
-		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
-		contextForErrorCode.insertNewValueForContext(contextId, actionId, value);
-	}
-
-
-	/**
-	 * Sets the value for the specified action ID for the specified context ID for the specified error code.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @param value
-	 */
-	protected void updateValue(int errorCode, int contextId, int actionId, T value) {
-		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
-		contextForErrorCode.updateValue(contextId, actionId, value);
+	protected boolean containsValueForErrorCodeAndContextId(int errorCode, int contextId, int actionId) {
+		if(contexts.containsKey(errorCode)) {
+			return contexts.get(errorCode).containsValueForContext(contextId, actionId);
+		} else {
+			return false;
+		}
+		
 	}
 
 	/**
@@ -156,18 +110,6 @@ class ErrorMap<T extends Comparable<T>> {
 		ActionLocation optimalActionLocation = contextForErrorCode.getOptimalActionLocation();
 		optimalActionLocation.setErrorCode(errorCode);
 		return optimalActionLocation;
-	}
-
-	/**
-	 * Gets the value for the specified error code, context id and action id.
-	 * 
-	 * @param errorCode
-	 * @param contextId
-	 * @param actionId
-	 * @return the corresponding value
-	 */
-	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
-		return contexts.get(errorCode).getValue(contextId, actionId);
 	}
 
 	/**
@@ -189,5 +131,35 @@ class ErrorMap<T extends Comparable<T>> {
 	protected T getRandomActionInRandomContextForError(int errorCode) {
 		ContextMap<T> contextsForError = contexts.get(errorCode);
 		return contextsForError.getRandomValueInRandomContext();
+	}
+	
+	/**
+	 * Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
+		return contexts.get(errorCode).getValue(contextId, actionId);
+	}
+	
+	/**
+	 * Sets the value for the specified action in the specified context for the
+	 * specified error. If the error, context or action is not in the hierarchy,
+	 * they will be added.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @param value
+	 */
+	protected void setValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
+		if (contexts.containsKey(errorCode)) {
+			contexts.get(errorCode).setValue(contextId, actionId, value);
+		} else {
+			contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
+		}
 	}
 }

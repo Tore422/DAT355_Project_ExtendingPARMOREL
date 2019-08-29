@@ -12,13 +12,13 @@ class ContextMapTest {
 	@BeforeEach
 	public void setUp() {
 		contextMap = new ContextMap<>();
-		contextMap.insertNewContext(0, 0, 5.0);
-		contextMap.insertNewValueForContext(0, 1, 5.0);
-		contextMap.insertNewValueForContext(0, 2, 7.0);
-		contextMap.insertNewContext(1, 0, 9.0);
-		contextMap.insertNewValueForContext(1, 1, 3.0);
-		contextMap.insertNewValueForContext(1, 2, 2.0);
-		contextMap.insertNewContext(2, 0, 2.0);
+		contextMap.setValue(0, 0, 5.0);
+		contextMap.setValue(0, 1, 5.0);
+		contextMap.setValue(0, 2, 7.0);
+		contextMap.setValue(1, 0, 9.0);
+		contextMap.setValue(1, 1, 3.0);
+		contextMap.setValue(1, 2, 2.0);
+		contextMap.setValue(2, 0, 2.0);
 	}
 
 	@Test
@@ -31,9 +31,9 @@ class ContextMapTest {
 
 	@Test
 	public void getOptimalActionIndexReturnsOneOfOptimalIndexesIfSeveralAreBest() {
-		contextMap.insertNewContext(3, 0, 9.0);
-		contextMap.insertNewValueForContext(3, 1, 4.0);
-		contextMap.insertNewValueForContext(3, 2, 4.0);
+		contextMap.setValue(3, 0, 9.0);
+		contextMap.setValue(3, 1, 4.0);
+		contextMap.setValue(3, 2, 4.0);
 		ActionLocation location = contextMap.getOptimalActionLocation();
 		assertNotNull(location);
 		assertNotEquals(0, location.getContextId().intValue());

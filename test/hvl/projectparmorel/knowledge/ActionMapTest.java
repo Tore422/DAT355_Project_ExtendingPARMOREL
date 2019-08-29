@@ -12,11 +12,11 @@ class ActionMapTest {
 	@BeforeEach
 	public void setUp() {
 		actionMap = new ActionMap<>();
-		actionMap.addValue(45, 1.5);
-		actionMap.addValue(12, 9.4);
-		actionMap.addValue(7, 3.6);
-		actionMap.addValue(315, 0.1);
-		actionMap.addValue(4, 7.2);
+		actionMap.setValue(45, 1.5);
+		actionMap.setValue(12, 9.4);
+		actionMap.setValue(7, 3.6);
+		actionMap.setValue(315, 0.1);
+		actionMap.setValue(4, 7.2);
 	}
 
 	@Test
@@ -28,7 +28,7 @@ class ActionMapTest {
 	
 	@Test
 	public void getHihgestValueKeyReturnsKeyForOneOfTheHighestValuesIfTwoAreEqual() {
-		actionMap.addValue(5, 9.4);
+		actionMap.setValue(5, 9.4);
 		Integer highestActionId = actionMap.getHihgestValueKey();
 		assertNotNull(highestActionId);
 		assertNotEquals(45, highestActionId.intValue());
