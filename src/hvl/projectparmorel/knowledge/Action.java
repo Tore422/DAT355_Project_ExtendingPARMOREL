@@ -2,7 +2,7 @@ package hvl.projectparmorel.knowledge;
 
 import hvl.projectparmorel.ml.SerializableMethod;
 
-class Action {
+class Action implements Comparable<Action> {
 	private TagDictionary tagDictionary;
 	int code;
 	String msg;
@@ -31,5 +31,12 @@ class Action {
 	@Override
 	public String toString() {
 		return "ActionExp [action=" + "action" + ", tagsDictionary=" + tagDictionary + "]";
+	}
+
+	//TODO: implement comparable or fix the getOptimalActionIndexForErrorCode for the QTable
+	@Override
+	public int compareTo(Action otherAction) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

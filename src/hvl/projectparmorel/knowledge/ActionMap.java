@@ -3,8 +3,9 @@ package hvl.projectparmorel.knowledge;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class ActionMap<T> {
+class ActionMap<T extends Comparable<T>> {
 	/**
 	 * A map containing the actions for the given context.
 	 */
@@ -85,5 +86,49 @@ class ActionMap<T> {
 	 */
 	protected void addValue(int actionId, T value) {
 		actions.put(actionId, value);
+	}
+
+	/**
+	 * Sets the value for the specified action ID
+	 * 
+	 * @param actionId
+	 * @param value
+	 */
+	protected void updateValue(int actionId, T value) {
+		actions.replace(actionId, value);
+	}
+
+	/**
+	 * Gets the key for highest value 
+	 * 
+	 * @return the highest value in the action map. If two are equal, one of them is returned. If the set is empty, null is returned.
+	 */
+	protected Integer getHihgestValueKey() {
+		Set<Integer> actionIdSet = actions.keySet();
+		Integer[] actionIds = new Integer[actionIdSet.size()];
+		actionIds = actionIdSet.toArray(actionIds);
+		if(actionIds.length > 0) {
+			Integer optimalActionId = 0;
+			
+			for(int i = 1; i < actionIds.length; i++) {
+				T optimalAction = actions.get(optimalActionId);
+				T action = actions.get(actionIds[i]);
+				if(action.compareTo(optimalAction) > 0) {
+					optimalActionId = i;
+				}
+			}
+			return optimalActionId;
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the value for the specified action ID
+	 * 
+	 * @param actionId
+	 * @return the value for the specified aciton ID
+	 */
+	protected T getValue(Integer actionId) {
+		return actions.get(actionId);
 	}
 }

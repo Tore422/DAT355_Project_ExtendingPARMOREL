@@ -3,8 +3,9 @@ package hvl.projectparmorel.knowledge;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class ContextMap<T> {
+class ContextMap<T extends Comparable<T>> {
 	/**
 	 * A map containing the actions for the given context.
 	 */
@@ -99,5 +100,58 @@ class ContextMap<T> {
 		ActionMap<T> actionMapForContext = actions.get(contextId);
 		actionMapForContext.addValue(actionId, value);
 		
+	}
+
+	/**
+	 * Sets the value for the specified context ID and action ID.
+	 * 
+	 * @param contextId
+	 * @param actionId
+	 * @param value
+	 */
+	protected void updateValue(int contextId, int actionId, T value) {
+		ActionMap<T> actionMapForContext = actions.get(contextId);
+		actionMapForContext.updateValue(actionId, value);
+	}
+
+	/**
+	 * Gets the optimal context and action ID to handle the specified error.
+	 * 
+	 * @return the location of highest value in the context map. If two are equal, one of them is returned. If the set is empty, null is returned.
+	 */
+	protected ActionLocation getOptimalActionLocation() {
+		Set<Integer> contextIdSet = actions.keySet();
+		Integer[] contextIds = new Integer[contextIdSet.size()];
+		contextIds = contextIdSet.toArray(contextIds);
+		
+		if(contextIds.length > 0) {
+			Integer optimalContextId = contextIds[0];
+			Integer optimalActionId = actions.get(optimalContextId).getHihgestValueKey();
+			T optimalAction = actions.get(optimalContextId).getValue(optimalActionId);
+			
+			for(int i = 1; i < contextIds.length; i++) {
+				Integer optimalActionIdForContext = actions.get(i).getHihgestValueKey();
+				T action = actions.get(i).getValue(optimalActionIdForContext);
+				if(action.compareTo(optimalAction) > 0) {
+					optimalContextId = i;
+					optimalActionId = optimalActionIdForContext;
+					optimalAction = action;
+				}
+			}
+			
+			return new ActionLocation(optimalContextId, optimalActionId);
+		}
+		return null;
+	}
+
+	/**
+	 *  Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected T getValue(Integer contextId, Integer actionId) {
+		return actions.get(contextId).getValue(actionId);
 	}
 }

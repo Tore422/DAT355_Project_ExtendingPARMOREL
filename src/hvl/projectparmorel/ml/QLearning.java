@@ -219,48 +219,63 @@ public class QLearning {
 				
 //			if (experience.getqTable().get(error.getCode()).containsKey(num)) {
 				// Action no already present
-				if(qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
-					
-				}
+				if(!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
+					qTable.setWeight(error.getCode(), num, action.getCode(), weight);
 				
-				if (!experience.getqTable().get(error.getCode()).get(num).containsKey(action.getCode())) {
-					experience.getqTable().get(error.getCode()).get(num).put(action.getCode(), weight);
-					if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-						hashcontainer.put(num, hashaux);
-						experience.getActionsDictionary().put(error.getCode(), hashcontainer);
+//				if (!experience.getqTable().get(error.getCode()).get(num).containsKey(action.getCode())) {
+//					experience.getqTable().get(error.getCode()).get(num).put(action.getCode(), weight);
+					
+					if(!actionDirectory.containsErrorCode(error.getCode())) {
+						actionDirectory.insertNewErrorCode(error.getCode(), num, action);
+//					if (!experience.getActionsDictionary().containsKey(error.getCode())) {
+//						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//						hashcontainer.put(num, hashaux);
+//						experience.getActionsDictionary().put(error.getCode(), hashcontainer);
 					} else {
-						if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-							hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-							experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
+						if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
+							actionDirectory.addContextToError(error.getCode(), num, action);
+						} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
+							actionDirectory.addAction(error.getCode(), num, action);
 						}
+//						if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
+//							hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//							experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
+//						}
 
-						else if (!experience.getActionsDictionary().get(error.getCode()).get(num)
-								.containsKey(action.getCode())) {
-							experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
-									new ActionExp(action, new HashMap<Integer, Integer>()));
-						}
+//						else if (!experience.getActionsDictionary().get(error.getCode()).get(num)
+//								.containsKey(action.getCode())) {
+//							experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
+//									new ActionExp(action, new HashMap<Integer, Integer>()));
+//						}
 					}
 				}
 			}
 			// Hierar not in q
 			else {
-				d.put(action.getCode(), weight);
-				experience.getqTable().get(error.getCode()).put(num, d);
-				if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-					hashcontainer.put(num, hashaux);
-					experience.getActionsDictionary().put(error.getCode(), hashcontainer);
+				qTable.setWeight(error.getCode(), num, action.getCode(), weight);
+//				d.put(action.getCode(), weight);
+//				experience.getqTable().get(error.getCode()).put(num, d);
+				if(!actionDirectory.containsErrorCode(error.getCode())) {
+					actionDirectory.insertNewErrorCode(error.getCode(), num, action);
+//				}
+//				if (!experience.getActionsDictionary().containsKey(error.getCode())) {
+//					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//					hashcontainer.put(num, hashaux);
+//					experience.getActionsDictionary().put(error.getCode(), hashcontainer);
 				} else {
-					if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-						experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
+					if(!actionDirectory.errorContainsContext(error.getCode(), num)) {
+//					if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
+						actionDirectory.addContextToError(error.getCode(), num, action);
+//						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
+//						experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
+					} else if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
+						actionDirectory.addAction(error.getCode(), num, action);
 					}
-
-					else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
-						experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
-								new ActionExp(action, new HashMap<Integer, Integer>()));
-					}
+//
+//					else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
+//						experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
+//								new ActionExp(action, new HashMap<Integer, Integer>()));
+//					}
 				}
 			}
 
@@ -269,45 +284,51 @@ public class QLearning {
 
 	// Returns key (action) with highest weight
 	Action bestAction(Error err) {
-		int sons = err.getSons();
-		int code = 0;
-		int maxi = 0;
-		Double max = -99999.0;
-		Integer pairKey = 0;
-		ExperienceMap experience = knowledge.getExperience();
-		Map<Integer, Double> mp = new HashMap<Integer, Double>();
-		for (int i = 0; i < err.getWhere().size() - 1; i++) {
-			if (sons != -1 && i == 0) {
-				for (int j = 0; j < sons; j++) {
-					code = Integer.valueOf(String.valueOf(i + 1) + String.valueOf(j));
-					if (experience.getqTable().get(err.getCode()).containsKey(code)) {
-						mp = experience.getqTable().get(err.getCode()).get(code);
-						for (Entry<Integer, Double> entry : mp.entrySet()) {
-							if ((Double) entry.getValue() > max) {
-								max = (Double) entry.getValue();
-								pairKey = (Integer) entry.getKey();
-								maxi = code;
-							}
-						}
-					}
-				}
-			} // if sons
-			else {
-				if (experience.getqTable().get(err.getCode()).containsKey(i + 1)) {
-					mp = experience.getqTable().get(err.getCode()).get(i + 1);
-					for (Entry<Integer, Double> entry : mp.entrySet()) {
-						if ((Double) entry.getValue() > max) {
-							max = (Double) entry.getValue();
-							pairKey = (Integer) entry.getKey();
-							maxi = i + 1;
-						}
-					}
-				}
-			} // not sons
-		} // for
-		Action a = experience.getActionsDictionary().get(err.getCode()).get(maxi).get(pairKey).getAction();
+		return knowledge.getOptimalActionForErrorCode(err.getCode());
+		
+//		
+//		int sons = err.getSons();
+//		int code = 0;
+//		int maxi = 0;
+//		Double max = -99999.0;
+//		Integer pairKey = 0;
+////		ExperienceMap experience = knowledge.getExperience();
+//		QTable qTable = knowledge.getQTable();
+//		Map<Integer, Double> mp = new HashMap<Integer, Double>();
+//		for (int i = 0; i < err.getWhere().size() - 1; i++) {
+//			if (sons != -1 && i == 0) {
+//				for (int j = 0; j < sons; j++) {
+//					code = Integer.valueOf(String.valueOf(i + 1) + String.valueOf(j));
+//					if (qTable.containsContextIdForError(err.getCode(), code)) {
+////					if (experience.getqTable().get(err.getCode()).containsKey(code)) {
+//						
+//						mp = experience.getqTable().get(err.getCode()).get(code);
+//						for (Entry<Integer, Double> entry : mp.entrySet()) {
+//							if ((Double) entry.getValue() > max) {
+//								max = (Double) entry.getValue();
+//								pairKey = (Integer) entry.getKey();
+//								maxi = code;
+//							}
+//						}
+//					}
+//				}
+//			} // if sons
+//			else {
+//				if (experience.getqTable().get(err.getCode()).containsKey(i + 1)) {
+//					mp = experience.getqTable().get(err.getCode()).get(i + 1);
+//					for (Entry<Integer, Double> entry : mp.entrySet()) {
+//						if ((Double) entry.getValue() > max) {
+//							max = (Double) entry.getValue();
+//							pairKey = (Integer) entry.getKey();
+//							maxi = i + 1;
+//						}
+//					}
+//				}
+//			} // not sons
+//		} // for
+//		Action a = experience.getActionsDictionary().get(err.getCode()).get(maxi).get(pairKey).getAction();
 
-		return a;
+//		return a;
 
 	}
 

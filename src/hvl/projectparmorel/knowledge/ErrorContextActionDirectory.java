@@ -3,7 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.util.List;
 import java.util.Set;
 
-public abstract class ErrorContextActionDirectory<T> {
+public abstract class ErrorContextActionDirectory<T extends Comparable<T>> {
 	public ErrorContextActionDirectory() {
 		
 	}
@@ -49,7 +49,7 @@ public abstract class ErrorContextActionDirectory<T> {
 	 * @param actionId
 	 * @param value
 	 */
-	protected abstract void addContextToError(Integer errorCode, Integer contextId, int actionId, T value);
+	protected abstract void addContextToError(Integer errorCode, Integer contextId, Integer actionId, T value);
 	
 	/**
 	 * Gets the error map from the directory;
@@ -66,7 +66,31 @@ public abstract class ErrorContextActionDirectory<T> {
 	 */
 	protected abstract void addValue(int errorCode, int contextId, int actionId, T value);
 
-	
+	/**
+	 * Updates the weight for the action specified by the error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @param weight
+	 */
+	protected abstract void updateValue(Integer errorCode, Integer contextId, Integer actionId, T value);
 
+	/**
+	 * Gets the optimal context and action ID to handle the specified error.
+	 * 
+	 * @param errorCode
+	 * @return the location of highest value in the context map. If two are equal, one of them is returned. If the set is empty, null is returned.
+	 */
+	protected abstract ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode);
+
+	/**
+	 * Gets the action for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding action
+	 */
+	protected abstract T getValue(Integer errorCode, Integer contextId, Integer actionId);
 }
-

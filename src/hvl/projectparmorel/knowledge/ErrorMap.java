@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ErrorMap<T> {
+class ErrorMap<T extends Comparable<T>> {
 	/**
 	 * A map containing the context for the given error codes.
 	 */
@@ -129,5 +129,44 @@ class ErrorMap<T> {
 	protected void insertNewAction(int errorCode, int contextId, int actionId, T value) {
 		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
 		contextForErrorCode.insertNewValueForContext(contextId, actionId, value);
+	}
+
+
+	/**
+	 * Sets the value for the specified action ID for the specified context ID for the specified error code.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @param value
+	 */
+	protected void updateValue(int errorCode, int contextId, int actionId, T value) {
+		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
+		contextForErrorCode.updateValue(contextId, actionId, value);
+	}
+
+	/**
+	 * Gets the optimal context and action ID to handle the specified error.
+	 * 
+	 * @param errorCode
+	 * @return the location of highest value in the context map. If two are equal, one of them is returned. If the set is empty, null is returned.
+	 */
+	protected ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode) {
+		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
+		ActionLocation optimalActionLocation = contextForErrorCode.getOptimalActionLocation();
+		optimalActionLocation.setErrorCode(errorCode);
+		return optimalActionLocation;
+	}
+
+	/**
+	 * Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
+		return contexts.get(errorCode).getValue(contextId, actionId);
 	}
 }

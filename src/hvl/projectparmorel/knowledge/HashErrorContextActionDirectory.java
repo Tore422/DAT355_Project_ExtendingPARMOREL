@@ -3,7 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.util.List;
 import java.util.Set;
 
-public class HashErrorContextActionDirectory<T> extends ErrorContextActionDirectory<T> {
+public class HashErrorContextActionDirectory<T extends Comparable<T>> extends ErrorContextActionDirectory<T> {
 	private ErrorMap<T> errors;
 
 	public HashErrorContextActionDirectory() {
@@ -33,7 +33,7 @@ public class HashErrorContextActionDirectory<T> extends ErrorContextActionDirect
 	}
 	
 	@Override
-	protected void addContextToError(Integer errorCode, Integer contextId, int actionId, T value) {
+	protected void addContextToError(Integer errorCode, Integer contextId, Integer actionId, T value) {
 		errors.insertNewContext(errorCode, contextId, actionId, value);
 	}
 	
@@ -46,5 +46,20 @@ public class HashErrorContextActionDirectory<T> extends ErrorContextActionDirect
 	@Override
 	protected ErrorMap<T> getErrorMap() {
 		return errors;
+	}
+
+	@Override
+	protected void updateValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
+		errors.updateValue(errorCode, contextId, actionId, value);
+	}
+
+	@Override
+	protected ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode) {
+		return errors.getOptimalActionIndexForErrorCode(errorCode);
+	}
+
+	@Override
+	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
+		return errors.getValue(errorCode, contextId, actionId);
 	}
 }

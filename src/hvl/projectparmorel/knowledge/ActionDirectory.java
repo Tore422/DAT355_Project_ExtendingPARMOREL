@@ -88,4 +88,16 @@ public class ActionDirectory {
 	protected ErrorContextActionDirectory<Action> getActionDirectory(){
 		return preferenceScores;
 	}
+
+	/**
+	 * Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
+		return preferenceScores.getValue(errorCode, contextId, actionId);
+	}
 }

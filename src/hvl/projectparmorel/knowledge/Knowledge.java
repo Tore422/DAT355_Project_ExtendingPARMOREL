@@ -2,6 +2,8 @@ package hvl.projectparmorel.knowledge;
 
 import java.util.List;
 
+import hvl.projectparmorel.ml.SerializableMethod;
+
 /**
  * Represents the algorithms knowledge.
  * 
@@ -47,5 +49,17 @@ public class Knowledge {
 	 */
 	public ActionDirectory getActionDirectory(){
 		return actionDirectory;
+	}
+	
+	/**
+	 * Gets the optimal action for the specified error code.
+	 * 
+	 * @param errorCode
+	 * @return the action for the specified error code with the highest weight.
+	 */
+	public hvl.projectparmorel.ml.Action getOptimalActionForErrorCode(Integer errorCode) {
+		ActionLocation optimalActionLocation = qTable.getOptimalActionIndexForErrorCode(errorCode);
+		Action optimalAction = actionDirectory.getAction(errorCode, optimalActionLocation.getContextId(), optimalActionLocation.getActionId());
+		return new hvl.projectparmorel.ml.Action(optimalAction.code, optimalAction.msg, optimalAction.method, optimalAction.hierarchy, optimalAction.subHierarchy);
 	}
 }
