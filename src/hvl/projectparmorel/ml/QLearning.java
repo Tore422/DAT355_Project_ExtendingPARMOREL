@@ -47,7 +47,6 @@ import hvl.projectparmorel.knowledge.QTable;
  * @author Magnus Marthinsen
  */
 public class QLearning {
-//	private Knowledge knowledge;
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
 
 	protected static int N_EPISODES = 25;
@@ -78,8 +77,6 @@ public class QLearning {
 	NotificationChain msgs = new NotificationChainImpl();
 	public Resource myMetaModel;
 	public static int user;
-
-//	static Experience newXp = new Experience();
 
 	static double factor = 0.0;
 	Sequence sx;
@@ -123,10 +120,6 @@ public class QLearning {
 
 	double[] alphas = linspace(1.0, MIN_ALPHA, N_EPISODES);
 
-//	public static Experience getNewXp() {
-//		return newXp;
-//	}
-
 	public Sequence getBestSeq() {
 		return sx;
 	}
@@ -135,28 +128,30 @@ public class QLearning {
 		this.sx = sx;
 	}
 
-	boolean isInvokable(Error e, Class<? extends Object> class1, Action a) {
-		boolean yes = false;
-
+	/**
+	 * Checks that the action is invokable for the given class and error
+	 * 
+	 * @param error
+	 * @param class1
+	 * @param action
+	 * @return true if the action is invokable, false otherwise
+	 */
+	private boolean isInvokable(Error error, Class<? extends Object> class1, Action action) {
 		Method[] methods = class1.getMethods();
-		if (String.valueOf(a.getCode()).startsWith("9999")) {
-			yes = true;
+		if (action.isDelete()) {
+			return true;
 		} else {
-			if (String.valueOf(a.getCode()).startsWith("888") && e.getCode() == 4 && class1 != EClassImpl.class) {
-				yes = true;
+			if (action.handlesMissingArgumentForGenericType(error) && class1 != EClassImpl.class) {
+				return true;
 			} else {
 				for (Method method : methods) {
-					if (a.getSerializableMethod().getMethod() != null) {
-						if (a.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
-							yes = true;
-							break;
-						}
+					if (action.getSerializableMethod().getMethod() != null && action.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
+							return true;
 					}
-				} // for
+				}
 			}
 		}
-		return yes;
-
+		return false;
 	}
 
 	Resource processModel(Resource auxModel2) throws IllegalAccessException, IllegalArgumentException,
