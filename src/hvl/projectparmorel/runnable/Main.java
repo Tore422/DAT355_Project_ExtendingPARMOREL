@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.ml.Error;
+import hvl.projectparmorel.ml.ErrorExtractor;
 import hvl.projectparmorel.ml.QLearning;
 
 public class Main {
@@ -86,11 +87,11 @@ public class Main {
 			System.out.println("----------------------------------------------------------------------");
 			System.out.println("----------------------------------------------------------------------");
 
-			List<Error> errors = ql.errorsExtractor(auxModel);
-			ql.nuQueue = errors;
+			List<Error> errors = ErrorExtractor.extractErrorsFrom(auxModel);
+//			ql.nuQueue = errors;
 
-			for (int y = 0; y < ql.nuQueue.size(); y++) {
-				ql.originalCodes.add(ql.nuQueue.get(y).getCode());
+			for (int y = 0; y < errors.size(); y++) {
+				ql.originalCodes.add(errors.get(y).getCode());
 			}
 			System.out.println("INITIAL ERRORS:");
 			System.out.println(errors.toString());

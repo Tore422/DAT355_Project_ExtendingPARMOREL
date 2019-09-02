@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.ml.Error;
+import hvl.projectparmorel.ml.ErrorExtractor;
 import hvl.projectparmorel.ml.QLearning;
 
 public class GUI extends JPanel {
@@ -205,8 +206,8 @@ public class GUI extends JPanel {
 		auxModel.getContents().addAll(EcoreUtil.copyAll(ql.myMetaModel.getContents()));
 
 		
-		errors = ql.errorsExtractor(auxModel);
-		ql.nuQueue = errors;
+		errors = ErrorExtractor.extractErrorsFrom(auxModel);
+//		ql.nuQueue = errors;
 		
 
 		String errorsFound = "Errors found in model " + files[0].getName() + ":" + System.getProperty("line.separator")

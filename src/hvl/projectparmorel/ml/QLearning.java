@@ -52,6 +52,8 @@ public class QLearning {
 	protected static int N_EPISODES = 25;
 	protected static double randomfactor = 0.25;
 
+	private List<Error> errorsToFix;
+
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
@@ -71,7 +73,6 @@ public class QLearning {
 	int MAX_EPISODE_STEPS = 20;
 	boolean done = false;
 	boolean invoked = false;
-	public List<Error> nuQueue = new ArrayList<Error>();
 	NotificationChain msgs = new NotificationChainImpl();
 	public Resource myMetaModel;
 	public static int user;
@@ -99,6 +100,8 @@ public class QLearning {
 		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
 		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
+
+		errorsToFix = new ArrayList<Error>();
 	}
 
 //	/**
@@ -131,12 +134,12 @@ public class QLearning {
 
 		Resource auxModel = resourceSet.createResource(uri);
 		auxModel.getContents().addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
-		
-		List<Error> errors = errorsExtractor(modelToProcess);
+
+		List<Error> errors = ErrorExtractor.extractErrorsFrom(modelToProcess);
 		List<Action> aux = extractActionsFor(errors);
 
-		for (int x = 0; x < nuQueue.size(); x++) {
-			Error err = nuQueue.get(x);
+		for (int x = 0; x < errorsToFix.size(); x++) {
+			Error err = errorsToFix.get(x);
 			if (!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
 				for (int j = 0; j < err.getWhere().size(); j++) {
 					// if package, look for origin in children
@@ -153,7 +156,7 @@ public class QLearning {
 											auxModel.getContents()
 													.addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
 											if (repairs)
-												err = nuQueue.get(x);
+												err = errorsToFix.get(x);
 										}
 									}
 
@@ -166,7 +169,7 @@ public class QLearning {
 										auxModel.getContents().addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
 
 										if (repairs)
-											err = nuQueue.get(x);
+											err = errorsToFix.get(x);
 									}
 								}
 							}
@@ -179,7 +182,7 @@ public class QLearning {
 		return modelToProcess;
 
 	}
-	
+
 	/**
 	 * Extract all the actions that has the potential to solve the specified errors.
 	 * 
@@ -216,7 +219,7 @@ public class QLearning {
 		}
 		return actionsFound;
 	}
-	
+
 	/**
 	 * Copies the actions given as input, adds the methods provided by the context
 	 * if they can help solve the problem, and returns the combined result.
@@ -224,15 +227,16 @@ public class QLearning {
 	 * @param actions
 	 * @param context
 	 * @param hierarchy
-	 * @return a map containing the actions from the specified context if they result in an altered model.
+	 * @return a map containing the actions from the specified context if they
+	 *         result in an altered model.
 	 */
-	private void addMethodsFromContext(Map<Integer, Action> actions, Class<? extends Object> context, int hierarchy){
+	private void addMethodsFromContext(Map<Integer, Action> actions, Class<? extends Object> context, int hierarchy) {
 		if (context != EPackageImpl.class) { // if not package
 			Method[] methods = context.getMethods();
 			for (Method method : methods) {
 				if (methodCanPerformChange(method) && !actions.containsKey(method.hashCode())) {
-					Action action = new Action(method.hashCode(), method.getName(),
-							new SerializableMethod(method), hierarchy + 1, 0);
+					Action action = new Action(method.hashCode(), method.getName(), new SerializableMethod(method),
+							hierarchy + 1, 0);
 					actions.put(method.hashCode(), action);
 				}
 			}
@@ -632,7 +636,7 @@ public class QLearning {
 		List<Error> newErrors = null;
 
 		if (found)
-			newErrors = errorsExtractor(auxModel2);
+			newErrors = ErrorExtractor.extractErrorsFrom(auxModel2);
 
 		if (light && found) {
 			// check error was solved
@@ -716,7 +720,7 @@ public class QLearning {
 			} else {
 				found = true;
 			}
-			errorMap = extractDuplicates(nuQueue);
+			errorMap = extractDuplicates(errorsToFix);
 		} else {
 			for (int i = 0; i < newErrors.size(); i++) {
 
@@ -780,21 +784,22 @@ public class QLearning {
 		// Copy original broken model into an aux
 		Resource auxModel2 = resourceSet.createResource(uri);
 		auxModel2.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
+		errorsToFix = ErrorExtractor.extractErrorsFrom(auxModel2);
 		solvingMap.clear();
 		original.clear();
-		original.addAll(nuQueue);
+		original.addAll(errorsToFix);
 		errorMap.clear();
 		errorMap = extractDuplicates(original);
 		System.out.println("PREFERENCES: " + preferences.toString());
 		// FILTER ACTIONS AND INITIALICES QTABLE
 		auxModel2 = processModel(auxModel2);
 		// START with initial model its errors and actions
-		System.out.println(nuQueue.toString());
+		System.out.println(errorsToFix.toString());
 		System.out.println("EPISODES: " + N_EPISODES);
 		while (episode < N_EPISODES) {
 			index = 0;
-			state = nuQueue.get(index);
-			sizeBefore = nuQueue.size();
+			state = errorsToFix.get(index);
+			sizeBefore = errorsToFix.size();
 			total_reward = 0;
 			alpha = alphas[episode];
 			end_reward = 0;
@@ -805,8 +810,8 @@ public class QLearning {
 			while (step < MAX_EPISODE_STEPS) {
 				action = chooseActionHash(state);
 
-				nuQueue.clear();
-				nuQueue = actionMatcher(state, action, auxModel2, false, action.getHierarchy(),
+				errorsToFix.clear();
+				errorsToFix = actionMatcher(state, action, auxModel2, false, action.getHierarchy(),
 						action.getSubHierarchy());
 				reward = rewardCalculator(state, action);
 				// Insert stuff into sequence
@@ -832,40 +837,40 @@ public class QLearning {
 				// check how the action has modified number of errors
 				// high modification
 				if (preferences.contains(6)) {
-					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward
-								+ (2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 6,
-								(2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
+					if ((sizeBefore - errorsToFix.size()) > 1) {
+						reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel
+								* (sizeBefore - errorsToFix.size()));
+						addTagMap(state, code, action, 6, (2 / 3 * weightRewardModificationOfTheOriginalModel
+								* (sizeBefore - errorsToFix.size())));
 					} else {
-						if ((sizeBefore - nuQueue.size()) != 0)
+						if ((sizeBefore - errorsToFix.size()) != 0)
 							reward = reward - weightRewardModificationOfTheOriginalModel;
 						addTagMap(state, code, action, 6, -weightRewardModificationOfTheOriginalModel);
 					}
 				}
 				// low modification
 				if (preferences.contains(5)) {
-					if ((sizeBefore - nuQueue.size()) > 1) {
-						reward = reward
-								- (2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size()));
-						addTagMap(state, code, action, 5,
-								-(2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - nuQueue.size())));
+					if ((sizeBefore - errorsToFix.size()) > 1) {
+						reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel
+								* (sizeBefore - errorsToFix.size()));
+						addTagMap(state, code, action, 5, -(2 / 3 * weightPunishModificationOfTheOriginalModel
+								* (sizeBefore - errorsToFix.size())));
 
 					} else {
-						if ((sizeBefore - nuQueue.size()) != 0)
+						if ((sizeBefore - errorsToFix.size()) != 0)
 							reward = reward + weightPunishModificationOfTheOriginalModel;
 						addTagMap(state, code, action, 5, weightPunishModificationOfTheOriginalModel);
 					}
 				}
 
-				if (nuQueue.size() != 0) {
-					next_state = nuQueue.get(index);
+				if (errorsToFix.size() != 0) {
+					next_state = errorsToFix.get(index);
 
 					if (!qTable.containsErrorCode(next_state.getCode())) {
 //					if (!processed.contains(next_state.getCode())
 //							|| !experience.getqTable().containsKey(next_state.getCode())) {
-						nuQueue = errorsExtractor(auxModel2);
-						extractActionsFor(nuQueue);
+						errorsToFix = ErrorExtractor.extractErrorsFrom(auxModel2);
+						extractActionsFor(errorsToFix);
 						auxModel2 = processModel(auxModel2);
 					}
 					// if new error introduced
@@ -881,7 +886,7 @@ public class QLearning {
 						}
 					}
 
-					next_state = nuQueue.get(index);
+					next_state = errorsToFix.get(index);
 					Action a = knowledge.getOptimalActionForErrorCode(next_state.getCode());
 
 					if (a.getSubHierarchy() != -1) {
@@ -902,7 +907,7 @@ public class QLearning {
 					qTable.setWeight(state.getCode(), code, action.getCode(), value);
 //					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					state = next_state;
-					sizeBefore = nuQueue.size();
+					sizeBefore = errorsToFix.size();
 				} // it has reached the end
 
 				else {
@@ -961,8 +966,8 @@ public class QLearning {
 			auxModel2.getContents().clear();
 			auxModel2.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
 			System.out.println("EPISODE " + episode + " TOTAL REWARD " + total_reward);
-			nuQueue.clear();
-			nuQueue.addAll(original);
+			errorsToFix.clear();
+			errorsToFix.addAll(original);
 
 			episode++;
 			nope = false;
@@ -1275,111 +1280,7 @@ public class QLearning {
 		}
 	}
 
-	public List<Error> errorsExtractor(Resource myMM) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchMethodException, SecurityException {
-		List<Error> errorsReturned = new ArrayList<Error>();
-		// Validate
-		int sons = 0;
-		boolean introduced = false;
-		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(myMM.getContents().get(0));
-		if (diagnostic.getSeverity() != Diagnostic.OK) {
-			for (Diagnostic child : diagnostic.getChildren()) {
-				// Each error found
-				// numeric code for error, msg, and location within MM
-				if (child.getCode() != 1) {
-					if (child.getData().get(0).getClass() == EPackageImpl.class
-							|| child.getMessage().contains("two features")) {
-						for (int i = 1; i < child.getData().size() - 1; i++) {
-							if (child.getData().get(i).toString().contains("Class")) {
-								sons++;
-							}
-						}
-
-						Error e = new Error(child.getCode(), child.getMessage(), child.getData(), sons);
-						errorsReturned.add(e);
-					} // if package or two features error
-					else {
-						if (child.getCode() == 40) { // if name null
-							String s = String.valueOf(child.getCode());
-							if (child.getData().get(0).getClass().toString().contains("EReferenceImpl")) {
-								s = s + "1";
-								Error e = new Error(Integer.parseInt(s), child.getMessage(), child.getData(), -1);
-								errorsReturned.add(e);
-								introduced = true;
-							} else {
-								Error e = new Error(child.getCode(), child.getMessage(), child.getData(), -1);
-								errorsReturned.add(e);
-								introduced = true;
-							}
-						} else {
-							if (child.getCode() == 44) {
-								String s = String.valueOf(44);
-								if (child.getData().get(0).getClass().toString().contains("EClassImpl")) {
-									s = s + "1";
-								}
-								if (child.getData().get(0).getClass().toString().contains("EOperation")) {
-									s = s + "2";
-								}
-								if (child.getData().get(0).getClass().toString().contains("EAttribute")) {
-									s = s + "3";
-								}
-								if (child.getData().get(0).getClass().toString().contains("ETypeParameterImpl")) {
-									s = s + "4";
-									// if name null
-								}
-								if (child.getData().get(0).getClass().toString().contains("EEnum")) {
-									s = s + "5";
-									// if name null
-								}
-								if (child.getData().get(0).getClass() == EReferenceImpl.class) {
-									EReferenceImpl era = (EReferenceImpl) EReference.class.getMethod("getEOpposite")
-											.invoke(child.getData().get(0));
-									List<Object> L = new ArrayList<Object>(child.getData());
-									Error e = new Error(child.getCode(), child.getMessage(), child.getData(), -1);
-									if (era != null) {
-										Object o = new Object();
-										o = era;
-										L.add(0, o);
-										e.setWhere(L);
-									}
-									errorsReturned.add(e);
-									introduced = true;
-								} else {
-									Error e = new Error(Integer.parseInt(s), child.getMessage(), child.getData(), -1);
-									errorsReturned.add(e);
-									introduced = true;
-								}
-							} // if 44
-
-							else {
-								if (!introduced) {
-									if (child.getData().get(0).getClass() == EReferenceImpl.class) {
-										EReferenceImpl era = (EReferenceImpl) EReference.class.getMethod("getEOpposite")
-												.invoke(child.getData().get(0));
-										List<Object> L = new ArrayList<Object>(child.getData());
-										Error e = new Error(child.getCode(), child.getMessage(), child.getData(), -1);
-										if (era != null) {
-											Object o = new Object();
-											o = era;
-											L.add(0, o);
-											e.setWhere(L);
-										}
-										errorsReturned.add(e);
-									} else {
-										Error e = new Error(child.getCode(), child.getMessage(), child.getData(), -1);
-										errorsReturned.add(e);
-									}
-								}
-							}
-						}
-					}
-				}
-				introduced = false;
-			}
-		}
-		return errorsReturned;
-
-	}
+	
 
 	public static void createTags(int user) {
 		switch (user) {
