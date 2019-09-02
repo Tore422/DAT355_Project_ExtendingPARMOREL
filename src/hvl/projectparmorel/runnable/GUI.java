@@ -233,7 +233,7 @@ public class GUI extends JPanel {
 		long endTime = 0;
 		ql.actionsExtractor(errors);
 		ql.modelFixer(auxModel);
-		ql.saveKnowledge();	
+//		ql.saveKnowledge();	
 
 		frame.getContentPane().removeAll();
 		frame.getContentPane().add(secondGUI());
