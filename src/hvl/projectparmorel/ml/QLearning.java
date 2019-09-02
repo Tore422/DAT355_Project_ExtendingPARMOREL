@@ -55,19 +55,17 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
-	Map<Integer, Action> actionsReturned = new HashMap<Integer, Action>();
 	Date date = new Date(1993, 1, 31);
 	int total_reward = 0;
 	boolean repairs = false;
 	public URI uri;
 	List<Error> original = new ArrayList<Error>();
-	List<Integer> processed = new ArrayList<Integer>();
+//	List<Integer> processed = new ArrayList<Integer>();
 	public List<Integer> originalCodes = new ArrayList<Integer>();
 	Map<Integer, double[]> Q = new HashMap<Integer, double[]>();
 	Map<Integer, Integer> errorMap = new HashMap<Integer, Integer>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
 	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
-	static List<Action> actionsFound = new ArrayList<Action>();
 	public ResourceSet resourceSet = new ResourceSetImpl();
 
 	int MAX_EPISODE_STEPS = 20;
@@ -128,6 +126,60 @@ public class QLearning {
 		this.sx = sx;
 	}
 
+	private Resource processModel(Resource modelToProcess) throws IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchMethodException, SecurityException {
+
+		Resource auxModel = resourceSet.createResource(uri);
+		auxModel.getContents().addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
+		
+		List<Error> errors = errorsExtractor(modelToProcess);
+		List<Action> aux = extractActionsFor(errors);
+
+		for (int x = 0; x < nuQueue.size(); x++) {
+			Error err = nuQueue.get(x);
+			if (!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
+				for (int j = 0; j < err.getWhere().size(); j++) {
+					// if package, look for origin in children
+					for (int i = 0; i < aux.size(); i++) {
+						if (err.getWhere().get(j) != null) {
+							if (isInvokable(err, err.getWhere().get(j).getClass(), aux.get(i))) {
+								if (err.getWhere().get(j).getClass() == EPackageImpl.class) {
+									for (int h = 0; h < err.getSons(); h++) {
+										actionMatcher(err, aux.get(i), auxModel, true, j + 1, h);
+										if (invoked) {
+											// if action applied reset model and go for next error
+											// update model to keep working on it
+											auxModel.getContents().clear();
+											auxModel.getContents()
+													.addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
+											if (repairs)
+												err = nuQueue.get(x);
+										}
+									}
+
+								} // if package
+								else {
+									actionMatcher(err, aux.get(i), auxModel, true, j + 1, -1);
+									if (invoked) {
+
+										auxModel.getContents().clear();
+										auxModel.getContents().addAll(EcoreUtil.copyAll(modelToProcess.getContents()));
+
+										if (repairs)
+											err = nuQueue.get(x);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return modelToProcess;
+
+	}
+
 	/**
 	 * Checks that the action is invokable for the given class and error
 	 * 
@@ -145,66 +197,14 @@ public class QLearning {
 				return true;
 			} else {
 				for (Method method : methods) {
-					if (action.getSerializableMethod().getMethod() != null && action.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
-							return true;
+					if (action.getSerializableMethod().getMethod() != null
+							&& action.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
+						return true;
 					}
 				}
 			}
 		}
 		return false;
-	}
-
-	Resource processModel(Resource auxModel2) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchMethodException, SecurityException {
-
-		Resource auxModel = resourceSet.createResource(uri);
-		auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
-		List<Action> aux = actionsFound;
-//		ExperienceMap experience = knowledge.getExperience();
-
-		for (int x = 0; x < nuQueue.size(); x++) {
-			Error err = nuQueue.get(x);
-			if (!knowledge.getActionDirectory().containsErrorCode(err.getCode())) {
-//			if (!experience.getActionsDictionary().containsKey(err.getCode())) {
-				for (int j = 0; j < err.getWhere().size(); j++) {
-					// if package, look for origin in children
-					for (int i = 0; i < aux.size(); i++) {
-						if (err.getWhere().get(j) != null) {
-							if (isInvokable(err, err.getWhere().get(j).getClass(), aux.get(i))) {
-								if (err.getWhere().get(j).getClass() == EPackageImpl.class) {
-									for (int h = 0; h < err.getSons(); h++) {
-										actionMatcher(err, aux.get(i), auxModel, true, j + 1, h);
-										if (invoked) {
-											// if action applied reset model and go for next error
-											// update model to keep working on it
-											auxModel.getContents().clear();
-											auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
-											if (repairs)
-												err = nuQueue.get(x);
-										}
-									}
-
-								} // if package
-								else {
-									actionMatcher(err, aux.get(i), auxModel, true, j + 1, -1);
-									if (invoked) {
-
-										auxModel.getContents().clear();
-										auxModel.getContents().addAll(EcoreUtil.copyAll(auxModel2.getContents()));
-
-										if (repairs)
-											err = nuQueue.get(x);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return auxModel2;
-
 	}
 
 	boolean checkIfNewErrors(Resource r) {
@@ -777,11 +777,11 @@ public class QLearning {
 				if (nuQueue.size() != 0) {
 					next_state = nuQueue.get(index);
 
-					if (!processed.contains(next_state.getCode()) || !qTable.containsErrorCode(next_state.getCode())) {
+					if (!qTable.containsErrorCode(next_state.getCode())) {
 //					if (!processed.contains(next_state.getCode())
 //							|| !experience.getqTable().containsKey(next_state.getCode())) {
 						nuQueue = errorsExtractor(auxModel2);
-						actionsExtractor(nuQueue);
+						extractActionsFor(nuQueue);
 						auxModel2 = processModel(auxModel2);
 					}
 					// if new error introduced
@@ -1191,68 +1191,88 @@ public class QLearning {
 		}
 	}
 
-	public Map<Integer, Action> actionsExtractor(List<Error> myErrors) {
-		actionsFound.clear();
-		actionsReturned.clear();
-		// Each error
+	/**
+	 * Extract all the actions that has the potential to solve the specified errors.
+	 * 
+	 * @param errors
+	 * @return
+	 */
+	public List<Action> extractActionsFor(List<Error> errors) {
+		Map<Integer, Action> actionsFound = new HashMap<Integer, Action>();
 
-		for (int i = 0; i < myErrors.size(); i++) {
-			if (!knowledge.getActionDirectory().containsErrorCode(myErrors.get(i).getCode())) {
-//			if (!knowledge.getExperience().getActionsDictionary().containsKey(myErrors.get(i).getCode())) {
-				List<?> ca;
-				// iterates over the whole structure of the error
-				ca = (List<?>) myErrors.get(i).getWhere();
-				// examples
-
-				for (int j = 0; j < ca.size() - 1; j++) {
-					if (ca.get(j) != null) {
-						Class c = ca.get(j).getClass();
-						if (c != EPackageImpl.class) {
-							// For each method extract data
-							Method[] methods = c.getMethods();
-							for (Method method : methods) {
-								if (!method.getName().startsWith("is") && !method.getName().startsWith("get")
-										&& !method.getName().startsWith("to") && !method.getName().startsWith("e")
-										&& !method.getName().contains("Get") && !method.getName().contains("Is")
-										&& !method.getName().contentEquals("eDynamicIsSet")
-										&& !method.getName().contentEquals("dynamicGet")
-										&& !method.getName().contentEquals("hashCode")
-										&& !method.getName().contentEquals("eVirtualIsSet")
-										&& !method.getName().contentEquals("dynamicUnset")
-										&& !method.getName().contentEquals("wait")
-										&& !method.getName().contentEquals("eDynamicUnset")
-										&& !method.getName().contentEquals("notify")
-										&& !method.getName().contentEquals("notifyAll")
-										&& !method.getName().contentEquals("eVirtualGet")
-										&& !method.getName().contentEquals("eVirtualUnset")
-										&& !method.getName().contentEquals("eDynamicGet")
-										&& !method.getName().contentEquals("dynamicSet")) {
-
-									if (!actionsReturned.containsKey(method.hashCode())) {
-										Action a = new Action(method.hashCode(), method.getName(),
-												new SerializableMethod(method), j + 1, 0);
-										// if the action was not already present
-										actionsReturned.put(method.hashCode(), a);
-										actionsFound.add(a);
-									}
-									// }
-								}
-							}
-							if (!actionsReturned.containsKey(99999)) {
-								Action a = new Action(99999, "delete", null, j + 1, 0);
-								actionsReturned.put(99999, a);
-								actionsFound.add(a);
-							}
-							//
-						} // if not package
-					} // is not null
-
-				} // for error where structure
-			} // for errors
-			processed.add(myErrors.get(i).getCode());
+		for (Error error : errors) {
+			if (!knowledge.getActionDirectory().containsErrorCode(error.getCode())) {
+				List<?> contexts = (List<?>) error.getWhere();
+				actionsFound = addMethodsFromContextList(actionsFound, contexts);
+			}
 		}
-		return actionsReturned;
+		return new ArrayList<>(actionsFound.values());
+	}
 
+	/**
+	 * Copies the actions given as input, adds the methods provided by the contexts
+	 * if they can help solve the problem, and returns the combined result.
+	 * 
+	 * @param actions
+	 * @param contexts
+	 * @return the actions found in the context that can help solve a problem
+	 */
+	private Map<Integer, Action> addMethodsFromContextList(Map<Integer, Action> actions, List<?> contexts) {
+		Map<Integer, Action> actionsFound = new HashMap<>(actions);
+		for (int i = 0; i < contexts.size() - 1; i++) {
+			if (contexts.get(i) != null) {
+				Class<? extends Object> context = contexts.get(i).getClass();
+				addMethodsFromContext(actionsFound, context, i);
+			}
+		}
+		return actionsFound;
+	}
+	
+	/**
+	 * Copies the actions given as input, adds the methods provided by the context
+	 * if they can help solve the problem, and returns the combined result.
+	 * 
+	 * @param actions
+	 * @param context
+	 * @param hierarchy
+	 * @return a map containing the actions from the specified context if they result in an altered model.
+	 */
+	private void addMethodsFromContext(Map<Integer, Action> actions, Class<? extends Object> context, int hierarchy){
+		if (context != EPackageImpl.class) { // if not package
+			Method[] methods = context.getMethods();
+			for (Method method : methods) {
+				if (methodCanPerformChange(method) && !actions.containsKey(method.hashCode())) {
+					Action action = new Action(method.hashCode(), method.getName(),
+							new SerializableMethod(method), hierarchy + 1, 0);
+					actions.put(method.hashCode(), action);
+				}
+			}
+
+			if (!actions.containsKey(99999)) {
+				Action a = new Action(99999, "delete", null, hierarchy + 1, 0);
+				actions.put(99999, a);
+			}
+		}
+	}
+
+	/**
+	 * Checks that the method actually can perform a change. Get-methods and so on
+	 * will return false.
+	 * 
+	 * @param method
+	 * @return true if the method can alter the model, false otherwise
+	 */
+	private boolean methodCanPerformChange(Method method) {
+		return !method.getName().startsWith("is") && !method.getName().startsWith("get")
+				&& !method.getName().startsWith("to") && !method.getName().startsWith("e")
+				&& !method.getName().contains("Get") && !method.getName().contains("Is")
+				&& !method.getName().contentEquals("eDynamicIsSet") && !method.getName().contentEquals("dynamicGet")
+				&& !method.getName().contentEquals("hashCode") && !method.getName().contentEquals("eVirtualIsSet")
+				&& !method.getName().contentEquals("dynamicUnset") && !method.getName().contentEquals("wait")
+				&& !method.getName().contentEquals("eDynamicUnset") && !method.getName().contentEquals("notify")
+				&& !method.getName().contentEquals("notifyAll") && !method.getName().contentEquals("eVirtualGet")
+				&& !method.getName().contentEquals("eVirtualUnset") && !method.getName().contentEquals("eDynamicGet")
+				&& !method.getName().contentEquals("dynamicSet");
 	}
 
 	public List<Error> errorsExtractor(Resource myMM) throws IllegalAccessException, IllegalArgumentException,

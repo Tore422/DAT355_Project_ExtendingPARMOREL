@@ -231,7 +231,6 @@ public class GUI extends JPanel {
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
-		ql.actionsExtractor(errors);
 		ql.modelFixer(auxModel);
 //		ql.saveKnowledge();	
 

@@ -39,6 +39,19 @@ public class Action implements Serializable {
 		return "Action" + code + ", msg=" + msg + "." + System.getProperty("line.separator");
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Action) {
+			Action otherAction = (Action) other;
+			return otherAction.getCode() == code 
+					&& otherAction.getMsg().equals(msg)
+					&& otherAction.getSerializableMethod().equals(method) 
+					&& otherAction.getHierarchy() == hierarchy
+					&& otherAction.getSubHierarchy() == subHierarchy;
+		}
+		return false;
+	}
+
 	/**
 	 * Gets the context id
 	 * 

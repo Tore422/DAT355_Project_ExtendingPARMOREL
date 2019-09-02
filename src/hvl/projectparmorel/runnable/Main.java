@@ -97,8 +97,6 @@ public class Main {
 			System.out.println("Size= " + errors.size());
 			System.out.println();
 
-			ql.actionsExtractor(errors);
-
 			ql.modelFixer(auxModel);
 
 			endTime = System.currentTimeMillis();
