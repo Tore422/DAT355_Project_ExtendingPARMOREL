@@ -3,6 +3,7 @@ package hvl.projectparmorel.runnable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -44,7 +45,7 @@ public class Main {
 			System.out.println("STARTING WITH MODEL - " + i + ": " + listOfFiles[i].getName());
 
 			// Copy original file
-			QLearning.copyFile(listOfFiles[i], dest);
+			copyFile(listOfFiles[i], dest);
 
 			ql.uri = URI.createFileURI(dest.getAbsolutePath());
 			ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
@@ -111,5 +112,9 @@ public class Main {
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
 		ql.saveKnowledge();
 		System.exit(0);
+	}
+	
+	private static void copyFile(File from, File to) throws IOException {
+		Files.copy(from.toPath(), to.toPath());
 	}
 }

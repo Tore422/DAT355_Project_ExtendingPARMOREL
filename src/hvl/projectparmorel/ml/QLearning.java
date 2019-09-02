@@ -119,12 +119,12 @@ public class QLearning {
 		prefs.saveToFile();
 	}
 
-	/**
-	 * Saves the knowledge
-	 */
-	public void saveKnowledge() {
+//	/**
+//	 * Saves the knowledge
+//	 */
+//	public void saveKnowledge() {
 //		knowledge.save();
-	}
+//	}
 
 	public static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
@@ -1483,10 +1483,6 @@ public class QLearning {
 		}
 		return errorsReturned;
 
-	}
-
-	public static void copyFile(File from, File to) throws IOException {
-		Files.copy(from.toPath(), to.toPath());
 	}
 
 	public static void createTags(int user) {
