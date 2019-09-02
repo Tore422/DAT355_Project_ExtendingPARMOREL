@@ -40,6 +40,19 @@ public class Action implements Serializable {
 	public String toString() {
 		return "Action"+ code + ", msg=" + msg +"." +System.getProperty("line.separator");
 	}
+	
+	/**
+	 * Gets the context id
+	 * 
+	 * @return the context ID
+	 */
+	public int getContextId() {
+		if (subHierarchy > -1) {
+			return Integer.valueOf(String.valueOf(hierarchy) + String.valueOf(subHierarchy));
+		} else {
+			return hierarchy;
+		}
+	}
 
 	public int getCode() {
 		return code;

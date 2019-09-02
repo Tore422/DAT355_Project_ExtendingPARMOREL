@@ -1,24 +1,14 @@
 package hvl.projectparmorel.ml;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -34,7 +24,6 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.impl.EAttributeImpl;
 import org.eclipse.emf.ecore.impl.EClassImpl;
-import org.eclipse.emf.ecore.impl.EDataTypeImpl;
 import org.eclipse.emf.ecore.impl.EEnumImpl;
 import org.eclipse.emf.ecore.impl.EEnumLiteralImpl;
 import org.eclipse.emf.ecore.impl.EGenericTypeImpl;
@@ -48,8 +37,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
 
@@ -146,160 +133,6 @@ public class QLearning {
 
 	public void setBestSeq(Sequence sx) {
 		this.sx = sx;
-	}
-
-	void qTable(Error error, Action action) {
-		int num;
-		double weight = 0.0;
-//		HashMap<Integer, Double> d = new HashMap<Integer, Double>();
-//		HashMap<Integer, HashMap<Integer, Double>> dx = new HashMap<Integer, HashMap<Integer, Double>>();
-//		HashMap<Integer, ActionExp> hashaux = new HashMap<Integer, ActionExp>();
-//		HashMap<Integer, HashMap<Integer, ActionExp>> hashcontainer = new HashMap<Integer, HashMap<Integer, ActionExp>>();
-		// Initialize all available actions weights to 0
-		// for each error only available actions
-
-		if (preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
-				weight = -(double) weightPunishDeletion / 100;
-			} else {
-				weight = 0.0;
-			}
-		}
-
-		if (action.getMsg().contains("get")) {
-			weight = -10.0;
-		} else {
-			weight = 0.0;
-		}
-
-		if (action.getSubHierarchy() > -1) {
-			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
-		} else {
-			num = action.getHierarchy();
-		}
-
-		// If error not present
-
-//		ExperienceMap experience = knowledge.getExperience();
-		QTable qTable = knowledge.getQTable();
-		ActionDirectory actionDirectory = knowledge.getActionDirectory();
-		
-		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), num, action.getCode())) {
-			qTable.setWeight(error.getCode(), num, action.getCode(), weight);
-			
-			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), num, action.getCode())) {
-				actionDirectory.setAction(error.getCode(), num, action);
-			}
-		}
-		
-//		if (!getNewXp().getqTable().containsKey(e.getCode())) {
-		
-//			d.put(a.getCode(), weight);
-//			dx.put(num, d);
-//			experience.getqTable().put(e.getCode(), dx);
-//			if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-			
-//				hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//				hashcontainer.put(num, hashaux);
-//				experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-//				if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-//					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//					experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
-//				}
-
-//				else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
-//					experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
-//							new ActionExp(action, new HashMap<Integer, Integer>()));
-//				}
-		// Error not in Q table
-			// Hierarchy already present
-
-//			if (experience.getqTable().get(error.getCode()).containsKey(num)) {
-				// Action no already present
-
-//				if (!experience.getqTable().get(error.getCode()).get(num).containsKey(action.getCode())) {
-//					experience.getqTable().get(error.getCode()).get(num).put(action.getCode(), weight);
-
-//					if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-//						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//						hashcontainer.put(num, hashaux);
-//						experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-//						if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-//							hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//							experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
-//						}
-
-//						else if (!experience.getActionsDictionary().get(error.getCode()).get(num)
-//								.containsKey(action.getCode())) {
-//							experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
-//									new ActionExp(action, new HashMap<Integer, Integer>()));
-//						}
-			// Hierar not in q
-//				d.put(action.getCode(), weight);
-//				experience.getqTable().get(error.getCode()).put(num, d);
-
-//				if (!experience.getActionsDictionary().containsKey(error.getCode())) {
-//					hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//					hashcontainer.put(num, hashaux);
-//					experience.getActionsDictionary().put(error.getCode(), hashcontainer);
-//					if (!experience.getActionsDictionary().get(error.getCode()).containsKey(num)) {
-//						hashaux.put(action.getCode(), new ActionExp(action, new HashMap<Integer, Integer>()));
-//						experience.getActionsDictionary().get(error.getCode()).put(num, hashaux);
-//
-//					else if (!experience.getActionsDictionary().get(error.getCode()).get(num).containsKey(action.getCode())) {
-//						experience.getActionsDictionary().get(error.getCode()).get(num).put(action.getCode(),
-//								new ActionExp(action, new HashMap<Integer, Integer>()));
-//					}
-	}
-
-	// Returns key (action) with highest weight
-	Action bestAction(Error err) {
-		return knowledge.getOptimalActionForErrorCode(err.getCode());
-
-//		
-//		int sons = err.getSons();
-//		int code = 0;
-//		int maxi = 0;
-//		Double max = -99999.0;
-//		Integer pairKey = 0;
-////		ExperienceMap experience = knowledge.getExperience();
-//		QTable qTable = knowledge.getQTable();
-//		Map<Integer, Double> mp = new HashMap<Integer, Double>();
-//		for (int i = 0; i < err.getWhere().size() - 1; i++) {
-//			if (sons != -1 && i == 0) {
-//				for (int j = 0; j < sons; j++) {
-//					code = Integer.valueOf(String.valueOf(i + 1) + String.valueOf(j));
-//					if (qTable.containsContextIdForError(err.getCode(), code)) {
-////					if (experience.getqTable().get(err.getCode()).containsKey(code)) {
-//						
-//						mp = experience.getqTable().get(err.getCode()).get(code);
-//						for (Entry<Integer, Double> entry : mp.entrySet()) {
-//							if ((Double) entry.getValue() > max) {
-//								max = (Double) entry.getValue();
-//								pairKey = (Integer) entry.getKey();
-//								maxi = code;
-//							}
-//						}
-//					}
-//				}
-//			} // if sons
-//			else {
-//				if (experience.getqTable().get(err.getCode()).containsKey(i + 1)) {
-//					mp = experience.getqTable().get(err.getCode()).get(i + 1);
-//					for (Entry<Integer, Double> entry : mp.entrySet()) {
-//						if ((Double) entry.getValue() > max) {
-//							max = (Double) entry.getValue();
-//							pairKey = (Integer) entry.getKey();
-//							maxi = i + 1;
-//						}
-//					}
-//				}
-//			} // not sons
-//		} // for
-//		Action a = experience.getActionsDictionary().get(err.getCode()).get(maxi).get(pairKey).getAction();
-
-//		return a;
-
 	}
 
 	boolean isInvokable(Error e, Class<? extends Object> class1, Action a) {
@@ -452,7 +285,7 @@ public class QLearning {
 //				a = experience.getActionsDictionary().get(err.getCode()).get(val).get(act).getAction();
 
 		} else {
-			return bestAction(err);
+			return knowledge.getOptimalActionForErrorCode(err.getCode());
 		}
 	}
 
@@ -726,11 +559,59 @@ public class QLearning {
 			// check error was solved
 			if (!errorChecker(newErrors, e, hierar - 1)) {
 				Action n = new Action(a.getCode(), a.getMsg(), a.getSerializableMethod(), hierar, sons);
-				qTable(e, n);
+				initializeQTableForAction(e, n);
 				repairs = true;
 			}
 		}
 		return newErrors;
+	}
+
+	/**
+	 * Initializes the QTable for the specified action, setting an initial weight.
+	 * 
+	 * @param error
+	 * @param action
+	 */
+	private void initializeQTableForAction(Error error, Action action) {
+		QTable qTable = knowledge.getQTable();
+		ActionDirectory actionDirectory = knowledge.getActionDirectory();
+
+		int contextId = action.getContextId();
+
+		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), contextId, action.getCode())) {
+			double weight = initializeWeightFor(action);
+			qTable.setWeight(error.getCode(), contextId, action.getCode(), weight);
+
+			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
+				actionDirectory.setAction(error.getCode(), contextId, action);
+			}
+		}
+	}
+
+	/**
+	 * Initializes the weight for the given action
+	 * 
+	 * @param action
+	 * @return initial weight
+	 */
+	private double initializeWeightFor(Action action) {
+		double weight = 0.0;
+
+		if (preferences.contains(4)) {
+			if (action.getMsg().contains("delete")) {
+				weight = -(double) weightPunishDeletion / 100;
+			} else {
+				weight = 0.0;
+			}
+		}
+
+		if (action.getMsg().contains("get")) {
+			weight = -10.0;
+		} else {
+			weight = 0.0;
+		}
+
+		return weight;
 	}
 
 	EReferenceImpl findOutOpposite(EReferenceImpl er, Error e) {
@@ -922,7 +803,7 @@ public class QLearning {
 					}
 
 					next_state = nuQueue.get(index);
-					Action a = bestAction(next_state);
+					Action a = knowledge.getOptimalActionForErrorCode(next_state.getCode());
 
 					if (a.getSubHierarchy() != -1) {
 						code2 = Integer.valueOf(String.valueOf(a.getHierarchy()) + String.valueOf(a.getSubHierarchy()));
