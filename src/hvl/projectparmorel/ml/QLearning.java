@@ -199,37 +199,8 @@ public class QLearning {
 	}
 
 	Action chooseActionHash(Error err) {
-		Action a = new Action();
-		int count = 0;
-		Integer val = 0;
-		Integer act = 0;
-//		ExperienceMap experience = knowledge.getExperience();
 		if (Math.random() < randomfactor) {
 			return knowledge.getActionDirectory().getRandomActionForError(err.getCode());
-
-//			boolean set = false;
-//				// how many error locations
-////				int x = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).size());
-//				int x = new Random().nextInt(knowledge.getActionDirectory().getNumberOfContextsForError(err.getCode()));
-//				for (Integer key : experience.getActionsDictionary().get(err.getCode()).keySet()) {
-//					if (count == x) {
-//						val = key;
-//						break;
-//					}
-//					count++;
-//				}
-//				// how many actions in that location
-//				int y = new Random().nextInt(experience.getActionsDictionary().get(err.getCode()).get(val).size());
-//				count = 0;
-//				for (Integer key2 : experience.getActionsDictionary().get(err.getCode()).get(val).keySet()) {
-//					if (count == y) {
-//						act = key2;
-//						break;
-//					}
-//					count++;
-//				}
-//				a = experience.getActionsDictionary().get(err.getCode()).get(val).get(act).getAction();
-
 		} else {
 			return knowledge.getOptimalActionForErrorCode(err.getCode());
 		}

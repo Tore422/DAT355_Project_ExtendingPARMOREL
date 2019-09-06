@@ -80,7 +80,6 @@ public class ModelProcesser {
 				}
 			}
 		}
-		System.out.println("qtable complete");
 	}
 
 	/**
