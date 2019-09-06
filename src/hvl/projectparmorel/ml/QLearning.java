@@ -85,7 +85,7 @@ public class QLearning {
 	private int weightRewardLongerSequencesOfActions;
 	private int weightRewardRepairingHighInErrorHierarchies;
 	private int weightRewardRepairingLowInErrorHierarchies;
-	private int weightPunishDeletion;
+	protected static int weightPunishDeletion;
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardModificationOfTheOriginalModel;
 
@@ -157,226 +157,7 @@ public class QLearning {
 		}
 		return false;
 	}
-
-	private List<Error> actionMatcher(Error error, Action action, Resource model, Boolean light, int hierarchy, int sons) {
-		EPackage epa = (EPackage) model.getContents().get(0);
-		EObject o = null;
-		boolean found = true;
-		invoked = false;
-		repairs = false;
-		EEnumLiteralImpl ob = null;
-
-		// if applicable either on father or son
-
-		if (error.getWhere().get(hierarchy - 1) != null) {
-			o = (EObject) error.getWhere().get(hierarchy - 1);
-			found = true;
-			if (o == null && error.getWhere().get(hierarchy - 1).getClass() == EEnumLiteralImpl.class) {
-				ob = (EEnumLiteralImpl) error.getWhere().get(hierarchy - 1);
-				o = null;
-			}
-		} else {
-			found = false;
-		}
-
-		// If whereError == whereAction
-		if (found) {
-			for (int i = 0; i < epa.getEClassifiers().size() && !invoked; i++) {
-				// if action is for class and if error is in that classifier
-				// This if is inside because we have to enter inside the classifiers anyway
-				if (error.getWhere().get(hierarchy - 1).getClass() == EClassImpl.class
-						&& epa.getEClassifiers().get(i).getClass() == EClassImpl.class) {
-					EClassImpl ec = (EClassImpl) epa.getEClassifiers().get(i);
-					applyAction(ec, error, action, o);
-					if (invoked)
-						break;
-				} else {
-					if (epa.getEClassifiers().get(i).getClass() == EClassImpl.class && !invoked) {
-						EClassImpl ec = (EClassImpl) epa.getEClassifiers().get(i);
-						// iterate over attrbs and references
-						// checking it is a reference or attrib action before iterating
-						for (int j = 0; j < ec.getEAllStructuralFeatures().size(); j++) {
-							// if it is an attribute
-							if (error.getWhere().get(hierarchy - 1).getClass() == EAttributeImpl.class
-									|| error.getWhere().get(hierarchy - 1).getClass() == EReferenceImpl.class) {
-
-								applyAction(ec.getEAllStructuralFeatures().get(j), error, action, o);
-								if (invoked)
-									break;
-							} // check if coincide and is a structure
-								// if structure
-							else if (error.getWhere().get(hierarchy - 1).getClass() == EGenericTypeImpl.class
-									&& !invoked) {
-								if (ec.getEAllStructuralFeatures().get(j) instanceof EReferenceImpl) {
-									EReferenceImpl er = (EReferenceImpl) ec.getEAllStructuralFeatures().get(j);
-									EGenericTypeImpl eg = (EGenericTypeImpl) er.getEGenericType();
-									if (eg != null) {
-										applyAction(eg, error, action, o);
-										if (invoked)
-											break;
-									}
-								}
-							} // if it is a generic type
-						} // for j
-							// checking it is an operation before iterating
-
-						if (error.getWhere().get(hierarchy - 1).getClass() == EOperationImpl.class
-								&& error.getWhere().get(hierarchy - 1).getClass() != EGenericTypeImpl.class && !invoked) {
-							for (int k = 0; k < ec.getEAllOperations().size(); k++) {
-								applyAction(ec.getEAllOperations().get(k), error, action, o);
-								if (invoked)
-									break;
-							} // for j
-						} // if operation
-						else if (error.getWhere().get(hierarchy - 1).getClass() == ETypeParameterImpl.class && !invoked) {
-							for (int h = 0; h < ec.getETypeParameters().size() && !invoked; h++) {
-								applyAction(ec.getETypeParameters().get(h), error, action, o);
-								if (invoked)
-									break;
-							}
-						}
-
-						else if (error.getWhere().get(hierarchy - 1).getClass() == EParameterImpl.class && !invoked) {
-							for (int h = 0; h < ec.getEAllOperations().size() && !invoked; h++) {
-								EOperationImpl eo = (EOperationImpl) ec.getEAllOperations().get(h);
-
-								for (int y = 0; y < eo.getEParameters().size(); y++) {
-									applyAction(eo.getEParameters().get(y), error, action, o);
-									if (invoked)
-										break;
-								}
-
-							}
-						}
-					} // if class
-					else if (error.getWhere().get(hierarchy - 1).getClass() == EEnumLiteralImpl.class && !invoked) {
-						EEnumImpl eu = (EEnumImpl) epa.getEClassifiers().get(i);
-						for (int w = 0; w < eu.getELiterals().size() && !invoked; w++) {
-							EEnumLiteralImpl auxe = (EEnumLiteralImpl) eu.getELiterals().get(w);
-							if (!o.toString().contains("null") && auxe.toString() != null) {
-								applyAction(auxe, error, action, o);
-								if (invoked)
-									break;
-							} // o is not null
-							else {
-								if (auxe == ob) {
-									applyAction(auxe, error, action, ob);
-									if (invoked)
-										break;
-								}
-							} // for literals
-						} // enumliteralimpl
-							// if it is an Enum
-					} // else as not in a class
-				} // for i
-			}
-		} // if action class and element coincidential
-
-		List<Error> newErrors = null;
-
-		if (found)
-			newErrors = ErrorExtractor.extractErrorsFrom(model);
-
-		if (light && found) {
-			// check error was solved
-			if (!errorChecker(newErrors, error, hierarchy - 1)) {
-				Action n = new Action(action.getCode(), action.getMsg(), action.getSerializableMethod(), hierarchy, sons);
-				initializeQTableForAction(error, n);
-				repairs = true;
-			}
-		}
-		return newErrors;
-	}
-
-	private void applyAction(EObject eobj, Error e, Action a, EObject o) {
-		try {
-// Check if element is the correct one to fix
-			if (checkIfSameElement(o, eobj)) {
-				if (String.valueOf(a.getCode()).startsWith("9999")) {
-					// if we delete a class we should also delete its references so that we don't
-					// get dangling elements
-					if (eobj.getClass() == EClassImpl.class) {
-						if (!checkIfSameElement(eobj, (EObject) e.getWhere().get(0))) {
-							for (EReference ref : ((EClassImpl) eobj).getEAllReferences()) {
-								EReferenceImpl era = (EReferenceImpl) EReference.class.getMethod("getEOpposite")
-										.invoke(ref);
-								if (era != null) {
-									EcoreUtil.delete(era, true);
-									invoked = true;
-								}
-							}
-							EcoreUtil.delete(eobj, true);
-						}
-					} else {
-						EcoreUtil.delete(eobj, true);
-						invoked = true;
-						return;
-					}
-				} else {
-					// if needs to add type arguments
-					if (e.getCode() == 4 && eobj.getClass() == EGenericTypeImpl.class) {
-						EGenericTypeImpl eg = (EGenericTypeImpl) e.getWhere().get(0);
-						eg.getETypeArguments().add(eg);
-						invoked = true;
-						a.setCode(88888);
-						a.setMsg("getETypeArguments().add(eg)");
-						return;
-					}
-					if (isInvokable(e, eobj.getClass(), a)) {
-						if (a.getSerializableMethod().getMethod().getParameterCount() > 0) {
-							Object[] values = argsDefaults(argsTypeExtractor(a.getSerializableMethod().getMethod(), e));
-							// if input needs a date
-							if (values.length != 0 && eobj instanceof EAttributeImpl
-									&& a.getSerializableMethod().getMethod().getName().contains("DefaultValue")
-									&& e.getCode() != 40 && ((ETypedElement) eobj).getEType() != null
-									&& ((ETypedElement) eobj).getEType().toString().contains("Date")) {
-
-								a.getSerializableMethod().getMethod().invoke(eobj, date);
-								invoked = true;
-								return;
-							} else {
-								// if dealing with opposite references
-								if (values.length == a.getSerializableMethod().getMethod().getParameterCount()) {
-									if (e.getCode() == 14 && a.getMsg().contains("setEOpposite")
-											&& eobj instanceof EReferenceImpl) {
-										values[0] = findOutOpposite((EReferenceImpl) eobj, e);
-									}
-									try {
-										a.getSerializableMethod().getMethod().invoke(eobj, values);
-										// sometimes this action in that error is problematic
-										if (e.getCode() == 40 && a.getCode() == 591449609) {
-											EAttributeImpl ea = (EAttributeImpl) eobj;
-											if (!ea.isSetEGenericType()) {
-												EGenericType eg = EcoreFactory.eINSTANCE.createEGenericType();
-												eg.setEClassifier(EcorePackage.Literals.ESTRING);
-												ea.setEGenericType(eg);
-											}
-										}
-										invoked = true;
-										return;
-									} catch (java.lang.ClassCastException
-											| java.lang.IllegalArgumentException exception) {
-										// Catch NullPointerExceptions.
-									}
-									invoked = true;
-									return;
-								}
-							}
-						} // if method has parameters
-						else {
-							a.getSerializableMethod().getMethod().invoke(eobj);
-							invoked = true;
-							return;
-						}
-						// check get parameters
-					} // if
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-
+	
 	boolean checkIfNewErrors(Resource r) {
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(r.getContents().get(0));
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
@@ -513,120 +294,6 @@ public class QLearning {
 		return val;
 	}
 
-	/**
-	 * Initializes the QTable for the specified action, setting an initial weight.
-	 * 
-	 * @param error
-	 * @param action
-	 */
-	private void initializeQTableForAction(Error error, Action action) {
-		QTable qTable = knowledge.getQTable();
-		ActionDirectory actionDirectory = knowledge.getActionDirectory();
-
-		int contextId = action.getContextId();
-
-		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), contextId, action.getCode())) {
-			double weight = initializeWeightFor(action);
-			qTable.setWeight(error.getCode(), contextId, action.getCode(), weight);
-
-			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
-				actionDirectory.setAction(error.getCode(), contextId, action);
-			}
-		}
-	}
-
-	/**
-	 * Initializes the weight for the given action
-	 * 
-	 * @param action
-	 * @return initial weight
-	 */
-	private double initializeWeightFor(Action action) {
-		double weight = 0.0;
-
-		if (preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
-				weight = -(double) weightPunishDeletion / 100;
-			} else {
-				weight = 0.0;
-			}
-		}
-
-		if (action.getMsg().contains("get")) {
-			weight = -10.0;
-		} else {
-			weight = 0.0;
-		}
-
-		return weight;
-	}
-
-	EReferenceImpl findOutOpposite(EReferenceImpl er, Error e) {
-		if (er.getEOpposite() == null) { // if the initial ref is opp null
-			for (int i = 0; i < e.getWhere().size(); i++) { // look in the rest of refs
-				if (e.getWhere().get(i) != null) { // if not null
-					EReferenceImpl eaux = (EReferenceImpl) e.getWhere().get(i);
-					if (eaux.getEOpposite() == er) { // if the opposite is the first ref
-						return eaux; // the first ref needs this one
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	boolean errorChecker(List<Error> newErrors, Error e, int index) {
-		boolean found = false;
-		if (errorMap.containsKey(e.getCode())) {
-			extractDuplicates(newErrors);
-			if (!errorMap.containsKey(e.getCode())) {
-				found = false;
-			} else {
-				found = true;
-			}
-			errorMap = extractDuplicates(errorsToFix);
-		} else {
-			for (int i = 0; i < newErrors.size(); i++) {
-
-				if (e.getWhere().get(index).getClass() == EGenericTypeImpl.class) {
-					EGenericTypeImpl eg = (EGenericTypeImpl) e.getWhere().get(index);
-					if (eg.getETypeArguments().size() > 0) {
-						found = false;
-						break;
-					}
-				}
-				if (newErrors.size() != 0) {
-
-					if (newErrors.get(i).getCode() == e.getCode()
-							&& newErrors.get(i).getWhere().size() == e.getWhere().size()) {
-						found = true;
-						break;
-
-					}
-
-				} else {
-					break;
-				}
-			}
-		}
-		return found;
-	}
-
-	Map<Integer, Integer> extractDuplicates(List<Error> le) {
-		errorMap.clear();
-		for (int i = 0; i < le.size(); i++) {
-			for (int j = 0; j < le.size(); j++) {
-
-				if (le.get(i).getCode() == le.get(j).getCode()
-						&& !le.get(i).getWhere().toString().contentEquals(le.get(j).getWhere().toString())) {
-					errorMap.put(le.get(i).getCode(), 2);
-				}
-			}
-		}
-		return errorMap;
-
-	}
-
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
 		QTable qTable = knowledge.getQTable();
@@ -653,12 +320,12 @@ public class QLearning {
 		solvingMap.clear();
 		original.clear();
 		original.addAll(errorsToFix);
-		errorMap.clear();
-		errorMap = extractDuplicates(original);
+//		errorMap.clear();
+//		errorMap = extractDuplicates(original);
 		System.out.println("PREFERENCES: " + preferences.toString());
 		// FILTER ACTIONS AND INITIALICES QTABLE
 		ModelProcesser modelProcesser = new ModelProcesser(resourceSet, knowledge);
-		auxModel2 = modelProcesser.processModel(auxModel2, uri);
+		modelProcesser.initializeQTableForErrorsInModel(auxModel2, uri);
 		// START with initial model its errors and actions
 		System.out.println(errorsToFix.toString());
 		System.out.println("EPISODES: " + N_EPISODES);
@@ -677,8 +344,7 @@ public class QLearning {
 				action = chooseActionHash(state);
 
 				errorsToFix.clear();
-				errorsToFix = actionMatcher(state, action, auxModel2, false, action.getHierarchy(),
-						action.getSubHierarchy());
+				errorsToFix = modelProcesser.tryApplyActionAndUpdatedQTableOnSuccess(state, action, auxModel2, false, action.getHierarchy()); //removed subHirerarchy - effect?
 				reward = rewardCalculator(state, action);
 				// Insert stuff into sequence
 				s.setId(episode);
@@ -737,7 +403,7 @@ public class QLearning {
 //							|| !experience.getqTable().containsKey(next_state.getCode())) {
 						errorsToFix = ErrorExtractor.extractErrorsFrom(auxModel2);
 						actionExtractor.extractActionsFor(errorsToFix);
-						auxModel2 = modelProcesser.processModel(auxModel2, uri);
+						modelProcesser.initializeQTableForErrorsInModel(auxModel2, uri);
 					}
 					// if new error introduced
 					if (!originalCodes.contains(next_state.getCode())) {
