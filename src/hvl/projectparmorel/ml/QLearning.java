@@ -2,24 +2,15 @@ package hvl.projectparmorel.ml;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-
-import org.eclipse.emf.common.notify.impl.NotificationChainImpl;
-import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EcoreFactory;
-import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
@@ -103,111 +94,13 @@ public class QLearning {
 	public void setBestSeq(Sequence sx) {
 		this.sx = sx;
 	}
-	
-	boolean checkIfNewErrors(Resource r) {
-		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(r.getContents().get(0));
-		if (diagnostic.getSeverity() != Diagnostic.OK) {
-			for (Diagnostic child : diagnostic.getChildren()) {
-				if (!knowledge.getQTable().containsErrorCode(child.getCode())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 
-	boolean checkIfSameElement(EObject o, EObject b) {
-		String one = o.toString();
-		String two = b.toString();
-		int index = one.indexOf("@");
-		int index2 = two.indexOf("@");
-		int index3 = one.indexOf(" ");
-		int index4 = two.indexOf(" ");
-
-		String a1, a2, b1, b2;
-		if (index != -1 || index2 != -1) {
-			a1 = one.substring(0, index);
-			a2 = one.substring(index3);
-			b1 = two.substring(0, index2);
-			b2 = two.substring(index4);
-			one = a1 + a2;
-			two = b1 + b2;
-		}
-
-		if (one.contentEquals(two)) {
-			if (o.eContents().size() == b.eContents().size()) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	Action chooseActionHash(Error err) {
+	private Action chooseActionHash(Error err) {
 		if (Math.random() < randomfactor) {
 			return knowledge.getActionDirectory().getRandomActionForError(err.getCode());
 		} else {
 			return knowledge.getOptimalActionForErrorCode(err.getCode());
 		}
-	}
-
-	// extract types of parameters given a method
-	List<String> argsTypeExtractor(Method m, Error e) {
-		List<String> argsClass = new ArrayList<String>();
-
-		Class<?>[] p = m.getParameterTypes();
-		for (int i = 0; i < p.length; i++) {
-			if (m.getName().contentEquals("setEClassifier") || m.getName().contains("SetEGenericType")
-					|| (e.getCode() == 401 && m.getName().contentEquals("setEType"))) {
-				argsClass.add(p[i].getName() + "CLASS");
-			} else {
-				if (m.getName().contentEquals("setTransient")) {
-					argsClass.add(p[i].getName() + "TRUE");
-				} else {
-					argsClass.add(p[i].getName());
-				}
-			}
-		}
-		return argsClass;
-	}
-
-	// Simulating type preferences
-	Object[] argsDefaults(List<String> list) {
-		List<Object> values = new ArrayList<Object>();
-		Random rand = new Random();
-		for (int i = 0; i < list.size(); i++) {
-			if (list.get(i).contentEquals("int")) {
-				values.add(1);
-			}
-			if (list.get(i).contentEquals("boolean")) {
-				values.add(false);
-			}
-			if (list.get(i).contentEquals("booleanTRUE")) {
-				values.add(true);
-			}
-			if (list.get(i).contains("String")) {
-				values.add("placeholder" + rand.nextInt((999999 - 1) + 1) + 1);
-			}
-			if (list.get(i).contentEquals("org.eclipse.emf.ecore.EClassifier")) {
-				values.add(EcorePackage.Literals.ESTRING);
-			}
-			if (list.get(i).contentEquals("org.eclipse.emf.ecore.EClassifierCLASS")) {
-				values.add(EcorePackage.Literals.ECLASS);
-			}
-			if (list.get(i).contentEquals("org.eclipse.emf.common.notify.NotificationChain")) {
-				values.add(new NotificationChainImpl());
-			}
-			if (list.get(i).contains("TypeParameter")) {
-				values.add(EcoreFactory.eINSTANCE.createETypeParameter());
-			}
-			if (list.get(i).contains("Reference")) {
-				values.add(EcorePackage.Literals.EREFERENCE__EREFERENCE_TYPE);
-			}
-		}
-		Object[] val = new Object[values.size()];
-		val = values.toArray(val);
-
-		return val;
 	}
 
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
