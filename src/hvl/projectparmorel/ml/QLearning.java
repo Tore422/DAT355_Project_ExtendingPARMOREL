@@ -122,17 +122,10 @@ public class QLearning {
 		int val;
 		int discarded = 0;
 		int episode = 0;
-		int step = 0;
-		int index = 0;
-		Action action;
-		double alpha;
-		boolean doni = false;
 		boolean nope = false;
 		boolean alert = false;
 		int code, code2;
-		int end_reward;
-		Error state, next_state;
-		int sizeBefore = 0;
+		Error next_state;
 
 		Resource modelCopy = copy(myMetaModel, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
@@ -147,28 +140,28 @@ public class QLearning {
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + N_EPISODES);
 		while (episode < N_EPISODES) {
-			index = 0;
-			state = errorsToFix.get(index);
-			sizeBefore = errorsToFix.size();
+			int index = 0;
+			Error currentErrorToFix = errorsToFix.get(index);
+			int sizeBefore = errorsToFix.size();
 			total_reward = 0;
-			alpha = alphas[episode];
-			end_reward = 0;
-			step = 0;
-			doni = false;
+			double alpha = alphas[episode];
+			int end_reward = 0;
+			int step = 0;
+			boolean doni = false;
 			Sequence s = new Sequence();
-//			ExperienceMap experience = knowledge.getExperience();
 			while (step < MAX_EPISODE_STEPS) {
-				action = chooseAction(state);
+				Action action = chooseAction(currentErrorToFix);
 
 				errorsToFix.clear();
-				errorsToFix = modelProcesser.tryApplyActionAndUpdatedQTableOnSuccess(state, action, modelCopy, false,
+				errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
 						action.getHierarchy()); // removed subHirerarchy - effect?
-				reward = rewardCalculator(state, action);
+				reward = rewardCalculator(currentErrorToFix, action);
 				// Insert stuff into sequence
 				s.setId(episode);
 				List<ErrorAction> ea = s.getSeq();
-				ea.add(new ErrorAction(state, action));
-				if ((state.getCode() == 401 || state.getCode() == 445 || state.getCode() == 27 || state.getCode() == 32)
+				ea.add(new ErrorAction(currentErrorToFix, action));
+				if ((currentErrorToFix.getCode() == 401 || currentErrorToFix.getCode() == 445
+						|| currentErrorToFix.getCode() == 27 || currentErrorToFix.getCode() == 32)
 						&& (action.getMsg().contentEquals("setEType") || action.getMsg().contentEquals("delete")
 								|| action.getMsg().contentEquals("setName")
 								|| action.getMsg().contentEquals("unsetEGenericType"))) {
@@ -190,12 +183,12 @@ public class QLearning {
 					if ((sizeBefore - errorsToFix.size()) > 1) {
 						reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel
 								* (sizeBefore - errorsToFix.size()));
-						addTagMap(state, code, action, 6, (2 / 3 * weightRewardModificationOfTheOriginalModel
-								* (sizeBefore - errorsToFix.size())));
+						addTagMap(currentErrorToFix, code, action, 6, (2 / 3
+								* weightRewardModificationOfTheOriginalModel * (sizeBefore - errorsToFix.size())));
 					} else {
 						if ((sizeBefore - errorsToFix.size()) != 0)
 							reward = reward - weightRewardModificationOfTheOriginalModel;
-						addTagMap(state, code, action, 6, -weightRewardModificationOfTheOriginalModel);
+						addTagMap(currentErrorToFix, code, action, 6, -weightRewardModificationOfTheOriginalModel);
 					}
 				}
 				// low modification
@@ -203,13 +196,13 @@ public class QLearning {
 					if ((sizeBefore - errorsToFix.size()) > 1) {
 						reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel
 								* (sizeBefore - errorsToFix.size()));
-						addTagMap(state, code, action, 5, -(2 / 3 * weightPunishModificationOfTheOriginalModel
-								* (sizeBefore - errorsToFix.size())));
+						addTagMap(currentErrorToFix, code, action, 5, -(2 / 3
+								* weightPunishModificationOfTheOriginalModel * (sizeBefore - errorsToFix.size())));
 
 					} else {
 						if ((sizeBefore - errorsToFix.size()) != 0)
 							reward = reward + weightPunishModificationOfTheOriginalModel;
-						addTagMap(state, code, action, 5, weightPunishModificationOfTheOriginalModel);
+						addTagMap(currentErrorToFix, code, action, 5, weightPunishModificationOfTheOriginalModel);
 					}
 				}
 
@@ -244,9 +237,9 @@ public class QLearning {
 					} else {
 						code2 = a.getHierarchy();
 					}
-					double value = qTable.getWeight(state.getCode(), code, action.getCode())
+					double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
 							+ alpha * (reward + gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
-							- qTable.getWeight(state.getCode(), code, action.getCode());
+							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
 //					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
 //							+ alpha * (reward
@@ -254,23 +247,23 @@ public class QLearning {
 //											.get(a.getCode())
 //									- experience.getqTable().get(state.getCode()).get(code).get(action.getCode()));
 
-					qTable.setWeight(state.getCode(), code, action.getCode(), value);
+					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 //					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
-					state = next_state;
+					currentErrorToFix = next_state;
 					sizeBefore = errorsToFix.size();
 				} // it has reached the end
 
 				else {
 					end_reward = 1;
 
-					double value = qTable.getWeight(state.getCode(), code, action.getCode())
+					double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
 							+ alpha * (reward + gamma * end_reward)
-							- qTable.getWeight(state.getCode(), code, action.getCode());
+							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
 //					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
 //							+ alpha * (reward + gamma * end_reward)
 //							- experience.getqTable().get(state.getCode()).get(code).get(action.getCode());
-					qTable.setWeight(state.getCode(), code, action.getCode(), value);
+					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 //					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					doni = true;
 				}
@@ -326,10 +319,8 @@ public class QLearning {
 		}
 		setBestSeq(bestSequence(solvingMap));
 
-		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" 
-				+ "\nSIZE: " + solvingMap.size()
-				+ "\nDISCARDED SEQUENCES: " + discarded 
-				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
+		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
+				+ "\nDISCARDED SEQUENCES: " + discarded + "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
 				+ getBestSeq().toString());
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

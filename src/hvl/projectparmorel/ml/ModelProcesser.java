@@ -68,9 +68,14 @@ public class ModelProcesser {
 					if (error.getWhere().get(i) != null) {
 						for (Action action : possibleActions) {
 							if (isInvokable(error, error.getWhere().get(i).getClass(), action)) {
-								List<Error> newErrors = tryApplyActionAndUpdatedQTableOnSuccess(error, action,
-										modelCopy, true, i);
+								List<Error> newErrors = tryApplyAction(error, action,
+										modelCopy, i);
 								if (newErrors != null) {
+									if (!errorStillExists(newErrors, error, i )) {
+										Action newAction = new Action(action.getCode(), action.getMsg(), action.getSerializableMethod(),
+												i, -1);
+										initializeQTableForAction(error, newAction);
+									}
 									modelCopy.getContents().clear();
 									modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
 								}
@@ -112,33 +117,25 @@ public class ModelProcesser {
 	/**
 	 * Extracts package content from the model, and matches the location where the
 	 * error resides to the correct type and tries to apply the action to this error
-	 * location. If the action is successfully applied, the QTable is initialized
-	 * for this action.
+	 * location.
 	 * 
 	 * @param error
 	 * @param action
 	 * @param model
-	 * @param light
 	 * @param hierarchy
 	 * @return a list of new errors if the action was successfully applied, null
 	 *         otherwise
 	 */
-	public List<Error> tryApplyActionAndUpdatedQTableOnSuccess(Error error, Action action, Resource model,
-			Boolean light, int hierarchy) {
+	public List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
 		EPackage ePackage = (EPackage) model.getContents().get(0);
 		EObject object = (EObject) error.getWhere().get(hierarchy);
 
 		if (object != null) {
 			boolean success = false;
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
-				success = tryApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
+				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
 			}
 			List<Error> newErrors = ErrorExtractor.extractErrorsFrom(model);
-			if (!errorStillExists(newErrors, error, hierarchy )) {
-				Action newAction = new Action(action.getCode(), action.getMsg(), action.getSerializableMethod(),
-						hierarchy, -1);
-				initializeQTableForAction(error, newAction);
-			}
 			return newErrors;
 		}
 		return null;
@@ -154,7 +151,7 @@ public class ModelProcesser {
 	 * @param eClassifier
 	 * @return true if an action was successfully applied, false otherwise
 	 */
-	private boolean tryApplyAction(Error error, Action action, EObject object, EClassifier eClassifier) {
+	private boolean identifyObjectTypeAndApplyAction(Error error, Action action, EObject object, EClassifier eClassifier) {
 		if (object.getClass() == EClassImpl.class && eClassifier.getClass() == EClassImpl.class) {
 			return applyAction((EClassImpl) eClassifier, error, action, object);
 		}
