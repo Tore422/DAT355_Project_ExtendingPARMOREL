@@ -98,6 +98,7 @@ public class Main {
 			System.out.println("Size= " + errors.size());
 			System.out.println();
 
+			System.out.println("PREFERENCES: " + QLearning.preferences.toString());
 			ql.modelFixer(auxModel);
 
 			endTime = System.currentTimeMillis();

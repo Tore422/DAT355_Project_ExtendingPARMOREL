@@ -232,6 +232,8 @@ public class GUI extends JPanel {
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
+		
+		System.out.println("PREFERENCES: " + QLearning.preferences.toString());
 		ql.modelFixer(auxModel);
 //		ql.saveKnowledge();	
 

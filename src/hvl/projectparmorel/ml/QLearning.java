@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -28,6 +30,8 @@ public class QLearning {
 	protected static double randomfactor = 0.25;
 
 	private List<Error> errorsToFix;
+
+	private Logger logger = Logger.getGlobal();
 
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
@@ -95,11 +99,18 @@ public class QLearning {
 		this.sx = sx;
 	}
 
-	private Action chooseActionHash(Error err) {
+	/**
+	 * Chooses an action for the specified error. The action is either the best
+	 * action based on the previous knowledge, or a random action.
+	 * 
+	 * @param error
+	 * @return a fitting action
+	 */
+	private Action chooseAction(Error error) {
 		if (Math.random() < randomfactor) {
-			return knowledge.getActionDirectory().getRandomActionForError(err.getCode());
+			return knowledge.getActionDirectory().getRandomActionForError(error.getCode());
 		} else {
-			return knowledge.getOptimalActionForErrorCode(err.getCode());
+			return knowledge.getOptimalActionForErrorCode(error.getCode());
 		}
 	}
 
@@ -122,22 +133,19 @@ public class QLearning {
 		int end_reward;
 		Error state, next_state;
 		int sizeBefore = 0;
-		// Copy original broken model into an aux
-		Resource auxModel2 = resourceSet.createResource(uri);
-		auxModel2.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
-		errorsToFix = ErrorExtractor.extractErrorsFrom(auxModel2);
+
+		Resource modelCopy = copy(myMetaModel, uri);
+		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 		solvingMap.clear();
 		original.clear();
 		original.addAll(errorsToFix);
-//		errorMap.clear();
-//		errorMap = extractDuplicates(original);
-		System.out.println("PREFERENCES: " + preferences.toString());
+
 		// FILTER ACTIONS AND INITIALICES QTABLE
 		ModelProcesser modelProcesser = new ModelProcesser(resourceSet, knowledge);
-		modelProcesser.initializeQTableForErrorsInModel(auxModel2, uri);
+		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
-		System.out.println(errorsToFix.toString());
-		System.out.println("EPISODES: " + N_EPISODES);
+		logger.info("Errors to fix: " + errorsToFix.toString());
+		logger.info("Number of episodes: " + N_EPISODES);
 		while (episode < N_EPISODES) {
 			index = 0;
 			state = errorsToFix.get(index);
@@ -150,10 +158,11 @@ public class QLearning {
 			Sequence s = new Sequence();
 //			ExperienceMap experience = knowledge.getExperience();
 			while (step < MAX_EPISODE_STEPS) {
-				action = chooseActionHash(state);
+				action = chooseAction(state);
 
 				errorsToFix.clear();
-				errorsToFix = modelProcesser.tryApplyActionAndUpdatedQTableOnSuccess(state, action, auxModel2, false, action.getHierarchy()); //removed subHirerarchy - effect?
+				errorsToFix = modelProcesser.tryApplyActionAndUpdatedQTableOnSuccess(state, action, modelCopy, false,
+						action.getHierarchy()); // removed subHirerarchy - effect?
 				reward = rewardCalculator(state, action);
 				// Insert stuff into sequence
 				s.setId(episode);
@@ -210,9 +219,9 @@ public class QLearning {
 					if (!qTable.containsErrorCode(next_state.getCode())) {
 //					if (!processed.contains(next_state.getCode())
 //							|| !experience.getqTable().containsKey(next_state.getCode())) {
-						errorsToFix = ErrorExtractor.extractErrorsFrom(auxModel2);
+						errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 						actionExtractor.extractActionsFor(errorsToFix);
-						modelProcesser.initializeQTableForErrorsInModel(auxModel2, uri);
+						modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 					}
 					// if new error introduced
 					if (!originalCodes.contains(next_state.getCode())) {
@@ -278,19 +287,19 @@ public class QLearning {
 
 			if (alert) {
 				try {
-					s.setModel(auxModel2);
+					s.setModel(modelCopy);
 				} catch (java.lang.NullPointerException exception) {
 					// Catch NullPointerExceptions.
 					nope = true;
 				}
 			} else {
-				s.setModel(auxModel2);
+				s.setModel(modelCopy);
 			}
 
 			if (s.getSeq().size() > 7) {
 				val = loopChecker(s.getSeq());
 				if (val > 1) {
-					total_reward = total_reward - val * 1000;
+//					total_reward = total_reward - val * 1000;
 				}
 			}
 
@@ -304,9 +313,9 @@ public class QLearning {
 			}
 
 			// RESET initial model and extract actions + errors
-			auxModel2.getContents().clear();
-			auxModel2.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
-			System.out.println("EPISODE " + episode + " TOTAL REWARD " + total_reward);
+			modelCopy.getContents().clear();
+			modelCopy.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
+			logger.info("EPISODE " + episode + " TOTAL REWARD " + total_reward);
 			errorsToFix.clear();
 			errorsToFix.addAll(original);
 
@@ -315,17 +324,13 @@ public class QLearning {
 			alert = false;
 
 		}
-		System.out.println();
-
-		System.out.println("-----------------ALL SEQUENCES FOUND-------------------");
-		System.out.println("SIZE: " + solvingMap.size());
-		// System.out.println(solvingMap.toString());
-		System.out.println("DISCARDED SEQUENCES: " + discarded);
-		System.out.println();
-		System.out.println("********************************************************");
-		System.out.println("--------::::B E S T   S E Q U E N C E   I S::::---------");
 		setBestSeq(bestSequence(solvingMap));
-		System.out.println(getBestSeq().toString());
+
+		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" 
+				+ "\nSIZE: " + solvingMap.size()
+				+ "\nDISCARDED SEQUENCES: " + discarded 
+				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
+				+ getBestSeq().toString());
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
@@ -334,9 +339,19 @@ public class QLearning {
 			updateSequencesWeights(getBestSeq(), -1);
 			sx.getModel().save(null);
 		}
+	}
 
-		System.out.println("********************************************************");
-
+	/**
+	 * Copies the model passed as a parameter
+	 * 
+	 * @param model
+	 * @param       uri, the Uniform Resource Identifier for the copy
+	 * @return a copy
+	 */
+	private Resource copy(Resource model, URI uri) {
+		Resource modelCopy = resourceSet.createResource(uri);
+		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+		return modelCopy;
 	}
 
 	void updateSequencesWeights(Sequence s, int tag) {
@@ -509,7 +524,7 @@ public class QLearning {
 	int rewardCalculator(Error state, Action action) {
 		int reward = 0;
 		int num;
-		
+
 		if (action.getSubHierarchy() > -1) {
 			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
 		} else {
