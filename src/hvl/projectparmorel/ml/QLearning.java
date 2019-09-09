@@ -5,33 +5,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.notify.impl.NotificationChainImpl;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EGenericType;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.emf.ecore.impl.EAttributeImpl;
-import org.eclipse.emf.ecore.impl.EClassImpl;
-import org.eclipse.emf.ecore.impl.EEnumImpl;
-import org.eclipse.emf.ecore.impl.EEnumLiteralImpl;
-import org.eclipse.emf.ecore.impl.EGenericTypeImpl;
-import org.eclipse.emf.ecore.impl.EOperationImpl;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
-import org.eclipse.emf.ecore.impl.EParameterImpl;
-import org.eclipse.emf.ecore.impl.EReferenceImpl;
-import org.eclipse.emf.ecore.impl.ETypeParameterImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -57,27 +41,18 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
-	Date date = new Date(1993, 1, 31);
 	int total_reward = 0;
-	boolean repairs = false;
 	public URI uri;
 	List<Error> original = new ArrayList<Error>();
-//	List<Integer> processed = new ArrayList<Integer>();
 	public List<Integer> originalCodes = new ArrayList<Integer>();
-	Map<Integer, double[]> Q = new HashMap<Integer, double[]>();
-	Map<Integer, Integer> errorMap = new HashMap<Integer, Integer>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
 	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	public ResourceSet resourceSet = new ResourceSetImpl();
 
 	int MAX_EPISODE_STEPS = 20;
-	boolean done = false;
-	boolean invoked = false;
-	NotificationChain msgs = new NotificationChainImpl();
 	public Resource myMetaModel;
 	public static int user;
 
-	static double factor = 0.0;
 	Sequence sx;
 	public static List<Integer> preferences = new ArrayList<Integer>();
 
@@ -128,42 +103,12 @@ public class QLearning {
 	public void setBestSeq(Sequence sx) {
 		this.sx = sx;
 	}
-
-	
-
-	/**
-	 * Checks that the action is invokable for the given class and error
-	 * 
-	 * @param error
-	 * @param class1
-	 * @param action
-	 * @return true if the action is invokable, false otherwise
-	 */
-	private boolean isInvokable(Error error, Class<? extends Object> class1, Action action) {
-		Method[] methods = class1.getMethods();
-		if (action.isDelete()) {
-			return true;
-		} else {
-			if (action.handlesMissingArgumentForGenericType(error) && class1 != EClassImpl.class) {
-				return true;
-			} else {
-				for (Method method : methods) {
-					if (action.getSerializableMethod().getMethod() != null
-							&& action.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
 	
 	boolean checkIfNewErrors(Resource r) {
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(r.getContents().get(0));
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
 			for (Diagnostic child : diagnostic.getChildren()) {
 				if (!knowledge.getQTable().containsErrorCode(child.getCode())) {
-//				if (!knowledge.getExperience().getqTable().containsKey(child.getCode())) {
 					return true;
 				}
 			}
@@ -502,7 +447,6 @@ public class QLearning {
 	}
 
 	void updateSequencesWeights(Sequence s, int tag) {
-//		ExperienceMap experience = knowledge.getExperience();
 		QTable qTable = knowledge.getQTable();
 		ActionDirectory actionDirectory = knowledge.getActionDirectory();
 		int num;
@@ -518,31 +462,15 @@ public class QLearning {
 			double oldWeight = qTable.getWeight(errorCode, num, actionId);
 
 			qTable.setWeight(errorCode, num, actionId, oldWeight + 300);
-//			experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num).put(
-//					s.getSeq().get(i).getAction().getCode(),
-//					experience.getqTable().get(s.getSeq().get(i).getError().getCode()).get(num)
-//							.get(s.getSeq().get(i).getAction().getCode()) + 300);
-
 			if (tag > -1) {
 
 				if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
 						.containsKey(tag)) {
 					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, 500);
-//					actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary().put(tag, 500);
-//				if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//						.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(tag)) {
-
-//					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag, 500);
 				} else {
 					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
 							.getTagDictionary().get(tag);
 					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, oldTagValue + 500);
-//					experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//							.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(tag,
-//									experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
-//											.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
-//											.get(tag) + 500);
 				}
 			}
 
@@ -554,30 +482,16 @@ public class QLearning {
 								.get(s.getSeq().get(i).getAction().getCode()).keySet()) {
 							if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
 									.containsKey(key)) {
-//							if (!experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//									.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().containsKey(key)) {
 								int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
 										.get(s.getSeq().get(i).getAction().getCode()).get(key);
 								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
 
-//								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key, tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-//												get(s.getSeq().get(i).getAction().getCode()).get(key));
 							} else {
 								int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
 										.getTagDictionary().get(key)
 										+ tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
 												.get(s.getSeq().get(i).getAction().getCode()).get(key);
 								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-
-//								experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode()).get(num)
-//										.get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary().put(key,
-//												
-//												experience.getActionsDictionary().get(s.getSeq().get(i).getError().getCode())
-//														.get(num).get(s.getSeq().get(i).getAction().getCode()).getTagsDictionary()
-//														.get(key) + 
-//														tagMap.get(s.getSeq().get(i).getError().getCode()).get(num).
-//														get(s.getSeq().get(i).getAction().getCode()).get(key));
 							}
 						}
 					}
@@ -702,9 +616,7 @@ public class QLearning {
 	int rewardCalculator(Error state, Action action) {
 		int reward = 0;
 		int num;
-
-		List<Integer> tagsFound = new ArrayList<Integer>();
-
+		
 		if (action.getSubHierarchy() > -1) {
 			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
 		} else {
