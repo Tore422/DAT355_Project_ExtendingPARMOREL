@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import hvl.projectparmorel.knowledge.ActionDirectory;
+import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
@@ -42,7 +43,6 @@ public class QLearning {
 	List<Error> original = new ArrayList<Error>();
 	public List<Integer> originalCodes = new ArrayList<Integer>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
-	Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	public ResourceSet resourceSet = new ResourceSetImpl();
 
 	int MAX_EPISODE_STEPS = 20;
@@ -75,7 +75,7 @@ public class QLearning {
 		prefs.saveToFile();
 
 		errorsToFix = new ArrayList<Error>();
-		rewardCalculator = new RewardCalculator(weightPunishDeletion);
+		rewardCalculator = new RewardCalculator(knowledge, weightPunishDeletion, weightRewardRepairingHighInErrorHierarchies, weightRewardRepairingLowInErrorHierarchies, weightRewardModificationOfTheOriginalModel, weightPunishModificationOfTheOriginalModel, weightRewardShorterSequencesOfActions, weightRewardLongerSequencesOfActions);
 	}
 
 //	/**
@@ -159,7 +159,7 @@ public class QLearning {
 				errorsToFix.clear();
 				errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
 						action.getHierarchy()); // removed subHirerarchy - effect?
-				reward = rewardCalculator(currentErrorToFix, action);
+				reward = rewardCalculator.rewardCalculator(currentErrorToFix, action);
 				// Insert stuff into sequence
 				s.setId(episode);
 				List<ErrorAction> ea = s.getSeq();
@@ -180,35 +180,8 @@ public class QLearning {
 				} else {
 					code = action.getHierarchy();
 				}
-
-				// check how the action has modified number of errors
-				// high modification
-				if (preferences.contains(6)) {
-					if ((sizeBefore - errorsToFix.size()) > 1) {
-						reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel
-								* (sizeBefore - errorsToFix.size()));
-						addTagMap(currentErrorToFix, code, action, 6, (2 / 3
-								* weightRewardModificationOfTheOriginalModel * (sizeBefore - errorsToFix.size())));
-					} else {
-						if ((sizeBefore - errorsToFix.size()) != 0)
-							reward = reward - weightRewardModificationOfTheOriginalModel;
-						addTagMap(currentErrorToFix, code, action, 6, -weightRewardModificationOfTheOriginalModel);
-					}
-				}
-				// low modification
-				if (preferences.contains(5)) {
-					if ((sizeBefore - errorsToFix.size()) > 1) {
-						reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel
-								* (sizeBefore - errorsToFix.size()));
-						addTagMap(currentErrorToFix, code, action, 5, -(2 / 3
-								* weightPunishModificationOfTheOriginalModel * (sizeBefore - errorsToFix.size())));
-
-					} else {
-						if ((sizeBefore - errorsToFix.size()) != 0)
-							reward = reward + weightPunishModificationOfTheOriginalModel;
-						addTagMap(currentErrorToFix, code, action, 5, weightPunishModificationOfTheOriginalModel);
-					}
-				}
+				
+				reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix, code, action);
 
 				if (errorsToFix.size() != 0) {
 					next_state = errorsToFix.get(index);
@@ -331,7 +304,7 @@ public class QLearning {
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if (getBestSeq().getSeq().size() != 0) {
-			updateSequencesWeights(getBestSeq(), -1);
+			rewardCalculator.updateSequencesWeights(getBestSeq(), -1);
 			sx.getModel().save(null);
 		}
 	}
@@ -347,97 +320,6 @@ public class QLearning {
 		Resource modelCopy = resourceSet.createResource(uri);
 		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
 		return modelCopy;
-	}
-
-	void updateSequencesWeights(Sequence s, int tag) {
-		QTable qTable = knowledge.getQTable();
-		ActionDirectory actionDirectory = knowledge.getActionDirectory();
-		int num;
-		for (int i = 0; i < s.getSeq().size(); i++) {
-			if (s.getSeq().get(i).getAction().getSubHierarchy() > -1) {
-				num = Integer.valueOf(String.valueOf(s.getSeq().get(i).getAction().getHierarchy())
-						+ String.valueOf(s.getSeq().get(i).getAction().getSubHierarchy()));
-			} else {
-				num = s.getSeq().get(i).getAction().getHierarchy();
-			}
-			int errorCode = s.getSeq().get(i).getError().getCode();
-			int actionId = s.getSeq().get(i).getAction().getCode();
-			double oldWeight = qTable.getWeight(errorCode, num, actionId);
-
-			qTable.setWeight(errorCode, num, actionId, oldWeight + 300);
-			if (tag > -1) {
-
-				if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
-						.containsKey(tag)) {
-					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, 500);
-				} else {
-					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
-							.getTagDictionary().get(tag);
-					actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, oldTagValue + 500);
-				}
-			}
-
-			if (tagMap.containsKey(s.getSeq().get(i).getError().getCode())) {
-				if (tagMap.get(s.getSeq().get(i).getError().getCode()).containsKey(num)) {
-					if (tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-							.containsKey(s.getSeq().get(i).getAction().getCode())) {
-						for (Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-								.get(s.getSeq().get(i).getAction().getCode()).keySet()) {
-							if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
-									.containsKey(key)) {
-								int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-										.get(s.getSeq().get(i).getAction().getCode()).get(key);
-								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-
-							} else {
-								int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
-										.getTagDictionary().get(key)
-										+ tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-												.get(s.getSeq().get(i).getAction().getCode()).get(key);
-								actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-							}
-						}
-					}
-				}
-			}
-		}
-
-	}
-
-	void rewardSmallorBig(List<Sequence> sm) {
-		int min = 9999;
-		int max = 0;
-		Sequence aux = null;
-
-		if (preferences.contains(0)) {
-			for (Sequence s : sm) {
-				if (s.getSeq().size() < min && s.getWeight() > 0) {
-					min = s.getSeq().size();
-					aux = s;
-				} else if (s.getSeq().size() == min) {
-					if (s.getWeight() > aux.getWeight()) {
-						aux = s;
-					}
-				}
-			}
-			aux.setWeight(aux.getWeight() + weightRewardShorterSequencesOfActions);
-			updateSequencesWeights(aux, 0);
-		}
-
-		if (preferences.contains(1)) {
-			for (Sequence s : sm) {
-				if (s.getSeq().size() > max && s.getWeight() > 0) {
-					max = s.getSeq().size();
-					aux = s;
-				} else if (s.getSeq().size() == max) {
-					if (s.getWeight() > aux.getWeight()) {
-						aux = s;
-					}
-				}
-			}
-			aux.setWeight(aux.getWeight() + weightRewardLongerSequencesOfActions);
-			updateSequencesWeights(aux, 1);
-		}
 	}
 
 	boolean uniqueSequence(Sequence s) {
@@ -503,7 +385,7 @@ public class QLearning {
 
 	Sequence bestSequence(List<Sequence> sm) {
 		double max = -1;
-		rewardSmallorBig(sm);
+		rewardCalculator.rewardSmallorBig(sm);
 		Sequence maxS = new Sequence();
 		for (Sequence s : sm) {
 			// normalize weights so that longer rewards dont get priority
@@ -515,88 +397,6 @@ public class QLearning {
 		return maxS;
 	}
 
-	// Action rewards
-	int rewardCalculator(Error state, Action action) {
-		int reward = 0;
-		int num;
-
-		if (action.getSubHierarchy() > -1) {
-			num = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
-		} else {
-			num = action.getHierarchy();
-		}
-
-		if (preferences.contains(2)) {
-			if (action.getHierarchy() == 1) {
-				reward += weightRewardRepairingHighInErrorHierarchies;
-				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies);
-			} else if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingHighInErrorHierarchies * 2 / 3;
-				addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies * 2 / 3);
-			} else if (action.getHierarchy() > 2) {
-				reward -= -74 / 100 * weightRewardRepairingHighInErrorHierarchies;
-				addTagMap(state, num, action, 2, -74 / 100 * weightRewardRepairingHighInErrorHierarchies);
-			}
-		}
-		if (preferences.contains(3)) {
-			if (action.getHierarchy() == 1) {
-				reward -= 74 / 100 * weightRewardRepairingLowInErrorHierarchies;
-				addTagMap(state, num, action, 3, -74 / 100 * weightRewardRepairingLowInErrorHierarchies);
-			}
-			if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingLowInErrorHierarchies * 2 / 3;
-				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies * 2 / 3);
-			}
-			if (action.getHierarchy() > 2) {
-				reward += weightRewardRepairingLowInErrorHierarchies;
-				addTagMap(state, num, action, 3, weightRewardRepairingLowInErrorHierarchies);
-			}
-		}
-
-		if (preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
-				reward -= weightPunishDeletion;
-				addTagMap(state, num, action, 4, -weightPunishDeletion);
-			} else {
-				reward += weightPunishDeletion / 10;
-				addTagMap(state, num, action, 4, weightPunishDeletion / 10);
-			}
-		}
-
-		if (!preferences.contains(2) && !preferences.contains(3) && !preferences.contains(4)) {
-			reward += 30;
-		}
-
-		return reward;
-	}
-
-	void addTagMap(Error state, int num, Action action, int tag, int r) {
-		HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> hashaux = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>();
-		HashMap<Integer, HashMap<Integer, Integer>> hashaux2 = new HashMap<Integer, HashMap<Integer, Integer>>();
-		HashMap<Integer, Integer> hashaux3 = new HashMap<Integer, Integer>();
-
-		if (!tagMap.containsKey(state.getCode())) {
-			hashaux3.put(tag, r);
-			hashaux2.put(action.getCode(), hashaux3);
-			hashaux.put(num, hashaux2);
-			tagMap.put(state.getCode(), hashaux);
-		}
-		if (!tagMap.get(state.getCode()).containsKey(num)) {
-			hashaux3.put(tag, r);
-			hashaux2.put(action.getCode(), hashaux3);
-			tagMap.get(state.getCode()).put(num, hashaux2);
-		}
-		if (!tagMap.get(state.getCode()).get(num).containsKey(action.getCode())) {
-			hashaux3.put(tag, r);
-			tagMap.get(state.getCode()).get(num).put(action.getCode(), hashaux3);
-		}
-		if (!tagMap.get(state.getCode()).get(num).get(action.getCode()).containsKey(tag)) {
-			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r);
-		} else {
-			tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag,
-					r + tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
-		}
-	}
 
 	public static void createTags(int user) {
 		switch (user) {
