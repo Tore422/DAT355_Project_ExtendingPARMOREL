@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -218,22 +219,23 @@ public class GUI extends JPanel {
 
 	void repairButtonPressed() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, IOException {
+		List<Integer> preferences = new ArrayList<>();
 		if (groupSeq.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
 		}
 		if (groupHierar.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
 		}
 		if (groupMod.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
 		}
 		if (tag4.isSelected()) {
-			QLearning.preferences.add(Integer.parseInt(tag4.getActionCommand()));
+			preferences.add(Integer.parseInt(tag4.getActionCommand()));
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
-		
-		System.out.println("PREFERENCES: " + QLearning.preferences.toString());
+		ql.setPreferences(preferences);
+		System.out.println("PREFERENCES: " + preferences.toString());
 		ql.modelFixer(auxModel);
 //		ql.saveKnowledge();	
 

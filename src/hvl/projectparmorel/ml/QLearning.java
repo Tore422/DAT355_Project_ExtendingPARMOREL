@@ -3,10 +3,7 @@ package hvl.projectparmorel.ml;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
@@ -14,8 +11,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import hvl.projectparmorel.knowledge.ActionDirectory;
-import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
@@ -50,34 +45,28 @@ public class QLearning {
 	public static int user;
 
 	Sequence sx;
-	public static List<Integer> preferences = new ArrayList<Integer>();
 
-	private int weightRewardShorterSequencesOfActions;
-	private int weightRewardLongerSequencesOfActions;
-	private int weightRewardRepairingHighInErrorHierarchies;
-	private int weightRewardRepairingLowInErrorHierarchies;
-	private int weightPunishDeletion;
-	private int weightPunishModificationOfTheOriginalModel;
-	private int weightRewardModificationOfTheOriginalModel;
-	
 	private RewardCalculator rewardCalculator;
 
-	public QLearning() {
-		Preferences prefs = new Preferences();
-		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
-		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
-		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
-		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
-		weightRewardRepairingLowInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
-		weightPunishDeletion = prefs.getWeightPunishDeletion();
-		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
-		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
-		prefs.saveToFile();
-
+	public QLearning(List<Integer> preferences) {
 		errorsToFix = new ArrayList<Error>();
-		rewardCalculator = new RewardCalculator(knowledge, weightPunishDeletion, weightRewardRepairingHighInErrorHierarchies, weightRewardRepairingLowInErrorHierarchies, weightRewardModificationOfTheOriginalModel, weightPunishModificationOfTheOriginalModel, weightRewardShorterSequencesOfActions, weightRewardLongerSequencesOfActions);
+		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
+		rewardCalculator = new RewardCalculator(knowledge, preferences);
+	}
+	
+	public QLearning() {
+		errorsToFix = new ArrayList<Error>();
+		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
 	}
 
+	public List<Integer> getPreferences(){
+		return rewardCalculator.getPreferences();
+	}
+	
+	public void setPreferences(List<Integer> preferences) {
+		rewardCalculator = new RewardCalculator(knowledge, preferences);
+	}
+	
 //	/**
 //	 * Saves the knowledge
 //	 */
@@ -180,8 +169,9 @@ public class QLearning {
 				} else {
 					code = action.getHierarchy();
 				}
-				
-				reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix, code, action);
+
+				reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(),
+						currentErrorToFix, code, action);
 
 				if (errorsToFix.size() != 0) {
 					next_state = errorsToFix.get(index);
@@ -193,18 +183,8 @@ public class QLearning {
 						actionExtractor.extractActionsFor(errorsToFix);
 						modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 					}
-					// if new error introduced
-					if (!originalCodes.contains(next_state.getCode())) {
-						// System.out.println("NEW ERROR: " + next_state.toString());
-						// high modification
-						if (preferences.contains(6)) {
-							reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;
-						}
-						// low modification
-						if (preferences.contains(5)) {
-							reward = reward - 2 / 3 * weightPunishModificationOfTheOriginalModel;
-						}
-					}
+
+					reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, originalCodes, next_state);
 
 					next_state = errorsToFix.get(index);
 					Action a = knowledge.getOptimalActionForErrorCode(next_state.getCode());
@@ -395,40 +375,6 @@ public class QLearning {
 			}
 		}
 		return maxS;
-	}
-
-
-	public static void createTags(int user) {
-		switch (user) {
-		// ECMFA paper preferences
-		case 0:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 2, 4 }));
-			break;
-		// error hierarchy high, sequence short
-		case 1:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 2 }));
-			break;
-		// error hierarchy low, sequence long, high modification
-		case 2:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 3, 6 }));
-			break;
-		// avoid deletion
-		case 3:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 4 }));
-			break;
-		// short sequence, low modification
-		case 4:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 4, 5 }));
-			break;
-		// long sequence, low modification, avoid deletion
-		case 5:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 5 }));
-			break;
-		// error hierarchy high
-		case 6:
-			preferences = new ArrayList<Integer>(Arrays.asList(new Integer[] { 2 }));
-			break;
-		}
 	}
 
 //	/**

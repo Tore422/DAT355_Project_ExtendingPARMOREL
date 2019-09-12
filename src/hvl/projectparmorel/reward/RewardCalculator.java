@@ -1,5 +1,6 @@
 package hvl.projectparmorel.reward;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +10,15 @@ import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.ml.Action;
 import hvl.projectparmorel.ml.Error;
-import hvl.projectparmorel.ml.QLearning;
+import hvl.projectparmorel.ml.Preferences;
 import hvl.projectparmorel.ml.Sequence;
 
 public class RewardCalculator {
 	
 	private Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
 	private Knowledge knowledge;
+	private List<Integer> preferences;
+
 	
 	private int weightPunishDeletion;
 	private int weightRewardRepairingHighInErrorHierarchies;
@@ -25,15 +28,20 @@ public class RewardCalculator {
 	private int weightRewardShorterSequencesOfActions;
 	private int weightRewardLongerSequencesOfActions;
 	
-	public RewardCalculator(Knowledge knowledge, int weightPunishDeletion, int weightRewardRepairingHighInErrorHierarchies, int weightRewardRepairingLowInErrorHierarchies, int weightRewardModificationOfTheOriginalModel, int weightPunishModificationOfTheOriginalModel, int weightRewardShorterSequencesOfActions, int weightRewardLongerSequencesOfActions) {
+	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
-		this.weightPunishDeletion = weightPunishDeletion;
-		this.weightRewardRepairingHighInErrorHierarchies = weightRewardRepairingHighInErrorHierarchies;
-		this.weightRewardRepairingLowInErrorHierarchies = weightRewardRepairingLowInErrorHierarchies;
-		this.weightRewardModificationOfTheOriginalModel = weightRewardModificationOfTheOriginalModel;
-		this.weightPunishModificationOfTheOriginalModel = weightPunishModificationOfTheOriginalModel;
-		this.weightRewardShorterSequencesOfActions = weightRewardShorterSequencesOfActions;
-		this.weightRewardLongerSequencesOfActions = weightRewardLongerSequencesOfActions;
+		this.preferences = preferences;
+		
+		Preferences prefs = new Preferences();
+		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
+		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
+		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
+		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
+		weightRewardRepairingLowInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
+		weightPunishDeletion = prefs.getWeightPunishDeletion();
+		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
+		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
+		prefs.saveToFile();
 	}
 
 	/**
@@ -45,7 +53,7 @@ public class RewardCalculator {
 	public double initializeWeightFor(Action action) {
 		double weight = 0.0;
 
-		if (QLearning.preferences.contains(4)) {
+		if (preferences.contains(4)) {
 			if (action.getMsg().contains("delete")) {
 				weight = -(double) weightPunishDeletion / 100;
 			} else {
@@ -73,7 +81,7 @@ public class RewardCalculator {
 				num = action.getHierarchy();
 			}
 
-			if (QLearning.preferences.contains(2)) {
+			if (preferences.contains(2)) {
 				if (action.getHierarchy() == 1) {
 					reward += weightRewardRepairingHighInErrorHierarchies;
 					addTagMap(state, num, action, 2, weightRewardRepairingHighInErrorHierarchies);
@@ -85,7 +93,7 @@ public class RewardCalculator {
 					addTagMap(state, num, action, 2, -74 / 100 * weightRewardRepairingHighInErrorHierarchies);
 				}
 			}
-			if (QLearning.preferences.contains(3)) {
+			if (preferences.contains(3)) {
 				if (action.getHierarchy() == 1) {
 					reward -= 74 / 100 * weightRewardRepairingLowInErrorHierarchies;
 					addTagMap(state, num, action, 3, -74 / 100 * weightRewardRepairingLowInErrorHierarchies);
@@ -100,7 +108,7 @@ public class RewardCalculator {
 				}
 			}
 
-			if (QLearning.preferences.contains(4)) {
+			if (preferences.contains(4)) {
 				if (action.getMsg().contains("delete")) {
 					reward -= weightPunishDeletion;
 					addTagMap(state, num, action, 4, -weightPunishDeletion);
@@ -110,7 +118,7 @@ public class RewardCalculator {
 				}
 			}
 
-			if (!QLearning.preferences.contains(2) && !QLearning.preferences.contains(3) && !QLearning.preferences.contains(4)) {
+			if (!preferences.contains(2) && !preferences.contains(3) && !preferences.contains(4)) {
 				reward += 30;
 			}
 
@@ -148,7 +156,7 @@ public class RewardCalculator {
 		public int updateBasedOnNumberOfErrors(int reward, int sizeBefore, int sizeAfter, Error currentErrorToFix, int code, Action action) {
 			// check how the action has modified number of errors
 			// high modification
-			if (QLearning.preferences.contains(6)) {
+			if (preferences.contains(6)) {
 				if ((sizeBefore - sizeAfter) > 1) {
 					reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel
 							* (sizeBefore - sizeAfter));
@@ -161,7 +169,7 @@ public class RewardCalculator {
 				}
 			}
 			// low modification
-			if (QLearning.preferences.contains(5)) {
+			if (preferences.contains(5)) {
 				if ((sizeBefore - sizeAfter) > 1) {
 					reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel
 							* (sizeBefore - sizeAfter));
@@ -237,7 +245,7 @@ public class RewardCalculator {
 			int max = 0;
 			Sequence aux = null;
 
-			if (QLearning.preferences.contains(0)) {
+			if (preferences.contains(0)) {
 				for (Sequence s : sm) {
 					if (s.getSeq().size() < min && s.getWeight() > 0) {
 						min = s.getSeq().size();
@@ -252,7 +260,7 @@ public class RewardCalculator {
 				updateSequencesWeights(aux, 0);
 			}
 
-			if (QLearning.preferences.contains(1)) {
+			if (preferences.contains(1)) {
 				for (Sequence s : sm) {
 					if (s.getSeq().size() > max && s.getWeight() > 0) {
 						max = s.getSeq().size();
@@ -266,5 +274,25 @@ public class RewardCalculator {
 				aux.setWeight(aux.getWeight() + weightRewardLongerSequencesOfActions);
 				updateSequencesWeights(aux, 1);
 			}
+		}
+		
+		public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error next_state) {
+			// if new error introduced
+			if (!originalCodes.contains(next_state.getCode())) {
+				// System.out.println("NEW ERROR: " + next_state.toString());
+				// high modification
+				if (preferences.contains(6)) {
+					reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;
+				}
+				// low modification
+				if (preferences.contains(5)) {
+					reward = reward - 2 / 3 * weightPunishModificationOfTheOriginalModel;
+				}
+			}
+			return reward;
+		}
+
+		public List<Integer> getPreferences() {
+			return new ArrayList<Integer>(preferences);
 		}
 }

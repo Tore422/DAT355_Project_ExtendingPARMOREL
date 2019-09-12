@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -24,9 +26,7 @@ public class Main {
 	public static void main(String[] args) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, IOException, NoSuchMethodException, SecurityException {
 
-		QLearning ql = new QLearning();
-		QLearning.user = 0;
-		QLearning.createTags(QLearning.user);
+		QLearning ql = new QLearning(createTags(0));
 
 		long startTimeT = System.currentTimeMillis();
 		long endTimeT = 0;
@@ -98,7 +98,7 @@ public class Main {
 			System.out.println("Size= " + errors.size());
 			System.out.println();
 
-			System.out.println("PREFERENCES: " + QLearning.preferences.toString());
+			System.out.println("PREFERENCES: " + ql.getPreferences().toString());
 			ql.modelFixer(auxModel);
 
 			endTime = System.currentTimeMillis();
@@ -116,5 +116,33 @@ public class Main {
 	
 	private static void copyFile(File from, File to) throws IOException {
 		Files.copy(from.toPath(), to.toPath());
+	}
+	
+	private static List<Integer> createTags(int user) {
+		switch (user) {
+		// ECMFA paper preferences
+		case 0:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 2, 4 }));
+		// error hierarchy high, sequence short
+		case 1:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 2 }));
+		// error hierarchy low, sequence long, high modification
+		case 2:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 3, 6 }));
+		// avoid deletion
+		case 3:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 4 }));
+		// short sequence, low modification
+		case 4:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 0, 4, 5 }));
+		// long sequence, low modification, avoid deletion
+		case 5:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 1, 5 }));
+		// error hierarchy high
+		case 6:
+			return new ArrayList<Integer>(Arrays.asList(new Integer[] { 2 }));
+		default:
+			return null;
+		}
 	}
 }
