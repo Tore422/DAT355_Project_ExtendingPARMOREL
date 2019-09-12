@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
  * Western Norway University of Applied Sciences Bergen, Norway
@@ -55,9 +56,11 @@ public class QLearning {
 	private int weightRewardLongerSequencesOfActions;
 	private int weightRewardRepairingHighInErrorHierarchies;
 	private int weightRewardRepairingLowInErrorHierarchies;
-	protected static int weightPunishDeletion;
+	private int weightPunishDeletion;
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardModificationOfTheOriginalModel;
+	
+	private RewardCalculator rewardCalculator;
 
 	public QLearning() {
 		Preferences prefs = new Preferences();
@@ -72,6 +75,7 @@ public class QLearning {
 		prefs.saveToFile();
 
 		errorsToFix = new ArrayList<Error>();
+		rewardCalculator = new RewardCalculator(weightPunishDeletion);
 	}
 
 //	/**
@@ -134,7 +138,7 @@ public class QLearning {
 		original.addAll(errorsToFix);
 
 		// FILTER ACTIONS AND INITIALICES QTABLE
-		ModelProcesser modelProcesser = new ModelProcesser(resourceSet, knowledge);
+		ModelProcesser modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
 		logger.info("Errors to fix: " + errorsToFix.toString());

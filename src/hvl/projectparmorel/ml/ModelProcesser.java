@@ -35,15 +35,18 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.reward.RewardCalculator;
 
 public class ModelProcesser {
 	private ResourceSet resourceSet;
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
 	private List<Error> errors;
+	private RewardCalculator rewardCalculator;
 
-	public ModelProcesser(ResourceSet resourceSet, hvl.projectparmorel.knowledge.Knowledge knowledge) {
+	public ModelProcesser(ResourceSet resourceSet, hvl.projectparmorel.knowledge.Knowledge knowledge, RewardCalculator rewardCalculator) {
 		this.resourceSet = resourceSet;
 		this.knowledge = knowledge;
+		this.rewardCalculator = rewardCalculator;
 	}
 
 	/**
@@ -400,39 +403,13 @@ public class ModelProcesser {
 		int contextId = action.getContextId();
 
 		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), contextId, action.getCode())) {
-			double weight = initializeWeightFor(action);
+			double weight = rewardCalculator.initializeWeightFor(action);
 			qTable.setWeight(error.getCode(), contextId, action.getCode(), weight);
 
 			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
 				actionDirectory.setAction(error.getCode(), contextId, action);
 			}
 		}
-	}
-
-	/**
-	 * Initializes the weight for the given action
-	 * 
-	 * @param action
-	 * @return initial weight
-	 */
-	private double initializeWeightFor(Action action) {
-		double weight = 0.0;
-
-		if (QLearning.preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
-				weight = -(double) QLearning.weightPunishDeletion / 100;
-			} else {
-				weight = 0.0;
-			}
-		}
-
-		if (action.getMsg().contains("get")) {
-			weight = -10.0;
-		} else {
-			weight = 0.0;
-		}
-
-		return weight;
 	}
 
 	/**
