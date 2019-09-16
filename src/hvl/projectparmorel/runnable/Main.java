@@ -15,8 +15,6 @@ import org.eclipse.emf.ecore.impl.EDataTypeImpl;
 import org.eclipse.emf.ecore.impl.EEnumImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.ErrorExtractor;
 import hvl.projectparmorel.ml.QLearning;
@@ -49,11 +47,11 @@ public class Main {
 			copyFile(listOfFiles[i], dest);
 
 			URI uri = URI.createFileURI(dest.getAbsolutePath());
-			ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-					new EcoreResourceFactoryImpl());
-			Resource myMetaModel = ql.resourceSet.getResource(uri, true);
+//			ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+//					new EcoreResourceFactoryImpl());
+			Resource myMetaModel = ql.getResourceSet().getResource(uri, true);
 
-			Resource auxModel = ql.resourceSet.createResource(uri);
+			Resource auxModel = ql.getResourceSet().createResource(uri);
 			auxModel.getContents().addAll(EcoreUtil.copyAll(myMetaModel.getContents()));
 
 			EPackage epa = (EPackage) auxModel.getContents().get(0);

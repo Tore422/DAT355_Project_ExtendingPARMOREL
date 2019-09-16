@@ -11,6 +11,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
@@ -43,10 +45,9 @@ public class QLearning {
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
 	private List<Sequence> solvingMap;
-	public ResourceSet resourceSet;
+	private ResourceSet resourceSet;
 
 	
-	public static int user;
 
 	Sequence sx;
 
@@ -54,6 +55,8 @@ public class QLearning {
 
 	public QLearning() {
 		resourceSet = new ResourceSetImpl();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
 		qTable = knowledge.getQTable();
@@ -68,6 +71,10 @@ public class QLearning {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+	}
+	
+	public ResourceSet getResourceSet() {
+		return resourceSet;
 	}
 
 	public List<Integer> getPreferences() {
@@ -122,6 +129,8 @@ public class QLearning {
 	public void fixModel(Resource model, URI uri) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
 		this.uri = uri;
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
 
