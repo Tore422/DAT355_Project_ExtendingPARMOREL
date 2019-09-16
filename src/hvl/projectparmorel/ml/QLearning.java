@@ -148,7 +148,7 @@ public class QLearning {
 				errorsToFix.clear();
 				errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
 						action.getHierarchy()); // removed subHirerarchy - effect?
-				reward = rewardCalculator.rewardCalculator(currentErrorToFix, action);
+				reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 				// Insert stuff into sequence
 				s.setId(episode);
 				List<ErrorAction> ea = s.getSeq();
@@ -177,8 +177,6 @@ public class QLearning {
 					next_state = errorsToFix.get(index);
 
 					if (!qTable.containsErrorCode(next_state.getCode())) {
-//					if (!processed.contains(next_state.getCode())
-//							|| !experience.getqTable().containsKey(next_state.getCode())) {
 						errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 						actionExtractor.extractActionsFor(errorsToFix);
 						modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
@@ -198,14 +196,7 @@ public class QLearning {
 							+ alpha * (reward + gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
 							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
-//					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
-//							+ alpha * (reward
-//									+ gamma * experience.getqTable().get(next_state.getCode()).get(code2)
-//											.get(a.getCode())
-//									- experience.getqTable().get(state.getCode()).get(code).get(action.getCode()));
-
 					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-//					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					currentErrorToFix = next_state;
 					sizeBefore = errorsToFix.size();
 				} // it has reached the end
@@ -217,11 +208,7 @@ public class QLearning {
 							+ alpha * (reward + gamma * end_reward)
 							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
-//					double value = experience.getqTable().get(state.getCode()).get(code).get(action.getCode())
-//							+ alpha * (reward + gamma * end_reward)
-//							- experience.getqTable().get(state.getCode()).get(code).get(action.getCode());
 					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-//					experience.getqTable().get(state.getCode()).get(code).put(action.getCode(), value);
 					doni = true;
 				}
 
@@ -284,7 +271,7 @@ public class QLearning {
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if (getBestSeq().getSeq().size() != 0) {
-			rewardCalculator.updateSequencesWeights(getBestSeq(), -1);
+			rewardCalculator.rewardSequence(getBestSeq(), -1);
 			sx.getModel().save(null);
 		}
 	}
