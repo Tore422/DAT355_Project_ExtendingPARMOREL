@@ -21,30 +21,31 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * @author Magnus Marthinsen
  */
 public class QLearning {
+	private final double MIN_ALPHA = 0.06; // Learning rate
+	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
+	private final int NUMBER_OF_EPISODES = 25;
+	private final int MAX_EPISODE_STEPS = 20;
+	
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
-
 	private ModelProcesser modelProcesser;
 
-	protected static int N_EPISODES = 25;
-	protected static double randomfactor = 0.25;
+	private double randomfactor = 0.25;
 
 	private List<Error> errorsToFix;
-	private int discarded;
+	private int discardedSequences;
 
 	private Logger logger = Logger.getGlobal();
 
-	private final double MIN_ALPHA = 0.06; // Learning rate
-	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
 	private URI uri;
-	List<Error> original = new ArrayList<Error>();
-	public List<Integer> originalCodes = new ArrayList<Integer>();
-	List<Sequence> solvingMap = new ArrayList<Sequence>();
+	private List<Error> originalErrors;
+	private List<Integer> initialErrorCodes;
+	private List<Sequence> solvingMap;
 	public ResourceSet resourceSet;
 
-	int MAX_EPISODE_STEPS = 20;
+	
 	public static int user;
 
 	Sequence sx;
@@ -57,7 +58,10 @@ public class QLearning {
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
 		qTable = knowledge.getQTable();
 		actionExtractor = new ActionExtractor(knowledge);
-		discarded = 0;
+		discardedSequences = 0;
+		originalErrors = new ArrayList<Error>();
+		initialErrorCodes = new ArrayList<Integer>();
+		solvingMap = new ArrayList<Sequence>();
 	}
 	
 	public QLearning(List<Integer> preferences) {
@@ -90,7 +94,7 @@ public class QLearning {
 		return d;
 	}
 
-	double[] alphas = linspace(1.0, MIN_ALPHA, N_EPISODES);
+	double[] alphas = linspace(1.0, MIN_ALPHA, NUMBER_OF_EPISODES);
 
 	public Sequence getBestSeq() {
 		return sx;
@@ -118,35 +122,36 @@ public class QLearning {
 	public void fixModel(Resource model, URI uri) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
 		this.uri = uri;
-		discarded = 0;
+		discardedSequences = 0;
 		int episode = 0;
 
 		Resource modelCopy = copy(model, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+		setInitialErrors(errorsToFix);
 		solvingMap.clear();
-		original.clear();
-		original.addAll(errorsToFix);
+		originalErrors.clear();
+		originalErrors.addAll(errorsToFix);
 
 		// FILTER ACTIONS AND INITIALICES QTABLE
 
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
 		logger.info("Errors to fix: " + errorsToFix.toString());
-		logger.info("Number of episodes: " + N_EPISODES);
-		while (episode < N_EPISODES) {
+		logger.info("Number of episodes: " + NUMBER_OF_EPISODES);
+		while (episode < NUMBER_OF_EPISODES) {
 			handleEpisode(modelCopy, episode);
 			
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
 			modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
 			errorsToFix.clear();
-			errorsToFix.addAll(original);
+			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
 		setBestSeq(bestSequence(solvingMap));
 
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
-				+ "\nDISCARDED SEQUENCES: " + discarded + "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
+				+ "\nDISCARDED SEQUENCES: " + discardedSequences + "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
 				+ getBestSeq().toString());
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -155,6 +160,17 @@ public class QLearning {
 		if (getBestSeq().getSeq().size() != 0) {
 			rewardCalculator.rewardSequence(getBestSeq(), -1);
 			sx.getModel().save(null);
+		}
+	}
+	
+	/**
+	 * Sets the initial error codes
+	 * 
+	 * @param errors
+	 */
+	private void setInitialErrors(List<Error> errors) {
+		for(Error error : errors) {
+			initialErrorCodes.add(error.getCode());
 		}
 	}
 
@@ -200,7 +216,7 @@ public class QLearning {
 		if (!errorOcurred && uniqueSequence(sequence)) {
 			solvingMap.add(sequence);
 		} else {
-			discarded++;
+			discardedSequences++;
 		}
 
 		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);	
@@ -253,7 +269,7 @@ public class QLearning {
 				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 			}
 
-			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, originalCodes, nextErrorToFix);
+			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
 
 			nextErrorToFix = errorsToFix.get(0);
 			Action a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
@@ -265,7 +281,7 @@ public class QLearning {
 				code2 = a.getHierarchy();
 			}
 			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + gamma * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
+					+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
 					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
 			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
@@ -274,7 +290,7 @@ public class QLearning {
 
 		else {
 			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + gamma) - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+					+ alpha * (reward + GAMMA) - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
 			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 		}

@@ -88,11 +88,7 @@ public class Main {
 			System.out.println("----------------------------------------------------------------------");
 
 			List<Error> errors = ErrorExtractor.extractErrorsFrom(auxModel);
-//			ql.nuQueue = errors;
 
-			for (int y = 0; y < errors.size(); y++) {
-				ql.originalCodes.add(errors.get(y).getCode());
-			}
 			System.out.println("INITIAL ERRORS:");
 			System.out.println(errors.toString());
 			System.out.println("Size= " + errors.size());
