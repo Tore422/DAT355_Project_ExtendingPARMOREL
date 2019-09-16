@@ -51,17 +51,6 @@ public class QLearning {
 
 	private RewardCalculator rewardCalculator;
 
-	public QLearning(List<Integer> preferences) {
-		resourceSet = new ResourceSetImpl();
-		errorsToFix = new ArrayList<Error>();
-		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
-		qTable = knowledge.getQTable();
-		actionExtractor = new ActionExtractor(knowledge);
-		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
-		discarded = 0;
-	}
-
 	public QLearning() {
 		resourceSet = new ResourceSetImpl();
 		errorsToFix = new ArrayList<Error>();
@@ -69,6 +58,12 @@ public class QLearning {
 		qTable = knowledge.getQTable();
 		actionExtractor = new ActionExtractor(knowledge);
 		discarded = 0;
+	}
+	
+	public QLearning(List<Integer> preferences) {
+		this();
+		rewardCalculator = new RewardCalculator(knowledge, preferences);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 
 	public List<Integer> getPreferences() {
