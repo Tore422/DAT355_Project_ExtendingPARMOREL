@@ -46,5 +46,15 @@ public class TagDictionary {
 	protected void set(int tagId, int value) {
 		tagDictionary.put(tagId, value);
 	}
+
+	/**
+	 * Checks if the tag dictionary contains the specified tag id
+	 * 
+	 * @param tagId
+	 * @return true if the dictionary contains the tagId
+	 */
+	public boolean contains(Integer tagId) {
+		return tagDictionary.containsKey(tagId);
+	}
 }
 

@@ -1,21 +1,18 @@
 package hvl.projectparmorel.reward;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.knowledge.TagMap;
 import hvl.projectparmorel.ml.Action;
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.Preferences;
 import hvl.projectparmorel.ml.Sequence;
 
 public class RewardCalculator {
-	
-	private Map<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> tagMap = new HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>();
+	private TagMap tagMap;
 	private Knowledge knowledge;
 	private List<Integer> preferences;
 
@@ -31,6 +28,7 @@ public class RewardCalculator {
 	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
 		this.preferences = preferences;
+		tagMap = new TagMap();
 		
 		Preferences prefs = new Preferences();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
@@ -125,32 +123,8 @@ public class RewardCalculator {
 			return reward;
 		}
 		
-		private void addTagMap(Error state, int num, Action action, int tag, int r) {
-			HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> hashaux = new HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>();
-			HashMap<Integer, HashMap<Integer, Integer>> hashaux2 = new HashMap<Integer, HashMap<Integer, Integer>>();
-			HashMap<Integer, Integer> hashaux3 = new HashMap<Integer, Integer>();
-
-			if (!tagMap.containsKey(state.getCode())) {
-				hashaux3.put(tag, r);
-				hashaux2.put(action.getCode(), hashaux3);
-				hashaux.put(num, hashaux2);
-				tagMap.put(state.getCode(), hashaux);
-			}
-			if (!tagMap.get(state.getCode()).containsKey(num)) {
-				hashaux3.put(tag, r);
-				hashaux2.put(action.getCode(), hashaux3);
-				tagMap.get(state.getCode()).put(num, hashaux2);
-			}
-			if (!tagMap.get(state.getCode()).get(num).containsKey(action.getCode())) {
-				hashaux3.put(tag, r);
-				tagMap.get(state.getCode()).get(num).put(action.getCode(), hashaux3);
-			}
-			if (!tagMap.get(state.getCode()).get(num).get(action.getCode()).containsKey(tag)) {
-				tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag, r);
-			} else {
-				tagMap.get(state.getCode()).get(num).get(action.getCode()).put(tag,
-						r + tagMap.get(state.getCode()).get(num).get(action.getCode()).get(tag));
-			}
+		private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
+			tagMap.setTag(error.getCode(), contextId, action.getCode(), tagId, value);
 		}
 
 		public int updateBasedOnNumberOfErrors(int reward, int sizeBefore, int sizeAfter, Error currentErrorToFix, int code, Action action) {
@@ -212,32 +186,9 @@ public class RewardCalculator {
 						actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, tag, oldTagValue + 500);
 					}
 				}
-
-				if (tagMap.containsKey(s.getSeq().get(i).getError().getCode())) {
-					if (tagMap.get(s.getSeq().get(i).getError().getCode()).containsKey(num)) {
-						if (tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-								.containsKey(s.getSeq().get(i).getAction().getCode())) {
-							for (Integer key : tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-									.get(s.getSeq().get(i).getAction().getCode()).keySet()) {
-								if (!actionDirectory.getTagDictionaryForAction(errorCode, num, actionId).getTagDictionary()
-										.containsKey(key)) {
-									int newTagValue = tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-											.get(s.getSeq().get(i).getAction().getCode()).get(key);
-									actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-
-								} else {
-									int newTagValue = actionDirectory.getTagDictionaryForAction(errorCode, num, actionId)
-											.getTagDictionary().get(key)
-											+ tagMap.get(s.getSeq().get(i).getError().getCode()).get(num)
-													.get(s.getSeq().get(i).getAction().getCode()).get(key);
-									actionDirectory.setTagValueInTagDictionary(errorCode, num, actionId, key, newTagValue);
-								}
-							}
-						}
-					}
-				}
+				
+				tagMap.updateRewardInActionDirectory(actionDirectory, s.getSeq().get(i), num);	
 			}
-
 		}
 		
 		public void rewardSmallorBig(List<Sequence> sm) {
