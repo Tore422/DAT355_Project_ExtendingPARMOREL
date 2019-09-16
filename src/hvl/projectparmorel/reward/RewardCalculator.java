@@ -225,46 +225,51 @@ public class RewardCalculator {
 		}
 	}
 
-	public void rewardSmallorBig(List<Sequence> sm) {
-		int min = 9999;
-		int max = 0;
-		Sequence aux = null;
+	/**
+	 * Rewards the sequences based on their length
+	 * 
+	 * @param sequences
+	 */
+	public void rewardBasedOnSequenceLength(List<Sequence> sequences) {
+		int smallestSequenceSize = 9999;
+		int largestSequenceSize = 0;
+		Sequence optimalSequence = null;
 
 		if (preferences.contains(0)) {
-			for (Sequence s : sm) {
-				if (s.getSeq().size() < min && s.getWeight() > 0) {
-					min = s.getSeq().size();
-					aux = s;
-				} else if (s.getSeq().size() == min) {
-					if (s.getWeight() > aux.getWeight()) {
-						aux = s;
+			for (Sequence sequence : sequences) {
+				if (sequence.getSeq().size() < smallestSequenceSize && sequence.getWeight() > 0) {
+					smallestSequenceSize = sequence.getSeq().size();
+					optimalSequence = sequence;
+				} else if (sequence.getSeq().size() == smallestSequenceSize) {
+					if (sequence.getWeight() > optimalSequence.getWeight()) {
+						optimalSequence = sequence;
 					}
 				}
 			}
-			aux.setWeight(aux.getWeight() + weightRewardShorterSequencesOfActions);
-			rewardSequence(aux, 0);
+			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardShorterSequencesOfActions);
+			rewardSequence(optimalSequence, 0);
 		}
 
 		if (preferences.contains(1)) {
-			for (Sequence s : sm) {
-				if (s.getSeq().size() > max && s.getWeight() > 0) {
-					max = s.getSeq().size();
-					aux = s;
-				} else if (s.getSeq().size() == max) {
-					if (s.getWeight() > aux.getWeight()) {
-						aux = s;
+			for (Sequence sequence : sequences) {
+				if (sequence.getSeq().size() > largestSequenceSize && sequence.getWeight() > 0) {
+					largestSequenceSize = sequence.getSeq().size();
+					optimalSequence = sequence;
+				} else if (sequence.getSeq().size() == largestSequenceSize) {
+					if (sequence.getWeight() > optimalSequence.getWeight()) {
+						optimalSequence = sequence;
 					}
 				}
 			}
-			aux.setWeight(aux.getWeight() + weightRewardLongerSequencesOfActions);
-			rewardSequence(aux, 1);
+			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardLongerSequencesOfActions);
+			rewardSequence(optimalSequence, 1);
 		}
 	}
 
-	public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error next_state) {
+	
+	public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error nextErrorToFix) {
 		// if new error introduced
-		if (!originalCodes.contains(next_state.getCode())) {
-			// System.out.println("NEW ERROR: " + next_state.toString());
+		if (!originalCodes.contains(nextErrorToFix.getCode())) {
 			// high modification
 			if (preferences.contains(6)) {
 				reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;

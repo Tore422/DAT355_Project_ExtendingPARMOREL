@@ -22,7 +22,11 @@ import hvl.projectparmorel.reward.RewardCalculator;
  */
 public class QLearning {
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
-
+	private QTable qTable;
+	private ActionExtractor actionExtractor;
+	
+	private ModelProcesser modelProcesser;
+	
 	protected static int N_EPISODES = 25;
 	protected static double randomfactor = 0.25;
 
@@ -33,7 +37,6 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
-	int total_reward = 0;
 	public URI uri;
 	List<Error> original = new ArrayList<Error>();
 	public List<Integer> originalCodes = new ArrayList<Integer>();
@@ -51,7 +54,10 @@ public class QLearning {
 	public QLearning(List<Integer> preferences) {
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
+		qTable = knowledge.getQTable();
+		actionExtractor = new ActionExtractor(knowledge);
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 	
 	public QLearning() {
@@ -109,16 +115,10 @@ public class QLearning {
 
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
-		QTable qTable = knowledge.getQTable();
-		ActionExtractor actionExtractor = new ActionExtractor(knowledge);
-
 		int val;
 		int discarded = 0;
 		int episode = 0;
 		boolean nope = false;
-		boolean alert = false;
-		int code, code2;
-		Error next_state;
 
 		Resource modelCopy = copy(myMetaModel, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
@@ -127,111 +127,33 @@ public class QLearning {
 		original.addAll(errorsToFix);
 
 		// FILTER ACTIONS AND INITIALICES QTABLE
-		ModelProcesser modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + N_EPISODES);
 		while (episode < N_EPISODES) {
 			int index = 0;
-			Error currentErrorToFix = errorsToFix.get(index);
-			int sizeBefore = errorsToFix.size();
-			total_reward = 0;
-			double alpha = alphas[episode];
-			int end_reward = 0;
+			int total_reward = 0;
 			int step = 0;
-			boolean doni = false;
 			Sequence s = new Sequence();
 			while (step < MAX_EPISODE_STEPS) {
-				Action action = chooseAction(currentErrorToFix);
-
-				errorsToFix.clear();
-				errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
-						action.getHierarchy()); // removed subHirerarchy - effect?
-				reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
-				// Insert stuff into sequence
-				s.setId(episode);
-				List<ErrorAction> ea = s.getSeq();
-				ea.add(new ErrorAction(currentErrorToFix, action));
-				if ((currentErrorToFix.getCode() == 401 || currentErrorToFix.getCode() == 445
-						|| currentErrorToFix.getCode() == 27 || currentErrorToFix.getCode() == 32)
-						&& (action.getMsg().contentEquals("setEType") || action.getMsg().contentEquals("delete")
-								|| action.getMsg().contentEquals("setName")
-								|| action.getMsg().contentEquals("unsetEGenericType"))) {
-					alert = true;
-				}
-				s.setSeq(ea);
-				s.setU(uri);
-
-				if (action.getSubHierarchy() != -1) {
-					code = Integer
-							.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
+				if(errorsToFix.size() != 0) {
+					Error currentErrorToFix = errorsToFix.get(index);
+					total_reward += handleStep(modelCopy, s, episode, currentErrorToFix);
+					step++;
 				} else {
-					code = action.getHierarchy();
-				}
-
-				reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(),
-						currentErrorToFix, code, action);
-
-				if (errorsToFix.size() != 0) {
-					next_state = errorsToFix.get(index);
-
-					if (!qTable.containsErrorCode(next_state.getCode())) {
-						errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
-						actionExtractor.extractActionsFor(errorsToFix);
-						modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
-					}
-
-					reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, originalCodes, next_state);
-
-					next_state = errorsToFix.get(index);
-					Action a = knowledge.getOptimalActionForErrorCode(next_state.getCode());
-
-					if (a.getSubHierarchy() != -1) {
-						code2 = Integer.valueOf(String.valueOf(a.getHierarchy()) + String.valueOf(a.getSubHierarchy()));
-					} else {
-						code2 = a.getHierarchy();
-					}
-					double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-							+ alpha * (reward + gamma * qTable.getWeight(next_state.getCode(), code2, a.getCode()))
-							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
-
-					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-					currentErrorToFix = next_state;
-					sizeBefore = errorsToFix.size();
-				} // it has reached the end
-
-				else {
-					end_reward = 1;
-
-					double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-							+ alpha * (reward + gamma * end_reward)
-							- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
-
-					qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-					doni = true;
-				}
-
-				total_reward = total_reward + reward;
-
-				if (doni) {
 					break;
 				}
-
-				step++;
 			}
 			// add the whole sequence into list
 
-			if (alert) {
 				try {
 					s.setModel(modelCopy);
 				} catch (java.lang.NullPointerException exception) {
 					// Catch NullPointerExceptions.
 					nope = true;
 				}
-			} else {
-				s.setModel(modelCopy);
-			}
 
 			if (s.getSeq().size() > 7) {
 				val = loopChecker(s.getSeq());
@@ -258,8 +180,6 @@ public class QLearning {
 
 			episode++;
 			nope = false;
-			alert = false;
-
 		}
 		setBestSeq(bestSequence(solvingMap));
 
@@ -274,6 +194,79 @@ public class QLearning {
 			rewardCalculator.rewardSequence(getBestSeq(), -1);
 			sx.getModel().save(null);
 		}
+	}
+
+	private int handleStep(Resource modelCopy, Sequence s, int episode, Error currentErrorToFix) {
+		Action action = chooseAction(currentErrorToFix);
+		int sizeBefore = errorsToFix.size();
+		double alpha = alphas[episode];
+
+		errorsToFix.clear();
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
+				action.getHierarchy()); // removed subHirerarchy - effect?
+		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
+		// Insert stuff into sequence
+		s.setId(episode);
+		List<ErrorAction> ea = s.getSeq();
+		ea.add(new ErrorAction(currentErrorToFix, action));
+//		if ((currentErrorToFix.getCode() == 401 || currentErrorToFix.getCode() == 445
+//				|| currentErrorToFix.getCode() == 27 || currentErrorToFix.getCode() == 32)
+//				&& (action.getMsg().contentEquals("setEType") || action.getMsg().contentEquals("delete")
+//						|| action.getMsg().contentEquals("setName")
+//						|| action.getMsg().contentEquals("unsetEGenericType"))) {
+//			// alert
+//		}
+		s.setSeq(ea);
+		s.setU(uri);
+
+		int code;
+		if (action.getSubHierarchy() != -1) {
+			code = Integer
+					.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
+		} else {
+			code = action.getHierarchy();
+		}
+
+		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(),
+				currentErrorToFix, code, action);
+
+		if (errorsToFix.size() != 0) {
+			Error nextErrorToFix = errorsToFix.get(0);
+
+			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
+				errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+				actionExtractor.extractActionsFor(errorsToFix);
+				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+			}
+
+			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, originalCodes, nextErrorToFix);
+
+			nextErrorToFix = errorsToFix.get(0);
+			Action a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
+
+			int code2;
+			if (a.getSubHierarchy() != -1) {
+				code2 = Integer.valueOf(String.valueOf(a.getHierarchy()) + String.valueOf(a.getSubHierarchy()));
+			} else {
+				code2 = a.getHierarchy();
+			}
+			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
+					+ alpha * (reward + gamma * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
+					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+
+			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
+			currentErrorToFix = nextErrorToFix;
+		} // it has reached the end
+
+		else {
+			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
+					+ alpha * (reward + gamma)
+					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+
+			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
+		}
+
+		return reward;
 	}
 
 	/**
@@ -352,7 +345,7 @@ public class QLearning {
 
 	Sequence bestSequence(List<Sequence> sm) {
 		double max = -1;
-		rewardCalculator.rewardSmallorBig(sm);
+		rewardCalculator.rewardBasedOnSequenceLength(sm);
 		Sequence maxS = new Sequence();
 		for (Sequence s : sm) {
 			// normalize weights so that longer rewards dont get priority
