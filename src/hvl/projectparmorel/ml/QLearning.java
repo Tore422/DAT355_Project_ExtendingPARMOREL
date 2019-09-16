@@ -24,13 +24,14 @@ public class QLearning {
 	private hvl.projectparmorel.knowledge.Knowledge knowledge;
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
-	
+
 	private ModelProcesser modelProcesser;
-	
+
 	protected static int N_EPISODES = 25;
 	protected static double randomfactor = 0.25;
 
 	private List<Error> errorsToFix;
+	private int discarded;
 
 	private Logger logger = Logger.getGlobal();
 
@@ -58,21 +59,22 @@ public class QLearning {
 		actionExtractor = new ActionExtractor(knowledge);
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		discarded = 0;
 	}
-	
+
 	public QLearning() {
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
 	}
 
-	public List<Integer> getPreferences(){
+	public List<Integer> getPreferences() {
 		return rewardCalculator.getPreferences();
 	}
-	
+
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 	}
-	
+
 //	/**
 //	 * Saves the knowledge
 //	 */
@@ -115,10 +117,8 @@ public class QLearning {
 
 	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
-		int val;
-		int discarded = 0;
+		discarded = 0;
 		int episode = 0;
-		boolean nope = false;
 
 		Resource modelCopy = copy(myMetaModel, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
@@ -127,59 +127,20 @@ public class QLearning {
 		original.addAll(errorsToFix);
 
 		// FILTER ACTIONS AND INITIALICES QTABLE
-		
+
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + N_EPISODES);
 		while (episode < N_EPISODES) {
-			int index = 0;
-			int total_reward = 0;
-			int step = 0;
-			Sequence s = new Sequence();
-			while (step < MAX_EPISODE_STEPS) {
-				if(errorsToFix.size() != 0) {
-					Error currentErrorToFix = errorsToFix.get(index);
-					total_reward += handleStep(modelCopy, s, episode, currentErrorToFix);
-					step++;
-				} else {
-					break;
-				}
-			}
-			// add the whole sequence into list
-
-				try {
-					s.setModel(modelCopy);
-				} catch (java.lang.NullPointerException exception) {
-					// Catch NullPointerExceptions.
-					nope = true;
-				}
-
-			if (s.getSeq().size() > 7) {
-				val = loopChecker(s.getSeq());
-				if (val > 1) {
-//					total_reward = total_reward - val * 1000;
-				}
-			}
-
-			s.setWeight(total_reward);
-
-			if (!nope && uniqueSequence(s)) {
-				// System.out.println(s.toString());
-				solvingMap.add(s);
-			} else {
-				discarded++;
-			}
-
+			handleEpisode(modelCopy, episode);
+			
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
 			modelCopy.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
-			logger.info("EPISODE " + episode + " TOTAL REWARD " + total_reward);
 			errorsToFix.clear();
 			errorsToFix.addAll(original);
-
 			episode++;
-			nope = false;
 		}
 		setBestSeq(bestSequence(solvingMap));
 
@@ -196,39 +157,91 @@ public class QLearning {
 		}
 	}
 
-	private int handleStep(Resource modelCopy, Sequence s, int episode, Error currentErrorToFix) {
+	/**
+	 * Handles a single episode
+	 * 
+	 * @param modelCopy
+	 * @param episode
+	 */
+	private void handleEpisode(Resource modelCopy, int episode) {
+		Sequence sequence = new Sequence();
+		boolean errorOcurred = false;
+		int totalReward = 0;
+		int step = 0;
+		
+		while (step < MAX_EPISODE_STEPS) {
+			if (errorsToFix.size() != 0) {
+				Error currentErrorToFix = errorsToFix.get(0);
+				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+				
+				step++;
+			} else {
+				break;
+			}
+		}
+
+		try {
+			sequence.setModel(modelCopy);
+		} catch (NullPointerException exception) {
+			errorOcurred = true;
+		}
+
+		int val;
+		if (sequence.getSeq().size() > 7) {
+			val = loopChecker(sequence.getSeq());
+			if (val > 1) {
+				totalReward -= val * 1000;
+			}
+		}
+
+		sequence.setWeight(totalReward);
+
+		if (!errorOcurred && uniqueSequence(sequence)) {
+			solvingMap.add(sequence);
+		} else {
+			discarded++;
+		}
+
+		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);	
+	}
+
+	/**
+	 * Handles a single step
+	 * 
+	 * @param modelCopy
+	 * @param sequence
+	 * @param episode
+	 * @param currentErrorToFix
+	 * @return the reward from the step
+	 */
+	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) {
 		Action action = chooseAction(currentErrorToFix);
 		int sizeBefore = errorsToFix.size();
 		double alpha = alphas[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy,
-				action.getHierarchy()); // removed subHirerarchy - effect?
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy()); // removed
+																													// subHirerarchy
+																													// -
+																													// effect?
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
-		s.setId(episode);
-		List<ErrorAction> ea = s.getSeq();
-		ea.add(new ErrorAction(currentErrorToFix, action));
-//		if ((currentErrorToFix.getCode() == 401 || currentErrorToFix.getCode() == 445
-//				|| currentErrorToFix.getCode() == 27 || currentErrorToFix.getCode() == 32)
-//				&& (action.getMsg().contentEquals("setEType") || action.getMsg().contentEquals("delete")
-//						|| action.getMsg().contentEquals("setName")
-//						|| action.getMsg().contentEquals("unsetEGenericType"))) {
-//			// alert
-//		}
-		s.setSeq(ea);
-		s.setU(uri);
+		sequence.setId(episode);
+		List<ErrorAction> errorActionList = sequence.getSeq();
+		errorActionList.add(new ErrorAction(currentErrorToFix, action));
+
+		sequence.setSeq(errorActionList);
+		sequence.setU(uri);
 
 		int code;
 		if (action.getSubHierarchy() != -1) {
-			code = Integer
-					.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
+			code = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
 		} else {
 			code = action.getHierarchy();
 		}
 
-		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(),
-				currentErrorToFix, code, action);
+		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
+				code, action);
 
 		if (errorsToFix.size() != 0) {
 			Error nextErrorToFix = errorsToFix.get(0);
@@ -260,8 +273,7 @@ public class QLearning {
 
 		else {
 			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + gamma)
-					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+					+ alpha * (reward + gamma) - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
 			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 		}
