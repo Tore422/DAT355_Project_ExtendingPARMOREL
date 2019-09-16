@@ -1,14 +1,13 @@
 package hvl.projectparmorel.ml;
-/*
- * Angela Barriga Rodriguez - 2019
- * abar@hvl.no
+
+import java.io.Serializable;
+
+/**
+ * 
+ * @author Angela Barriga Rodriguez - 2019, abar@hvl.no
  * Western Norway University of Applied Sciences
  * Bergen - Norway
  */
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-
 public class Action implements Serializable {
 
 	/**
