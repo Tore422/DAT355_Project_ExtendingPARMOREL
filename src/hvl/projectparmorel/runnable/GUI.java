@@ -40,10 +40,11 @@ public class GUI extends JPanel {
 	private File dest;
 	static JFrame frame;
 	JPanel newPanel = new JPanel();
-
-	QLearning ql = new QLearning();
+	private URI uri;
+	private QLearning ql;
 	List<Error> errors = null;
 	Resource auxModel;
+	Resource myMetaModel;
 
 	private JButton exportButton;
 	private JTextArea sequenceDisplay;
@@ -73,6 +74,7 @@ public class GUI extends JPanel {
 	}
 
 	public GUI() {
+		ql = new QLearning();
 		// construct components
 		importButton = new JButton("Import model");
 		repairButton = new JButton("Repair");
@@ -198,13 +200,13 @@ public class GUI extends JPanel {
 
 		Files.copy(files[0].toPath(), dest.toPath());
 	
-		ql.uri = URI.createFileURI(dest.getAbsolutePath());
+		uri = URI.createFileURI(dest.getAbsolutePath());
 		ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
-		ql.myMetaModel = ql.resourceSet.getResource(ql.uri, true);
+		myMetaModel = ql.resourceSet.getResource(uri, true);
 
-		Resource auxModel = ql.resourceSet.createResource(ql.uri);
-		auxModel.getContents().addAll(EcoreUtil.copyAll(ql.myMetaModel.getContents()));
+		Resource auxModel = ql.resourceSet.createResource(uri);
+		auxModel.getContents().addAll(EcoreUtil.copyAll(myMetaModel.getContents()));
 
 		
 		errors = ErrorExtractor.extractErrorsFrom(auxModel);
@@ -236,7 +238,7 @@ public class GUI extends JPanel {
 		long endTime = 0;
 		ql.setPreferences(preferences);
 		System.out.println("PREFERENCES: " + preferences.toString());
-		ql.modelFixer(auxModel);
+		ql.fixModel(myMetaModel, uri);
 //		ql.saveKnowledge();	
 
 		frame.getContentPane().removeAll();

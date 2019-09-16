@@ -38,14 +38,13 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double gamma = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private int reward = 0;
-	public URI uri;
+	private URI uri;
 	List<Error> original = new ArrayList<Error>();
 	public List<Integer> originalCodes = new ArrayList<Integer>();
 	List<Sequence> solvingMap = new ArrayList<Sequence>();
-	public ResourceSet resourceSet = new ResourceSetImpl();
+	public ResourceSet resourceSet;
 
 	int MAX_EPISODE_STEPS = 20;
-	public Resource myMetaModel;
 	public static int user;
 
 	Sequence sx;
@@ -53,6 +52,7 @@ public class QLearning {
 	private RewardCalculator rewardCalculator;
 
 	public QLearning(List<Integer> preferences) {
+		resourceSet = new ResourceSetImpl();
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
 		qTable = knowledge.getQTable();
@@ -63,8 +63,12 @@ public class QLearning {
 	}
 
 	public QLearning() {
+		resourceSet = new ResourceSetImpl();
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
+		qTable = knowledge.getQTable();
+		actionExtractor = new ActionExtractor(knowledge);
+		discarded = 0;
 	}
 
 	public List<Integer> getPreferences() {
@@ -73,6 +77,7 @@ public class QLearning {
 
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 
 //	/**
@@ -115,12 +120,13 @@ public class QLearning {
 		}
 	}
 
-	public void modelFixer(Resource auxModel) throws IllegalAccessException, IllegalArgumentException,
+	public void fixModel(Resource model, URI uri) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
+		this.uri = uri;
 		discarded = 0;
 		int episode = 0;
 
-		Resource modelCopy = copy(myMetaModel, uri);
+		Resource modelCopy = copy(model, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 		solvingMap.clear();
 		original.clear();
@@ -137,7 +143,7 @@ public class QLearning {
 			
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
-			modelCopy.getContents().add(EcoreUtil.copy(myMetaModel.getContents().get(0)));
+			modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
 			errorsToFix.clear();
 			errorsToFix.addAll(original);
 			episode++;

@@ -48,13 +48,13 @@ public class Main {
 			// Copy original file
 			copyFile(listOfFiles[i], dest);
 
-			ql.uri = URI.createFileURI(dest.getAbsolutePath());
+			URI uri = URI.createFileURI(dest.getAbsolutePath());
 			ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 					new EcoreResourceFactoryImpl());
-			ql.myMetaModel = ql.resourceSet.getResource(ql.uri, true);
+			Resource myMetaModel = ql.resourceSet.getResource(uri, true);
 
-			Resource auxModel = ql.resourceSet.createResource(ql.uri);
-			auxModel.getContents().addAll(EcoreUtil.copyAll(ql.myMetaModel.getContents()));
+			Resource auxModel = ql.resourceSet.createResource(uri);
+			auxModel.getContents().addAll(EcoreUtil.copyAll(myMetaModel.getContents()));
 
 			EPackage epa = (EPackage) auxModel.getContents().get(0);
 			System.out.println("Num. Classes: " + epa.getEClassifiers().size());
@@ -99,7 +99,7 @@ public class Main {
 			System.out.println();
 
 			System.out.println("PREFERENCES: " + ql.getPreferences().toString());
-			ql.modelFixer(auxModel);
+			ql.fixModel(myMetaModel, uri);
 
 			endTime = System.currentTimeMillis();
 			long timeneeded = (endTime - startTime);
