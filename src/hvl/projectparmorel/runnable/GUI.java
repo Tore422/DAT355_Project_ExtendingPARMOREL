@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.ErrorExtractor;
 import hvl.projectparmorel.ml.QLearning;
+import hvl.projectparmorel.ml.Sequence;
 
 public class GUI extends JPanel {
 
@@ -236,7 +237,7 @@ public class GUI extends JPanel {
 		long endTime = 0;
 		ql.setPreferences(preferences);
 		System.out.println("PREFERENCES: " + preferences.toString());
-		ql.fixModel(myMetaModel, uri);
+		Sequence bestSequence = ql.fixModel(myMetaModel, uri);
 //		ql.saveKnowledge();	
 
 		frame.getContentPane().removeAll();
@@ -246,7 +247,7 @@ public class GUI extends JPanel {
 
 		String seqFound = "Best sequence found to repair model " + files[0].getName() + ":"
 				+ System.getProperty("line.separator") + System.getProperty("line.separator");
-		getSequenceDisplay().insert(seqFound + ql.getBestSeq().toString(), 0);
+		getSequenceDisplay().insert(seqFound + bestSequence.toString(), 0);
 		
 		endTime = System.currentTimeMillis();
 		long timeneeded = (endTime - startTime);

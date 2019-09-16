@@ -1,7 +1,6 @@
 package hvl.projectparmorel.ml;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,11 +45,6 @@ public class QLearning {
 	private List<Integer> initialErrorCodes;
 	private List<Sequence> solvingMap;
 	private ResourceSet resourceSet;
-
-	
-
-	Sequence sx;
-
 	private RewardCalculator rewardCalculator;
 
 	public QLearning() {
@@ -103,14 +97,6 @@ public class QLearning {
 
 	double[] alphas = linspace(1.0, MIN_ALPHA, NUMBER_OF_EPISODES);
 
-	public Sequence getBestSeq() {
-		return sx;
-	}
-
-	public void setBestSeq(Sequence sx) {
-		this.sx = sx;
-	}
-
 	/**
 	 * Chooses an action for the specified error. The action is either the best
 	 * action based on the previous knowledge, or a random action.
@@ -126,8 +112,14 @@ public class QLearning {
 		}
 	}
 
-	public void fixModel(Resource model, URI uri) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, NoSuchMethodException, SecurityException, IOException {
+	/**
+	 * Attempts to fix the model
+	 * 
+	 * @param model
+	 * @param uri
+	 * @return the best possible sequence
+	 */
+	public Sequence fixModel(Resource model, URI uri) {
 		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
@@ -157,19 +149,25 @@ public class QLearning {
 			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
-		setBestSeq(bestSequence(solvingMap));
+		Sequence bestSequence = bestSequence(solvingMap);
 
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences + "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
-				+ getBestSeq().toString());
+				+ bestSequence);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		if (getBestSeq().getSeq().size() != 0) {
-			rewardCalculator.rewardSequence(getBestSeq(), -1);
-			sx.getModel().save(null);
+		if (bestSequence.getSeq().size() != 0) {
+			rewardCalculator.rewardSequence(bestSequence, -1);
+			try {
+				bestSequence.getModel().save(null);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		return bestSequence;
 	}
 	
 	/**
