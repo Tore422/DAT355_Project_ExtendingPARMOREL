@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
@@ -75,7 +76,7 @@ public class ModelProcesser {
 										modelCopy, i);
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error, i )) {
-										Action newAction = new Action(action.getCode(), action.getMsg(), action.getSerializableMethod(),
+										Action newAction = new Action(action.getCode(), action.getMessage(), action.getMethod(),
 												i, -1);
 										initializeQTableForAction(error, newAction);
 									}
@@ -107,8 +108,8 @@ public class ModelProcesser {
 				return true;
 			} else {
 				for (Method method : methods) {
-					if (action.getSerializableMethod().getMethod() != null
-							&& action.getSerializableMethod().getMethod().hashCode() == method.hashCode()) {
+					if (action.getMethod().getMethod() != null
+							&& action.getMethod().getMethod().hashCode() == method.hashCode()) {
 						return true;
 					}
 				}
@@ -220,11 +221,11 @@ public class ModelProcesser {
 					return true;
 				}
 				if (isInvokable(error, eObject.getClass(), action)) {
-					if (action.getSerializableMethod().getMethod().getParameterCount() > 0) {// if method has parameters
+					if (action.getMethod().getMethod().getParameterCount() > 0) {// if method has parameters
 						applyActionsThatRequireParameters(eObject, error, action);
 					} 
 					else {
-						invokeMethod(action.getSerializableMethod().getMethod(), eObject);
+						invokeMethod(action.getMethod().getMethod(), eObject);
 						return true;
 					}
 					
@@ -421,25 +422,25 @@ public class ModelProcesser {
 	 * @return true if method was invoked, false otherwise.
 	 */
 	private boolean applyActionsThatRequireParameters(EObject eObject, Error error, Action action) {
-		Object[] values = getDefaultValues(extractParameterTypes(action.getSerializableMethod().getMethod(), error));
+		Object[] values = getDefaultValues(extractParameterTypes(action.getMethod().getMethod(), error));
 		// if input needs a date
 		if (values.length != 0 && eObject instanceof EAttributeImpl
-				&& action.getSerializableMethod().getMethod().getName().contains("DefaultValue")
+				&& action.getMethod().getMethod().getName().contains("DefaultValue")
 				&& error.getCode() != 40 && ((ETypedElement) eObject).getEType() != null
 				&& ((ETypedElement) eObject).getEType().toString().contains("Date")) {
 
-			invokeMethod(action.getSerializableMethod().getMethod(), eObject, new Date());
+			invokeMethod(action.getMethod().getMethod(), eObject, new Date());
 			return true;
 		} else {
 			// if dealing with opposite references
-			if (values.length == action.getSerializableMethod().getMethod().getParameterCount()) {
-				if (error.getCode() == 14 && action.getMsg().contains("setEOpposite")
+			if (values.length == action.getMethod().getMethod().getParameterCount()) {
+				if (error.getCode() == 14 && action.getMessage().contains("setEOpposite")
 						&& eObject instanceof EReferenceImpl) {
 					values[0] = findOpposite((EReferenceImpl) eObject, error);
 				}
 
 				try {
-					invokeMethod(action.getSerializableMethod().getMethod(), eObject, values);
+					invokeMethod(action.getMethod().getMethod(), eObject, values);
 
 					if (error.getCode() == 40 && action.getCode() == 591449609) { // sometimes this action in that error
 																					// is problematic
@@ -540,7 +541,7 @@ public class ModelProcesser {
 		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getWhere().get(0);
 		genericType.getETypeArguments().add(genericType);
 		action.setCode(88888);
-		action.setMsg("getETypeArguments().add(genericType)");
+		action.setMessage("getETypeArguments().add(genericType)");
 	}
 
 	/**

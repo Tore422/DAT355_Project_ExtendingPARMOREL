@@ -6,8 +6,7 @@ package hvl.projectparmorel.ml;
  * Bergen - Norway
  */
 
-
-
+import hvl.projectparmorel.knowledge.Action;
 
 public class ErrorAction {
 
@@ -39,7 +38,7 @@ public class ErrorAction {
 	@Override
 	public String toString() {
 		return "ErrorAction [Error: " + error.getCode() + " " + error.getMsg() +", Action: "
-				+ action.getMsg() + ", Error hierarchy: " + action.getHierarchy() + ", " + action.getSubHierarchy() + "]"
+				+ action.getMessage() + ", Error hierarchy: " + action.getHierarchy() + ", " + action.getSubHierarchy() + "]"
 				+ System.getProperty("line.separator");
 	}
 

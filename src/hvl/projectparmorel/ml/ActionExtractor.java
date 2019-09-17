@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
+import hvl.projectparmorel.knowledge.Action;
+
 public class ActionExtractor {
 	private hvl.projectparmorel.knowledge.Knowledge  knowledge;
 	

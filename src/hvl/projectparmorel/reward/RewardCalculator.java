@@ -2,11 +2,12 @@ package hvl.projectparmorel.reward;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.knowledge.TagMap;
-import hvl.projectparmorel.ml.Action;
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.Preferences;
 import hvl.projectparmorel.ml.Sequence;
@@ -51,14 +52,14 @@ public class RewardCalculator {
 		double weight = 0.0;
 
 		if (preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
+			if (action.getMessage().contains("delete")) {
 				weight = -(double) weightPunishDeletion / 100;
 			} else {
 				weight = 0.0;
 			}
 		}
 
-		if (action.getMsg().contains("get")) {
+		if (action.getMessage().contains("get")) {
 			weight = -10.0;
 		} else {
 			weight = 0.0;
@@ -116,7 +117,7 @@ public class RewardCalculator {
 		}
 
 		if (preferences.contains(4)) {
-			if (action.getMsg().contains("delete")) {
+			if (action.getMessage().contains("delete")) {
 				reward -= weightPunishDeletion;
 				addTagMap(currentErrorToFix, contextId, action, 4, -weightPunishDeletion);
 			} else {

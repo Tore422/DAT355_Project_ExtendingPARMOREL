@@ -3,6 +3,7 @@ package hvl.projectparmorel.ml;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import hvl.projectparmorel.knowledge.Action;
 
 public class ActionExp implements Serializable {
 

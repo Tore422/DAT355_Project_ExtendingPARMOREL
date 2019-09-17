@@ -44,9 +44,8 @@ public class ActionDirectory {
 	 * @param errorCode
 	 * @return a random action
 	 */
-	public hvl.projectparmorel.ml.Action getRandomActionForError(int errorCode) {
-		Action randomAction = preferenceScores.getRandomValueForError(errorCode);
-		return new hvl.projectparmorel.ml.Action(randomAction.code, randomAction.msg, randomAction.method, randomAction.hierarchy, randomAction.subHierarchy);
+	public Action getRandomActionForError(int errorCode) {
+		return preferenceScores.getRandomValueForError(errorCode);
 	}
 
 	/**
@@ -83,8 +82,8 @@ public class ActionDirectory {
 	 * @param contextId
 	 * @param action
 	 */
-	public void setAction(int errorCode, int contextId, hvl.projectparmorel.ml.Action action) {
-		preferenceScores.setValue(errorCode, contextId, action.getCode(), new Action(action));
+	public void setAction(int errorCode, int contextId, Action action) {
+		preferenceScores.setValue(errorCode, contextId, action.getCode(), action);
 	}
 	
 	/**
