@@ -15,6 +15,12 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	public void setValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
 		errors.setValue(errorCode, contextId, actionId, value);
 	}
+//	
+//	@Override
+//	protected void setAction(int errorCode, int contextId, Action action, double weight) {
+//		errors.setAction(errorCode, contextId, action, weight);
+//		
+//	}
 
 	@Override
 	public void setAllValuesTo(T value) {
@@ -38,8 +44,8 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	}
 
 	@Override
-	protected ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode) {
-		return errors.getOptimalActionIndexForErrorCode(errorCode);
+	protected T getOptimalActionForErrorCode(Integer errorCode) {
+		return errors.getOptimalActionForErrorCode(errorCode);
 	}
 
 	@Override
@@ -56,5 +62,4 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	protected boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId) {
 		return errors.containsValueForErrorCodeAndContextId(errorCode, contextId, actionId);
 	}
-
 }

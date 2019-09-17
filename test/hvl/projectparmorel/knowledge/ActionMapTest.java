@@ -36,5 +36,4 @@ class ActionMapTest {
 		assertNotEquals(315, highestActionId.intValue());
 		assertNotEquals(4, highestActionId.intValue());
 	}
-
 }

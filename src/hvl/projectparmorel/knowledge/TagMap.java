@@ -64,7 +64,7 @@ public class TagMap {
 //		}
 //	}
 	
-	public void updateRewardInActionDirectory(ActionDirectory actionDirectory, ErrorAction errorAction, int contextId) {
+	public void updateRewardInActionDirectory(QTable actionDirectory, ErrorAction errorAction, int contextId) {
 		int errorCode = errorAction.getError().getCode();
 		int actionId = errorAction.getAction().getCode();
 

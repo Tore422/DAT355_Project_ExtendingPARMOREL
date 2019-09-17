@@ -1,7 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
 public class QTable {
-	ErrorContextActionDirectory<Double> qTable;
+	ErrorContextActionDirectory<Action> qTable;
 
 	protected QTable() {
 		qTable = new HashErrorContextActionDirectory<>();
@@ -18,23 +18,22 @@ public class QTable {
 	}
 
 	/**
-	 * Checks that the specified error code and context ID contains the specified
-	 * action ID
+	 * Checks that the provided action Id exists for the specified error code and
+	 * contect id
 	 * 
 	 * @param errorCode
 	 * @param contextId
 	 * @param actionId
-	 * @return true if the action ID is found for the specified error and context,
-	 *         false otherwise
+	 * @return true if the action ID exists for the specified error code and context
+	 *         ID, false otherwise.
 	 */
-	public boolean containsActionIdForErrorCodeAndContextId(int errorCode, int contextId, int actionId) {
-		return qTable.getErrorMap().containsValueForErrorCodeAndContextId(errorCode, contextId, actionId);
+	public boolean containsActionForErrorAndContext(int errorCode, int contextId, int actionId) {
+		return qTable.containsValueForErrorAndContext(errorCode, contextId, actionId);
 	}
 
 	/**
 	 * Sets the weight for the specified action in the specified context for the
-	 * specified error. If the error, context or action is not in the hierarchy,
-	 * they will be added.
+	 * specified error.
 	 * 
 	 * @param errorCode
 	 * @param contextId
@@ -42,7 +41,8 @@ public class QTable {
 	 * @param weight
 	 */
 	public void setWeight(Integer errorCode, Integer contextId, Integer actionId, Double weight) {
-		qTable.setValue(errorCode, contextId, actionId, weight);
+		Action action = qTable.getValue(errorCode, contextId, actionId);
+		action.setWeight(weight);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class QTable {
 	 * @return the weight
 	 */
 	public double getWeight(Integer errorCode, Integer contextId, Integer actionId) {
-		return qTable.getValue(errorCode, contextId, actionId);
+		return qTable.getValue(errorCode, contextId, actionId).getWeight();
 	}
 
 	/**
@@ -63,8 +63,70 @@ public class QTable {
 	 * 
 	 * @return the qTalbe
 	 */
-	protected ErrorContextActionDirectory<Double> getQTableDirectory() {
+	protected ErrorContextActionDirectory<Action> getActionDirectory() {
 		return qTable;
+	}
+
+	/**
+	 * Gets a random action for the specified error
+	 * 
+	 * @param errorCode
+	 * @return a random action
+	 */
+	public Action getRandomActionForError(int errorCode) {
+		return qTable.getRandomValueForError(errorCode);
+	}
+
+	/**
+	 * Gets the tag dictionary for the specified action
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the tag dictionary for the action
+	 */
+	public hvl.projectparmorel.ml.TagDictionary getTagDictionaryForAction(Integer errorCode, Integer contextId,
+			Integer actionId) {
+		Action action = getAction(errorCode, contextId, actionId);
+		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getTagDictionary());
+	}
+
+	/**
+	 * Sets the value for the specified tag for the specified action in the
+	 * specified context for the specified error.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @param tag
+	 * @param value
+	 */
+	public void setTagValueInTagDictionary(Integer errorCode, Integer contextId, Integer actionId, int tag, int value) {
+		Action action = getAction(errorCode, contextId, actionId);
+		action.getTagDictionary().set(tag, value);
+	}
+
+	/**
+	 * Adds action to the specified error code and context ID.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param action
+	 */
+	public void setAction(int errorCode, int contextId, Action action) {
+		qTable.setValue(errorCode, contextId, action.getCode(), action);
+	}
+	
+	/**
+	 * Gets the value for the specified error code, context id and action id.
+	 * 
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionId
+	 * @return the corresponding value
+	 */
+	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
+		return qTable.getValue(errorCode, contextId, actionId);
 	}
 
 	/**
@@ -74,7 +136,7 @@ public class QTable {
 	 * @return the location of highest value in the context map. If two are equal,
 	 *         one of them is returned. If the set is empty, null is returned.
 	 */
-	protected ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode) {
-		return qTable.getOptimalActionIndexForErrorCode(errorCode);
+	protected Action getOptimalActionForErrorCode(Integer errorCode) {
+		return qTable.getOptimalActionForErrorCode(errorCode);
 	}
 }

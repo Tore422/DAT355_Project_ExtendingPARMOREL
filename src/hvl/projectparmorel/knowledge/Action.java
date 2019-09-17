@@ -18,6 +18,7 @@ public class Action implements Comparable<Action> {
 	private SerializableMethod method;
 	private int hierarchy;
 	private int subHierarchy;
+	private double weight;
 	
 	public Action() {
 		tagDictionary = new TagDictionary();
@@ -50,11 +51,14 @@ public class Action implements Comparable<Action> {
 		return false;
 	}
 
-	//TODO: implement comparable or fix the getOptimalActionIndexForErrorCode for the QTable
+	/**
+	 * Compares action based on weights
+	 */
 	@Override
 	public int compareTo(Action otherAction) {
-		// TODO Auto-generated method stub
-		return 0;
+		Double thisWeight = new Double(weight);
+		Double otherWeight = new Double(otherAction.getWeight());
+		return thisWeight.compareTo(otherWeight);
 	}
 	
 	/**
@@ -88,6 +92,14 @@ public class Action implements Comparable<Action> {
 	 */
 	public boolean isDelete() {
 		return String.valueOf(code).startsWith("9999");
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
 	}
 
 	public int getCode() {

@@ -89,7 +89,7 @@ class ContextMap<T extends Comparable<T>> {
 	 * @return the location of highest value in the context map. If two are equal,
 	 *         one of them is returned. If the set is empty, null is returned.
 	 */
-	protected ActionLocation getOptimalActionLocation() {
+	protected T getOptimalAction() {
 		Set<Integer> contextIdSet = actions.keySet();
 		Integer[] contextIds = new Integer[contextIdSet.size()];
 		contextIds = contextIdSet.toArray(contextIds);
@@ -109,7 +109,7 @@ class ContextMap<T extends Comparable<T>> {
 				}
 			}
 
-			return new ActionLocation(optimalContextId, optimalActionId);
+			return optimalAction;
 		}
 		return null;
 	}

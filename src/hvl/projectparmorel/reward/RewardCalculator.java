@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hvl.projectparmorel.knowledge.Action;
-import hvl.projectparmorel.knowledge.ActionDirectory;
-import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.TagMap;
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.Preferences;
@@ -195,8 +194,8 @@ public class RewardCalculator {
 	 * @param tag
 	 */
 	public void rewardSequence(Sequence sequence, int tag) {
-		QTable qTable = knowledge.getQTable();
-		ActionDirectory actionDirectory = knowledge.getActionDirectory();
+		QTable qTable = knowledge.getActionDirectory();
+		QTable actionDirectory = knowledge.getActionDirectory();
 		int contextId;
 		for (int i = 0; i < sequence.getSeq().size(); i++) {
 			if (sequence.getSeq().get(i).getAction().getSubHierarchy() > -1) {

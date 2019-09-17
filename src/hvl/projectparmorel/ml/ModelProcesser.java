@@ -34,7 +34,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hvl.projectparmorel.knowledge.Action;
-import hvl.projectparmorel.knowledge.ActionDirectory;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
@@ -398,18 +397,14 @@ public class ModelProcesser {
 	 * @param action
 	 */
 	private void initializeQTableForAction(Error error, Action action) {
-		QTable qTable = knowledge.getQTable();
-		ActionDirectory actionDirectory = knowledge.getActionDirectory();
+		QTable actionDirectory = knowledge.getActionDirectory();
 
 		int contextId = action.getContextId();
 
-		if (!qTable.containsActionIdForErrorCodeAndContextId(error.getCode(), contextId, action.getCode())) {
+		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
 			double weight = rewardCalculator.initializeWeightFor(action);
-			qTable.setWeight(error.getCode(), contextId, action.getCode(), weight);
-
-			if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
-				actionDirectory.setAction(error.getCode(), contextId, action);
-			}
+			action.setWeight(weight);
+			actionDirectory.setAction(error.getCode(), contextId, action);
 		}
 	}
 

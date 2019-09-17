@@ -94,11 +94,9 @@ class ErrorMap<T extends Comparable<T>> {
 	 * @param errorCode
 	 * @return the location of highest value in the context map. If two are equal, one of them is returned. If the set is empty, null is returned.
 	 */
-	protected ActionLocation getOptimalActionIndexForErrorCode(Integer errorCode) {
+	protected T getOptimalActionForErrorCode(Integer errorCode) {
 		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
-		ActionLocation optimalActionLocation = contextForErrorCode.getOptimalActionLocation();
-		optimalActionLocation.setErrorCode(errorCode);
-		return optimalActionLocation;
+		return contextForErrorCode.getOptimalAction();
 	}
 
 	/**
@@ -151,4 +149,12 @@ class ErrorMap<T extends Comparable<T>> {
 			contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
 		}
 	}
+
+//	public void setAction(int errorCode, int contextId, Action action, double weight) {
+//		if (contexts.containsKey(errorCode)) {
+//			contexts.get(errorCode).setAction(contextId, action.getCode(), value);
+//		} else if (action instanceof Action){
+//			contexts.put(errorCode, new ContextMap<T>(contextId, ((Action) action).getCode(), weight));
+//		}
+//	}
 }

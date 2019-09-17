@@ -14,6 +14,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
@@ -28,7 +29,7 @@ public class QLearning {
 	private final int NUMBER_OF_EPISODES = 25;
 	private final int MAX_EPISODE_STEPS = 20;
 	
-	private hvl.projectparmorel.knowledge.Knowledge knowledge;
+	private Knowledge knowledge;
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
 	private ModelProcesser modelProcesser;
@@ -53,8 +54,8 @@ public class QLearning {
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
-		knowledge = new hvl.projectparmorel.knowledge.Knowledge();
-		qTable = knowledge.getQTable();
+		knowledge = new Knowledge();
+		qTable = knowledge.getActionDirectory();
 		actionExtractor = new ActionExtractor(knowledge);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();

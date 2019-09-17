@@ -9,13 +9,10 @@ import java.util.List;
  * @author Magnus Marthinsen
  */
 public class Knowledge {
-	
-	ActionDirectory actionDirectory;
-	QTable qTable;
+	private QTable actionDirectory;
 	
 	public Knowledge() {
-		actionDirectory = new ActionDirectory();
-		qTable = new QTable();
+		actionDirectory = new QTable();
 	}
 	
 	/**
@@ -26,18 +23,8 @@ public class Knowledge {
 	 * @param the preferences to influence. Only these preferences will be affected.
 	 */
 	public void influenceQTableFromPreferenceScores(List<Integer> preferences) {
-		ErrorContextActionDirectory<Double> qTableDirectory = qTable.getQTableDirectory();
 		ErrorContextActionDirectory<Action> preferenceScores = actionDirectory.getActionDirectory();
-		qTableDirectory.influenceWeightsByPreferedScores(preferenceScores, preferences);
-	}
-	
-	/**
-	 * Gets the QTable
-	 * 
-	 * @return the QTable
-	 */
-	public QTable getQTable(){
-		return qTable;
+		preferenceScores.influenceWeightsByPreferedScores(preferenceScores, preferences);
 	}
 	
 	/**
@@ -45,7 +32,7 @@ public class Knowledge {
 	 * 
 	 * @return the action directory
 	 */
-	public ActionDirectory getActionDirectory(){
+	public QTable getActionDirectory(){
 		return actionDirectory;
 	}
 	
@@ -56,9 +43,6 @@ public class Knowledge {
 	 * @return the action for the specified error code with the highest weight.
 	 */
 	public Action getOptimalActionForErrorCode(Integer errorCode) {
-		ActionLocation optimalActionLocation = qTable.getOptimalActionIndexForErrorCode(errorCode);
-		Action optimalAction = actionDirectory.getAction(errorCode, optimalActionLocation.getContextId(), optimalActionLocation.getActionId());
-		return optimalAction;
-//		return new hvl.projectparmorel.ml.Action(optimalAction.getCode(), optimalAction.getMessage(), optimalAction.getMethod(), optimalAction.getHierarchy(), optimalAction.getSubHierarchy());
+		return actionDirectory.getOptimalActionForErrorCode(errorCode);
 	}
 }
