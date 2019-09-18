@@ -21,7 +21,7 @@ public class QTable {
 
 	/**
 	 * Checks that the provided action Id exists for the specified error code and
-	 * contect id
+	 * context id
 	 * 
 	 * @param errorCode
 	 * @param contextId

@@ -20,10 +20,22 @@ public class Action implements Comparable<Action> {
 	private int subHierarchy;
 	private double weight;
 	
+	/**
+	 * Creates an action with no parameters set.
+	 */
 	public Action() {
 		preferenceMap = new PreferenceWeightMap();
 	}
 	
+	/**
+	 * Creates an action with all the parameters, except weight, set.
+	 * 
+	 * @param code
+	 * @param message
+	 * @param method
+	 * @param hierarchy
+	 * @param subHierarchy
+	 */
 	public Action(int code, String message, SerializableMethod method, int hierarchy, int subHierarchy) {
 		this();
 		this.code = code;
@@ -37,7 +49,7 @@ public class Action implements Comparable<Action> {
 	public String toString() {
 		return "Action" + code + ", msg=" + message + "." + System.getProperty("line.separator");
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Action) {
@@ -52,26 +64,13 @@ public class Action implements Comparable<Action> {
 	}
 
 	/**
-	 * Compares action based on weights
+	 * Compares actions based on weights
 	 */
 	@Override
 	public int compareTo(Action otherAction) {
 		Double thisWeight = new Double(weight);
 		Double otherWeight = new Double(otherAction.getWeight());
 		return thisWeight.compareTo(otherWeight);
-	}
-	
-	/**
-	 * Gets the context id
-	 * 
-	 * @return the context ID
-	 */
-	public int getContextId() {
-		if (subHierarchy > -1) {
-			return Integer.valueOf(String.valueOf(hierarchy) + String.valueOf(subHierarchy));
-		} else {
-			return hierarchy;
-		}
 	}
 	
 	/**
@@ -92,6 +91,19 @@ public class Action implements Comparable<Action> {
 	 */
 	public boolean isDelete() {
 		return String.valueOf(code).startsWith("9999");
+	}
+	
+	/**
+	 * Gets the context id
+	 * 
+	 * @return the context ID
+	 */
+	public int getContextId() {
+		if (subHierarchy > -1) {
+			return Integer.valueOf(String.valueOf(hierarchy) + String.valueOf(subHierarchy));
+		} else {
+			return hierarchy;
+		}
 	}
 
 	public double getWeight() {

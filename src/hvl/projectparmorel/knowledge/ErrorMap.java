@@ -149,12 +149,4 @@ class ErrorMap<T extends Comparable<T>> {
 			contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
 		}
 	}
-
-//	public void setAction(int errorCode, int contextId, Action action, double weight) {
-//		if (contexts.containsKey(errorCode)) {
-//			contexts.get(errorCode).setAction(contextId, action.getCode(), value);
-//		} else if (action instanceof Action){
-//			contexts.put(errorCode, new ContextMap<T>(contextId, ((Action) action).getCode(), weight));
-//		}
-//	}
 }

@@ -86,17 +86,4 @@ public abstract class ErrorContextActionDirectory<T extends Comparable<T>> {
 	 * @param value
 	 */
 	public abstract void setValue(Integer errorCode, Integer contextId, Integer actionId, T value);
-
-//	/**
-//	 * Sets the value for the specified action in the specified context for the
-//	 * specified error. If the error, context or action is not in the hierarchy,
-//	 * they will be added.
-//	 * 
-//	 * @param errorCode
-//	 * @param contextId
-//	 * @param actionId
-//	 * @param value
-//	 * @param weight
-//	 */
-//	protected abstract void setAction(int errorCode, int contextId, Action action, double weight);
 }

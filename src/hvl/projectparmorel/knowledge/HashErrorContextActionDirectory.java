@@ -15,12 +15,6 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	public void setValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
 		errors.setValue(errorCode, contextId, actionId, value);
 	}
-//	
-//	@Override
-//	protected void setAction(int errorCode, int contextId, Action action, double weight) {
-//		errors.setAction(errorCode, contextId, action, weight);
-//		
-//	}
 
 	@Override
 	public void setAllValuesTo(T value) {
