@@ -6,13 +6,11 @@ import java.util.List;
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.knowledge.Knowledge;
-import hvl.projectparmorel.knowledge.TagMap;
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.Preferences;
 import hvl.projectparmorel.ml.Sequence;
 
 public class RewardCalculator {
-	private TagMap tagMap;
 	private Knowledge knowledge;
 	private List<Integer> preferences;
 
@@ -27,7 +25,6 @@ public class RewardCalculator {
 	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
 		this.preferences = preferences;
-		tagMap = new TagMap();
 
 		Preferences prefs = new Preferences();
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
@@ -142,7 +139,8 @@ public class RewardCalculator {
 	 * @param value
 	 */
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
-		tagMap.setTag(error.getCode(), contextId, action.getCode(), tagId, value);
+		QTable qTable = knowledge.getActionDirectory();
+		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
 	}
 
 	/**
@@ -195,7 +193,6 @@ public class RewardCalculator {
 	 */
 	public void rewardSequence(Sequence sequence, int tag) {
 		QTable qTable = knowledge.getActionDirectory();
-		QTable actionDirectory = knowledge.getActionDirectory();
 		int contextId;
 		for (int i = 0; i < sequence.getSeq().size(); i++) {
 			if (sequence.getSeq().get(i).getAction().getSubHierarchy() > -1) {
@@ -211,17 +208,17 @@ public class RewardCalculator {
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
 			if (tag > -1) {
 
-				if (!actionDirectory.getTagDictionaryForAction(errorCode, contextId, actionId).getTagDictionary()
+				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).getTagDictionary()
 						.containsKey(tag)) {
-					actionDirectory.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, 500);
+					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, 500);
 				} else {
-					int oldTagValue = actionDirectory.getTagDictionaryForAction(errorCode, contextId, actionId)
+					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
 							.getTagDictionary().get(tag);
-					actionDirectory.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, oldTagValue + 500);
+					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, oldTagValue + 500);
 				}
 			}
-
-			tagMap.updateRewardInActionDirectory(actionDirectory, sequence.getSeq().get(i), contextId);
+			qTable.updateReward(sequence.getSeq().get(i), contextId);
+//			tagMap.updateRewardInActionDirectory(actionDirectory, sequence.getSeq().get(i), contextId);
 		}
 	}
 

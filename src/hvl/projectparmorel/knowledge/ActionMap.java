@@ -43,10 +43,10 @@ class ActionMap<T extends Comparable<T>> {
 	protected void influenceWeightsByPreferedScores(ActionMap<Action> actionMapForContext, List<Integer> preferences) {
 		for (Integer actionId : actions.keySet()) {
 			Action action = actionMapForContext.getValue(actionId);
-			TagDictionary tagDictionary = action.getTagDictionary();
-			for (Integer tagId : tagDictionary.getAllTagIds()) {
+			PreferenceWeightMap tagDictionary = action.getTagDictionary();
+			for (Integer tagId : tagDictionary.getAllPreferenceIds()) {
 				if (preferences.contains(tagId)) {
-					Double value = tagDictionary.getTagFor(tagId) * 0.2;
+					Double value = tagDictionary.getWeightFor(tagId) * 0.2;
 					value += (double) actions.get(actionId);
 
 					if (actions.values().toArray()[0] instanceof Double) {

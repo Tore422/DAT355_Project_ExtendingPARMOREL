@@ -1,5 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
+import hvl.projectparmorel.ml.ErrorAction;
+
 public class QTable {
 	ErrorContextActionDirectory<Action> qTable;
 
@@ -88,7 +90,7 @@ public class QTable {
 	public hvl.projectparmorel.ml.TagDictionary getTagDictionaryForAction(Integer errorCode, Integer contextId,
 			Integer actionId) {
 		Action action = getAction(errorCode, contextId, actionId);
-		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getTagDictionary());
+		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getPreferenceMap());
 	}
 
 	/**
@@ -138,5 +140,15 @@ public class QTable {
 	 */
 	protected Action getOptimalActionForErrorCode(Integer errorCode) {
 		return qTable.getOptimalActionForErrorCode(errorCode);
+	}
+
+	public void updateReward(ErrorAction errorAction, int contextId) {
+		int errorCode = errorAction.getError().getCode();
+		int actionId = errorAction.getAction().getCode();
+		
+		if(qTable.containsValueForErrorAndContext(errorCode, contextId, actionId)) {
+			Action actionToUpdate = errorAction.getAction();
+			actionToUpdate.savePreferenceWeights();
+		}
 	}
 }

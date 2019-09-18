@@ -12,7 +12,7 @@ import hvl.projectparmorel.ml.SerializableMethod;
  * Bergen - Norway
  */
 public class Action implements Comparable<Action> {
-	private TagDictionary tagDictionary;
+	private PreferenceWeightMap preferenceMap;
 	private int code;
 	private String message;
 	private SerializableMethod method;
@@ -21,7 +21,7 @@ public class Action implements Comparable<Action> {
 	private double weight;
 	
 	public Action() {
-		tagDictionary = new TagDictionary();
+		preferenceMap = new PreferenceWeightMap();
 	}
 	
 	public Action(int code, String message, SerializableMethod method, int hierarchy, int subHierarchy) {
@@ -130,7 +130,14 @@ public class Action implements Comparable<Action> {
 		this.message = message;
 	}
 
-	protected TagDictionary getTagDictionary() {
-		return tagDictionary;
+	protected PreferenceWeightMap getTagDictionary() {
+		return preferenceMap;
+	}
+
+	public void savePreferenceWeights() {
+		for(Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
+			preferenceMap.combineAndSavePreference(preferenceId);
+		}
+		
 	}
 }
