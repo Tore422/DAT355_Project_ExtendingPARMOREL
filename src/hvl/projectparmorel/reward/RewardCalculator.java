@@ -189,35 +189,33 @@ public class RewardCalculator {
 	 * Rewards the specified sequence
 	 * 
 	 * @param sequence
-	 * @param tag
+	 * @param preferenceId
 	 */
-	public void rewardSequence(Sequence sequence, int tag) {
+	public void rewardSequence(Sequence sequence, int preferenceId) {
 		QTable qTable = knowledge.getActionDirectory();
 		int contextId;
-		for (int i = 0; i < sequence.getSeq().size(); i++) {
-			if (sequence.getSeq().get(i).getAction().getSubHierarchy() > -1) {
-				contextId = Integer.valueOf(String.valueOf(sequence.getSeq().get(i).getAction().getHierarchy())
-						+ String.valueOf(sequence.getSeq().get(i).getAction().getSubHierarchy()));
+		for (int i = 0; i < sequence.getSequence().size(); i++) {
+			if (sequence.getSequence().get(i).getAction().getSubHierarchy() > -1) {
+				contextId = Integer.valueOf(String.valueOf(sequence.getSequence().get(i).getAction().getHierarchy())
+						+ String.valueOf(sequence.getSequence().get(i).getAction().getSubHierarchy()));
 			} else {
-				contextId = sequence.getSeq().get(i).getAction().getHierarchy();
+				contextId = sequence.getSequence().get(i).getAction().getHierarchy();
 			}
-			int errorCode = sequence.getSeq().get(i).getError().getCode();
-			int actionId = sequence.getSeq().get(i).getAction().getCode();
+			int errorCode = sequence.getSequence().get(i).getError().getCode();
+			int actionId = sequence.getSequence().get(i).getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
-			if (tag > -1) {
+			if (preferenceId > -1) {
 
-				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).getTagDictionary()
-						.containsKey(tag)) {
-					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, 500);
+				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
+					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
 				} else {
-					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
-							.getTagDictionary().get(tag);
-					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, tag, oldTagValue + 500);
+					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId).getWeightFor(preferenceId);
+					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
 				}
 			}
-			qTable.updateReward(sequence.getSeq().get(i), contextId);
+			qTable.updateReward(sequence.getSequence().get(i), contextId);
 //			tagMap.updateRewardInActionDirectory(actionDirectory, sequence.getSeq().get(i), contextId);
 		}
 	}
@@ -234,10 +232,10 @@ public class RewardCalculator {
 
 		if (preferences.contains(0)) {
 			for (Sequence sequence : sequences) {
-				if (sequence.getSeq().size() < smallestSequenceSize && sequence.getWeight() > 0) {
-					smallestSequenceSize = sequence.getSeq().size();
+				if (sequence.getSequence().size() < smallestSequenceSize && sequence.getWeight() > 0) {
+					smallestSequenceSize = sequence.getSequence().size();
 					optimalSequence = sequence;
-				} else if (sequence.getSeq().size() == smallestSequenceSize) {
+				} else if (sequence.getSequence().size() == smallestSequenceSize) {
 					if (sequence.getWeight() > optimalSequence.getWeight()) {
 						optimalSequence = sequence;
 					}
@@ -249,10 +247,10 @@ public class RewardCalculator {
 
 		if (preferences.contains(1)) {
 			for (Sequence sequence : sequences) {
-				if (sequence.getSeq().size() > largestSequenceSize && sequence.getWeight() > 0) {
-					largestSequenceSize = sequence.getSeq().size();
+				if (sequence.getSequence().size() > largestSequenceSize && sequence.getWeight() > 0) {
+					largestSequenceSize = sequence.getSequence().size();
 					optimalSequence = sequence;
-				} else if (sequence.getSeq().size() == largestSequenceSize) {
+				} else if (sequence.getSequence().size() == largestSequenceSize) {
 					if (sequence.getWeight() > optimalSequence.getWeight()) {
 						optimalSequence = sequence;
 					}

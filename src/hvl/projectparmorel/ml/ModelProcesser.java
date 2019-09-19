@@ -67,10 +67,10 @@ public class ModelProcesser {
 
 		for (Error error : errors) {
 			if (!knowledge.getActionDirectory().containsErrorCode(error.getCode())) {
-				for (int i = 0; i < error.getWhere().size(); i++) {
-					if (error.getWhere().get(i) != null) {
+				for (int i = 0; i < error.getContexts().size(); i++) {
+					if (error.getContexts().get(i) != null) {
 						for (Action action : possibleActions) {
-							if (isInvokable(error, error.getWhere().get(i).getClass(), action)) {
+							if (isInvokable(error, error.getContexts().get(i).getClass(), action)) {
 								List<Error> newErrors = tryApplyAction(error, action,
 										modelCopy, i);
 								if (newErrors != null) {
@@ -131,7 +131,7 @@ public class ModelProcesser {
 	 */
 	public List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
 		EPackage ePackage = (EPackage) model.getContents().get(0);
-		EObject object = (EObject) error.getWhere().get(hierarchy);
+		EObject object = (EObject) error.getContexts().get(hierarchy);
 
 		if (object != null) {
 			boolean success = false;
@@ -185,15 +185,15 @@ public class ModelProcesser {
 		if (duplicateErrors.containsKey(error.getCode()) && newErrorDuplicates.containsKey(error.getCode())) {
 			return true;
 		} else {
-			if (error.getWhere().get(index).getClass() == EGenericTypeImpl.class) {
-				EGenericTypeImpl eg = (EGenericTypeImpl) error.getWhere().get(index);
+			if (error.getContexts().get(index).getClass() == EGenericTypeImpl.class) {
+				EGenericTypeImpl eg = (EGenericTypeImpl) error.getContexts().get(index);
 				if (eg.getETypeArguments().size() > 0) {
 					return false;
 				}
 			}
 			for (int i = 0; i < newErrors.size(); i++) {
 				if (newErrors.get(i).getCode() == error.getCode()
-						&& newErrors.get(i).getWhere().size() == error.getWhere().size()) {
+						&& newErrors.get(i).getContexts().size() == error.getContexts().size()) {
 					return true;
 				}
 			}
@@ -466,7 +466,7 @@ public class ModelProcesser {
 	 */
 	private boolean deleteClass(EObject classToDelete, Error error) {
 		if (classToDelete.getClass() == EClassImpl.class
-				&& !isSameElement(classToDelete, (EObject) error.getWhere().get(0))) {
+				&& !isSameElement(classToDelete, (EObject) error.getContexts().get(0))) {
 			for (EReference reference : ((EClassImpl) classToDelete).getEAllReferences()) {
 				try {
 					EReferenceImpl oppositeReference = (EReferenceImpl) invokeMethod(
@@ -533,7 +533,7 @@ public class ModelProcesser {
 	 * @param action
 	 */
 	private void addTypeArguments(Error error, Action action) {
-		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getWhere().get(0);
+		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getContexts().get(0);
 		genericType.getETypeArguments().add(genericType);
 		action.setCode(88888);
 		action.setMessage("getETypeArguments().add(genericType)");
@@ -574,9 +574,9 @@ public class ModelProcesser {
 	 */
 	private EReferenceImpl findOpposite(EReferenceImpl reference, Error error) {
 		if (reference.getEOpposite() == null) { // if the initial ref is opp null
-			for (int i = 0; i < error.getWhere().size(); i++) { // look in the rest of refs
-				if (error.getWhere().get(i) != null) {
-					EReferenceImpl eaux = (EReferenceImpl) error.getWhere().get(i);
+			for (int i = 0; i < error.getContexts().size(); i++) { // look in the rest of refs
+				if (error.getContexts().get(i) != null) {
+					EReferenceImpl eaux = (EReferenceImpl) error.getContexts().get(i);
 					if (eaux.getEOpposite() == reference) { // if the opposite is the first ref
 						return eaux; // the first ref needs this one
 					}
@@ -675,7 +675,7 @@ public class ModelProcesser {
 		for (int i = 0; i < errors.size(); i++) {
 			for (int j = 0; j < errors.size(); j++) {
 				if (errors.get(i).getCode() == errors.get(j).getCode()
-						&& !errors.get(i).getWhere().toString().contentEquals(errors.get(j).getWhere().toString())) {
+						&& !errors.get(i).getContexts().toString().contentEquals(errors.get(j).getContexts().toString())) {
 					duplicateErrors.put(errors.get(i).getCode(), errors.get(i));
 				}
 			}

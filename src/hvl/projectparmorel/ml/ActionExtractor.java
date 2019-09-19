@@ -28,7 +28,7 @@ public class ActionExtractor {
 
 		for (Error error : errors) {
 			if (!knowledge.getActionDirectory().containsErrorCode(error.getCode())) {
-				List<?> contexts = (List<?>) error.getWhere();
+				List<?> contexts = (List<?>) error.getContexts();
 				actionsFound = addMethodsFromContextList(actionsFound, contexts);
 			}
 		}

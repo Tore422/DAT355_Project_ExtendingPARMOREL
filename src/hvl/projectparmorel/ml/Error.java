@@ -1,37 +1,33 @@
 package hvl.projectparmorel.ml;
-/*
- * Angela Barriga Rodriguez - 2019
+
+import java.util.List;
+
+/**
+ * 
+ * @author Magnus Marthinsen
+ * @author Angela Barriga Rodriguez - 2019
  * abar@hvl.no
  * Western Norway University of Applied Sciences
  * Bergen - Norway
  */
-
-import java.util.List;
-
 public class Error {
 
-	int code;
-	String msg;
-	List<?> where;
-	int sons;
+	private int code;
+	private String message;
+	private List<?> contexts;
 
 	public Error() {
-		super();
 	}
 
-	public Error(int code, String msg, List<?> object, int sons) {
-		super();
+	public Error(int code, String message, List<?> where) {
 		this.code = code;
-		this.msg = msg;
-		this.where = object;
-		this.sons = sons;
+		this.message = message;
+		this.contexts = where;
 	}
 
 	@Override
 	public String toString() {
-		// return "Error " + code + ", msg=" + msg + ", sons=" + sons+", where= "+where
-		// +System.getProperty("line.separator");
-		return "Error " + code + ", msg=" + msg + System.getProperty("line.separator");
+		return "Error " + code + ", message=" + message + System.getProperty("line.separator");
 
 	}
 
@@ -75,27 +71,19 @@ public class Error {
 		this.code = code;
 	}
 
-	public String getMsg() {
-		return msg;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setMsg(String msg) {
-		this.msg = msg;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
-	public List<?> getWhere() {
-		return where;
+	public List<?> getContexts() {
+		return contexts;
 	}
 
-	public void setWhere(List<?> where) {
-		this.where = where;
-	}
-
-	public int getSons() {
-		return sons;
-	}
-
-	public void setSons(int sons) {
-		this.sons = sons;
+	public void setContexts(List<?> contexts) {
+		this.contexts = contexts;
 	}
 }

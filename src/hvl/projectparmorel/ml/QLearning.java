@@ -160,7 +160,7 @@ public class QLearning {
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		if (bestSequence.getSeq().size() != 0) {
+		if (bestSequence.getSequence().size() != 0) {
 			rewardCalculator.rewardSequence(bestSequence, -1);
 			try {
 				bestSequence.getModel().save(null);
@@ -213,8 +213,8 @@ public class QLearning {
 		}
 
 		int val;
-		if (sequence.getSeq().size() > 7) {
-			val = loopChecker(sequence.getSeq());
+		if (sequence.getSequence().size() > 7) {
+			val = loopChecker(sequence.getSequence());
 			if (val > 1) {
 				totalReward -= val * 1000;
 			}
@@ -253,11 +253,11 @@ public class QLearning {
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
-		List<ErrorAction> errorActionList = sequence.getSeq();
+		List<ErrorAction> errorActionList = sequence.getSequence();
 		errorActionList.add(new ErrorAction(currentErrorToFix, action));
 
-		sequence.setSeq(errorActionList);
-		sequence.setU(uri);
+		sequence.setSequence(errorActionList);
+		sequence.setURI(uri);
 
 		int code;
 		if (action.getSubHierarchy() != -1) {
@@ -325,15 +325,15 @@ public class QLearning {
 		int same = 0;
 		for (Sequence seq : solvingMap) {
 			if (seq.getWeight() == s.getWeight()) {
-				for (ErrorAction ea : s.getSeq()) {
-					for (ErrorAction ea2 : seq.getSeq()) {
+				for (ErrorAction ea : s.getSequence()) {
+					for (ErrorAction ea2 : seq.getSequence()) {
 						if (ea.equals(ea2)) {
 							same++;
 						}
 					}
 				} // for ea
 					// if all elements in list are the same
-				if (same == s.getSeq().size()) {
+				if (same == s.getSequence().size()) {
 					check = false;
 					break;
 				}
@@ -361,17 +361,17 @@ public class QLearning {
 			nums.add(ea.get(i).getError());
 			if (nums.size() > 2) {
 				if (ea.get(i).getError().getCode() == nums.get(i - 2).getCode()) {
-					if (ea.get(i).getError().getWhere().get(0) == null) {
+					if (ea.get(i).getError().getContexts().get(0) == null) {
 						index = 1;
 					} else {
 						index = 0;
 					}
-					if (nums.get(i - 2).getWhere().get(0) == null) {
+					if (nums.get(i - 2).getContexts().get(0) == null) {
 						index2 = 1;
 					} else {
 						index2 = 0;
 					}
-					if (ea.get(i).getError().getWhere().get(index).getClass() == nums.get(i - 2).getWhere().get(index2)
+					if (ea.get(i).getError().getContexts().get(index).getClass() == nums.get(i - 2).getContexts().get(index2)
 							.getClass()) {
 						value++;
 					}

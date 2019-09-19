@@ -57,7 +57,7 @@ public class ErrorExtractor {
 		if (diagnostic.getCode() != 1) { // we don't remember what error code 1 is. Could it be an error at package
 											// level?
 			if (isPackageOrTwoFeatures(diagnostic)) {
-				return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData(), -1);
+				return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 			} else {
 				return getErrorFromErrorCode(diagnostic);
 			}
@@ -86,7 +86,7 @@ public class ErrorExtractor {
 		default:
 			Error error = handleEReferenceImplError(diagnostic);
 			if (error == null) {
-				error = new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData(), -1);
+				error = new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 			}
 			return error;
 		}
@@ -107,9 +107,9 @@ public class ErrorExtractor {
 		String code = String.valueOf(diagnostic.getCode());
 		if (diagnostic.getData().get(0).getClass().toString().contains("EReferenceImpl")) {
 			code = code + "1";
-			return new Error(Integer.parseInt(code), diagnostic.getMessage(), diagnostic.getData(), -1);
+			return new Error(Integer.parseInt(code), diagnostic.getMessage(), diagnostic.getData());
 		} else {
-			return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData(), -1);
+			return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 		}
 	}
 	
@@ -150,7 +150,7 @@ public class ErrorExtractor {
 		}
 		Error error = handleEReferenceImplError(diagnostic);
 		if (error == null) {
-			error = new Error(Integer.parseInt(s), diagnostic.getMessage(), diagnostic.getData(), -1);
+			error = new Error(Integer.parseInt(s), diagnostic.getMessage(), diagnostic.getData());
 		}
 		return error;
 	}
@@ -164,13 +164,13 @@ public class ErrorExtractor {
 	private static Error handleEReferenceImplError(Diagnostic diagnostic) {
 		if (diagnostic.getData().get(0).getClass() == EReferenceImpl.class) {
 			try {
-				Error e = new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData(), -1);
+				Error e = new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 				EReferenceImpl era = (EReferenceImpl) EReference.class.getMethod("getEOpposite")
 						.invoke(diagnostic.getData().get(0));
 				if (era != null) {
 					List<Object> contexts = new ArrayList<Object>(diagnostic.getData());
 					contexts.add(0, era);
-					e.setWhere(contexts);
+					e.setContexts(contexts);
 				}
 				return e;
 			} catch (IllegalAccessException e1) {

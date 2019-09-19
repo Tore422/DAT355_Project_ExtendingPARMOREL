@@ -87,10 +87,11 @@ public class QTable {
 	 * @param actionId
 	 * @return the tag dictionary for the action
 	 */
-	public hvl.projectparmorel.ml.TagDictionary getTagDictionaryForAction(Integer errorCode, Integer contextId,
+	public PreferenceWeightMap getTagDictionaryForAction(Integer errorCode, Integer contextId,
 			Integer actionId) {
 		Action action = getAction(errorCode, contextId, actionId);
-		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getPreferenceMap());
+		return action.getTagDictionary();
+//		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getPreferenceMap());
 	}
 
 	/**

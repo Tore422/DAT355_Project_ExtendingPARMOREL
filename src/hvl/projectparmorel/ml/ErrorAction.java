@@ -1,13 +1,13 @@
 package hvl.projectparmorel.ml;
-/*
- * Angela Barriga Rodriguez - 2019
+
+import hvl.projectparmorel.knowledge.Action;
+
+/**
+ * @author Angela Barriga Rodriguez - 2019
  * abar@hvl.no
  * Western Norway University of Applied Sciences
  * Bergen - Norway
  */
-
-import hvl.projectparmorel.knowledge.Action;
-
 public class ErrorAction {
 
 	Error error;
@@ -37,7 +37,7 @@ public class ErrorAction {
 
 	@Override
 	public String toString() {
-		return "ErrorAction [Error: " + error.getCode() + " " + error.getMsg() +", Action: "
+		return "ErrorAction [Error: " + error.getCode() + " " + error.getMessage() +", Action: "
 				+ action.getMessage() + ", Error hierarchy: " + action.getHierarchy() + ", " + action.getSubHierarchy() + "]"
 				+ System.getProperty("line.separator");
 	}
