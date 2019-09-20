@@ -97,4 +97,11 @@ public abstract class ErrorContextActionDirectory<T extends Comparable<T> & Sava
 	 * @param root
 	 */
 	protected abstract void saveTo(Document document, Element root);
+
+	/**
+	 * Loads content from the specified document from the root element.
+	 * 
+	 * @param root
+	 */
+	protected abstract void loadFrom(Document document);
 }

@@ -5,23 +5,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 class ContextMap<T extends Comparable<T> & Savable> {
+	private final String XML_NODE_NAME = "context";
+	private final String XML_ID_NAME = "id";
 	/**
 	 * A map containing the actions for the given context.
 	 */
 	private Map<Integer, ActionMap<T>> actions;
+	private Logger logger = Logger.getGlobal();
 
 	protected ContextMap() {
 		actions = new HashMap<>();
 	}
 
 	protected ContextMap(Integer contextId, Integer actionId, T value) {
-		actions = new HashMap<>();
+		this();
 		actions.put(contextId, new ActionMap<T>(actionId, value));
+	}
+
+	protected ContextMap(Element error) {
+		this();
+		NodeList contextList = error.getElementsByTagName(XML_NODE_NAME);
+		for(int i = 0; i < contextList.getLength(); i++) {
+			Node context = contextList.item(i);
+			if(context.getNodeType() == Node.ELEMENT_NODE) {
+				Element contextElement = (Element) context;
+				Integer contextId = Integer.parseInt(contextElement.getAttribute(XML_ID_NAME));
+				ActionMap<T> contextMap = new ActionMap<>(contextElement);
+				actions.put(contextId, contextMap);
+			} else {
+				logger.warning("The node " + context.getNodeName() + " is not correctly formated.");
+			}
+		}
 	}
 
 	/**
@@ -184,7 +207,12 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 */
 	protected void saveTo(Document document, Element error) {
 		for(Integer key : actions.keySet()) {
-            Element context = document.createElement("context");
+            Element context = document.createElement(XML_NODE_NAME);
+            
+            Attr contextId = document.createAttribute(XML_ID_NAME);
+            contextId.setValue("" + key);
+            context.setAttributeNode(contextId);
+            
             actions.get(key).saveTo(document, context);
             error.appendChild(context);
 		}

@@ -4,15 +4,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 class ErrorMap<T extends Comparable<T> & Savable> {
+	private final String XML_NODE_NAME = "error";
+	private final String XML_CODE_NAME = "code";
 	/**
 	 * A map containing the context for the given error codes.
 	 */
 	private Map<Integer, ContextMap<T>> contexts;
+	private Logger logger = Logger.getGlobal();
 
 	protected ErrorMap() {
 		contexts = new HashMap<>();
@@ -161,9 +168,35 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 */
 	protected void saveTo(Document document, Element root) {
 		for(Integer key : contexts.keySet()) {
-            Element error = document.createElement("error");
+            Element error = document.createElement(XML_NODE_NAME);
+            
+            Attr errorCode = document.createAttribute(XML_CODE_NAME);
+            errorCode.setValue("" + key);
+            error.setAttributeNode(errorCode);
+            
             contexts.get(key).saveTo(document, error);
             root.appendChild(error);
 		}	
+	}
+
+	/**
+	 * Loads the content from the specified document.
+	 * 
+	 * @param document
+	 */
+	protected void loadFrom(Document document) {
+		NodeList errorList = document.getElementsByTagName(XML_NODE_NAME);
+		for (int i = 0; i < errorList.getLength(); i++) {
+			Node error = errorList.item(i);
+			if(error.getNodeType() == Node.ELEMENT_NODE) {
+				Element errorElement = (Element) error;
+				Integer errorCode = Integer.parseInt(errorElement.getAttribute(XML_CODE_NAME));
+				ContextMap<T> contextMap = new ContextMap<>(errorElement);
+				contexts.put(errorCode, contextMap);
+			} else {
+				logger.warning("The node " + error.getNodeName() + " is not correctly formated.");
+			}
+		}
+
 	}
 }

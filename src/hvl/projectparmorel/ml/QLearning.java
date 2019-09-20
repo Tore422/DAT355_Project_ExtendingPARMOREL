@@ -89,6 +89,13 @@ public class QLearning {
 		knowledge.save();
 	}
 
+	/**
+	 * Loads knowledge from file
+	 */
+	public void loadKnowledge() {
+		knowledge.load();
+	}
+	
 	private static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
 		for (int i = 0; i < points; i++) {

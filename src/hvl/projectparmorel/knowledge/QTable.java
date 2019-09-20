@@ -164,4 +164,13 @@ public class QTable {
 	protected void saveTo(Document document, Element root) {
 		qTable.saveTo(document, root);	
 	}
+
+	/**
+	 * Loads content from the specified document
+	 * 
+	 * @param document
+	 */
+	protected void loadFrom(Document document) {
+		qTable.loadFrom(document);
+	}
 }

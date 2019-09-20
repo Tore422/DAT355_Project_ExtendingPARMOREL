@@ -5,23 +5,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 class ActionMap<T extends Comparable<T> & Savable> {
+	private final String XML_NODE_NAME = "action";
+	private final String XML_ID_NAME = "id";
 	/**
 	 * A map containing the actions for the given context.
 	 */
 	private Map<Integer, T> actions;
+	private Logger logger = Logger.getGlobal();
 
 	protected ActionMap() {
 		actions = new HashMap<>();
 	}
 
 	protected ActionMap(Integer actionId, T value) {
-		actions = new HashMap<>();
+		this();
 		actions.put(actionId, value);
+	}
+
+	protected ActionMap(Element context) {
+		this();
+		NodeList actionList = context.getElementsByTagName(XML_NODE_NAME);
+		for(int i = 0; i < actionList.getLength(); i++) {
+			Node action = actionList.item(i);
+			if(action.getNodeType() == Node.ELEMENT_NODE) {
+				Element contextElement = (Element) action;
+				Integer contextId = Integer.parseInt(contextElement.getAttribute(XML_ID_NAME));
+//				ActionMap<T> contextMap = new ActionMap<>(contextElement);
+//				actions.put(contextId, contextMap);
+			} else {
+				logger.warning("The node " + action.getNodeName() + " is not correctly formated.");
+			}
+		}
+		
 	}
 
 	/**
@@ -140,7 +164,12 @@ class ActionMap<T extends Comparable<T> & Savable> {
 	 */
 	protected void saveTo(Document document, Element context) {
 		for(Integer key : actions.keySet()) {
-            Element action = document.createElement("action");
+            Element action = document.createElement(XML_NODE_NAME);
+            
+            Attr contextId = document.createAttribute(XML_ID_NAME);
+            contextId.setValue("" + key);
+            action.setAttributeNode(contextId);
+            
             actions.get(key).saveTo(document, action);
             context.appendChild(action);
 		}

@@ -64,4 +64,9 @@ public class HashErrorContextActionDirectory<T extends Comparable<T> & Savable> 
 	protected void saveTo(Document document, Element root) {
 		errors.saveTo(document, root);		
 	}
+
+	@Override
+	protected void loadFrom(Document document) {
+		errors.loadFrom(document);		
+	}
 }
