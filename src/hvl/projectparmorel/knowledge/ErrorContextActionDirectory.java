@@ -3,7 +3,10 @@ package hvl.projectparmorel.knowledge;
 import java.util.List;
 import java.util.Set;
 
-public abstract class ErrorContextActionDirectory<T extends Comparable<T>> {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public abstract class ErrorContextActionDirectory<T extends Comparable<T> & Savable> {
 	public ErrorContextActionDirectory() {
 
 	}
@@ -86,4 +89,12 @@ public abstract class ErrorContextActionDirectory<T extends Comparable<T>> {
 	 * @param value
 	 */
 	public abstract void setValue(Integer errorCode, Integer contextId, Integer actionId, T value);
+
+	/**
+	 * Saves content to the document under the root element
+	 * 
+	 * @param document 
+	 * @param root
+	 */
+	protected abstract void saveTo(Document document, Element root);
 }

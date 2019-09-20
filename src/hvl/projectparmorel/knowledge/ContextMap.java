@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-class ContextMap<T extends Comparable<T>> {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+class ContextMap<T extends Comparable<T> & Savable> {
 	/**
 	 * A map containing the actions for the given context.
 	 */
@@ -170,6 +173,20 @@ class ContextMap<T extends Comparable<T>> {
 			actions.get(contextId).setValue(actionId, value);
 		} else {
 			actions.put(contextId, new ActionMap<T>(actionId, value));
+		}
+	}
+
+	/**
+	 * Saves content to the document under the error element
+	 * 
+	 * @param document 
+	 * @param error
+	 */
+	protected void saveTo(Document document, Element error) {
+		for(Integer key : actions.keySet()) {
+            Element context = document.createElement("context");
+            actions.get(key).saveTo(document, context);
+            error.appendChild(context);
 		}
 	}
 }

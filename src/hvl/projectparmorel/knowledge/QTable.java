@@ -1,5 +1,8 @@
 package hvl.projectparmorel.knowledge;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import hvl.projectparmorel.ml.ErrorAction;
 
 public class QTable {
@@ -91,7 +94,6 @@ public class QTable {
 			Integer actionId) {
 		Action action = getAction(errorCode, contextId, actionId);
 		return action.getTagDictionary();
-//		return new hvl.projectparmorel.ml.TagDictionary(action.getTagDictionary().getPreferenceMap());
 	}
 
 	/**
@@ -151,5 +153,15 @@ public class QTable {
 			Action actionToUpdate = errorAction.getAction();
 			actionToUpdate.savePreferenceWeights();
 		}
+	}
+
+	/**
+	 * Saves content to the document under the root element
+	 * 
+	 * @param document 
+	 * @param root
+	 */
+	protected void saveTo(Document document, Element root) {
+		qTable.saveTo(document, root);	
 	}
 }

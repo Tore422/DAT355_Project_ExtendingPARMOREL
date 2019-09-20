@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class ErrorMap<T extends Comparable<T>> {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+class ErrorMap<T extends Comparable<T> & Savable> {
 	/**
 	 * A map containing the context for the given error codes.
 	 */
@@ -148,5 +151,19 @@ class ErrorMap<T extends Comparable<T>> {
 		} else {
 			contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
 		}
+	}
+
+	/**
+	 * Saves content to the document under the root element
+	 * 
+	 * @param document 
+	 * @param root
+	 */
+	protected void saveTo(Document document, Element root) {
+		for(Integer key : contexts.keySet()) {
+            Element error = document.createElement("error");
+            contexts.get(key).saveTo(document, error);
+            root.appendChild(error);
+		}	
 	}
 }

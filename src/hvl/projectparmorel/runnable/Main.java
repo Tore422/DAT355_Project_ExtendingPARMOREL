@@ -104,7 +104,7 @@ public class Main {
 		endTimeT = System.currentTimeMillis();
 		long timeneededT = (endTimeT - startTimeT);
 		System.out.println("TOTAL EXECUTION TIME: " + timeneededT);
-//		ql.saveKnowledge();
+		ql.saveKnowledge();
 		System.exit(0);
 	}
 	

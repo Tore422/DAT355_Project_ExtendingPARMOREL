@@ -82,12 +82,12 @@ public class QLearning {
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 
-//	/**
-//	 * Saves the knowledge
-//	 */
-//	public void saveKnowledge() {
-//		knowledge.save();
-//	}
+	/**
+	 * Saves the knowledge
+	 */
+	public void saveKnowledge() {
+		knowledge.save();
+	}
 
 	private static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
@@ -165,7 +165,6 @@ public class QLearning {
 			try {
 				bestSequence.getModel().save(null);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

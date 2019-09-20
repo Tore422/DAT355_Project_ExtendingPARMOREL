@@ -1,6 +1,20 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Represents the algorithms knowledge.
@@ -9,6 +23,8 @@ import java.util.List;
  * @author Magnus Marthinsen
  */
 public class Knowledge {
+	private Logger logger = Logger.getGlobal();
+	private final String knowledgeFileName = "knowledge.xml";
 	private QTable actionDirectory;
 	
 	public Knowledge() {
@@ -44,5 +60,34 @@ public class Knowledge {
 	 */
 	public Action getOptimalActionForErrorCode(Integer errorCode) {
 		return actionDirectory.getOptimalActionForErrorCode(errorCode);
+	}
+
+	/**
+	 * Saves the knowledge to file.
+	 */
+	public void save() {
+		logger.info("Saving initialized");
+		try {
+			DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+            Document document = documentBuilder.newDocument();
+            logger.info("document created");
+            
+            Element root = document.createElement("knowledge");
+            document.appendChild(root);
+            
+            actionDirectory.saveTo(document, root);
+            
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(new File(knowledgeFileName));
+            transformer.transform(domSource, streamResult);
+            logger.info("Saving completed");
+		}  catch (ParserConfigurationException pce) {
+            pce.printStackTrace();
+        } catch (TransformerException tfe) {
+            tfe.printStackTrace();
+        }
 	}
 }

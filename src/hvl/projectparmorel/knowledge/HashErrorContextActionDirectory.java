@@ -3,7 +3,10 @@ package hvl.projectparmorel.knowledge;
 import java.util.List;
 import java.util.Set;
 
-public class HashErrorContextActionDirectory<T extends Comparable<T>> extends ErrorContextActionDirectory<T> {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class HashErrorContextActionDirectory<T extends Comparable<T> & Savable> extends ErrorContextActionDirectory<T> {
 	private ErrorMap<T> errors;
 
 	public HashErrorContextActionDirectory() {
@@ -55,5 +58,10 @@ public class HashErrorContextActionDirectory<T extends Comparable<T>> extends Er
 	@Override
 	protected boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId) {
 		return errors.containsValueForErrorCodeAndContextId(errorCode, contextId, actionId);
+	}
+
+	@Override
+	protected void saveTo(Document document, Element root) {
+		errors.saveTo(document, root);		
 	}
 }

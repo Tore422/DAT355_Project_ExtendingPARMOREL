@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class PreferenceWeightMap {
 	/**
 	 * This is the map updated through the execution.
@@ -76,6 +80,26 @@ public class PreferenceWeightMap {
 			storedPreferenceMap.put(preferenceId, storedPreferenceMap.get(preferenceId) + executionPreferenceMap.get(preferenceId));
 		} else {
 			storedPreferenceMap.put(preferenceId, executionPreferenceMap.get(preferenceId));
+		}
+	}
+
+	/**
+	 * Saves the content to the document under preferenceMap
+	 * @param document
+	 * @param preferenceMap
+	 */
+	protected void saveTo(Document document, Element preferenceMap) {
+		for(Integer key : storedPreferenceMap.keySet()) {
+			Element preference = document.createElement("preference");
+			preferenceMap.appendChild(preference);
+			
+			Attr preferenceId = document.createAttribute("id");
+			preferenceId.setValue("" + key);
+            preference.setAttributeNode(preferenceId);
+			
+			Attr value = document.createAttribute("value");
+            value.setValue("" + storedPreferenceMap.get(key));
+            preference.setAttributeNode(value);
 		}
 	}
 }
