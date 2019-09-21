@@ -1,6 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -93,9 +94,10 @@ public class Knowledge {
 	}
 
 	public void load() {
-		logger.info("Loading initialized");
 		try {
+			logger.info("Loading initialized");
 			File fXmlFile = new File(knowledgeFileName);
+			logger.info("File found");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
@@ -103,6 +105,8 @@ public class Knowledge {
 
 			logger.info("Root found: " + doc.getDocumentElement().getNodeName());
 			actionDirectory.loadFrom(doc);
+		} catch (FileNotFoundException e) {
+			logger.info("File not found");
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
