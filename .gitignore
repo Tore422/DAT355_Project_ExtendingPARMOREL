@@ -26,6 +26,8 @@ hs_err_pid*
 /bin/
 
 # Files specific to this project
+knowledge.xml
+
 ##  Fixed models
 fixed/*
 tofix\\repaired-test_model.ecore
