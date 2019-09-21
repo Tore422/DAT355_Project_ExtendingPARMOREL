@@ -1,10 +1,10 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -19,7 +19,6 @@ class ContextMap {
 	 * A map containing the actions for the given context.
 	 */
 	private Map<Integer, ActionMap> actions;
-	private Logger logger = Logger.getGlobal();
 
 	protected ContextMap() {
 		actions = new HashMap<>();
@@ -30,7 +29,7 @@ class ContextMap {
 		actions.put(contextId, new ActionMap(actionId, action));
 	}
 
-	protected ContextMap(Element error) {
+	protected ContextMap(Element error) throws IOException {
 		this();
 		NodeList contextList = error.getElementsByTagName(XML_NODE_NAME);
 		for(int i = 0; i < contextList.getLength(); i++) {
@@ -41,7 +40,7 @@ class ContextMap {
 				ActionMap contextMap = new ActionMap(contextElement);
 				actions.put(contextId, contextMap);
 			} else {
-				logger.warning("The node " + context.getNodeName() + " is not correctly formated.");
+				throw new IOException("Could not instantiate context from node " + context.getNodeName());
 			}
 		}
 	}

@@ -25,7 +25,7 @@ public class Main {
 			InvocationTargetException, IOException, NoSuchMethodException, SecurityException {
 
 		QLearning ql = new QLearning(createTags(0));
-
+		ql.loadKnowledge();
 		long startTimeT = System.currentTimeMillis();
 		long endTimeT = 0;
 		String root = "././mutants/";

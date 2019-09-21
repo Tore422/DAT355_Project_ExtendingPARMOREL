@@ -1,5 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -7,8 +8,13 @@ import java.util.Set;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class PreferenceWeightMap {
+	private final String XML_ID_NAME = "id";
+	private final String XML_VALUE_NAME = "value";
+	
 	/**
 	 * This is the map updated through the execution.
 	 */
@@ -25,6 +31,25 @@ public class PreferenceWeightMap {
 	
 	public PreferenceWeightMap(Map<Integer, Integer> preferenceMap) {
 		this.executionPreferenceMap = preferenceMap;
+		storedPreferenceMap = new HashMap<Integer, Integer>();
+	}
+
+	protected PreferenceWeightMap(NodeList preferenceList) throws IOException {
+		this();
+		for(int i = 0; i < preferenceList.getLength(); i++) {
+			Node context = preferenceList.item(i);
+			if(context.getNodeType() == Node.ELEMENT_NODE) {
+				Element preferenceElement = (Element) context;
+				String preferenceIdAsString = preferenceElement.getAttribute(XML_ID_NAME);
+				if(preferenceIdAsString.length() > 0) {
+					Integer preferenceId = Integer.parseInt(preferenceIdAsString);
+					Integer value = Integer.parseInt(preferenceElement.getAttribute(XML_VALUE_NAME));
+					storedPreferenceMap.put(preferenceId, value);
+				}
+			} else {
+				throw new IOException("Could not instantiate preference map from " + context.getNodeName());
+			}
+		}
 	}
 
 	public Map<Integer, Integer> getPreferenceMap() {
@@ -93,11 +118,11 @@ public class PreferenceWeightMap {
 			Element preference = document.createElement("preference");
 			preferenceMap.appendChild(preference);
 			
-			Attr preferenceId = document.createAttribute("id");
+			Attr preferenceId = document.createAttribute(XML_ID_NAME);
 			preferenceId.setValue("" + key);
             preference.setAttributeNode(preferenceId);
 			
-			Attr value = document.createAttribute("value");
+			Attr value = document.createAttribute(XML_VALUE_NAME);
             value.setValue("" + storedPreferenceMap.get(key));
             preference.setAttributeNode(value);
 		}

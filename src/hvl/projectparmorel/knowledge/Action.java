@@ -9,6 +9,7 @@ import java.util.Base64;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import hvl.projectparmorel.ml.Error;
 import hvl.projectparmorel.ml.SerializableMethod;
@@ -21,6 +22,14 @@ import hvl.projectparmorel.ml.SerializableMethod;
  *         Western Norway University of Applied Sciences Bergen - Norway
  */
 public class Action implements Comparable<Action> {
+	private final String XML_CODE_NAME = "code";
+	private final String XML_WEIGHT_NAME = "weight";
+	private final String XML_MESSAGE_NAME = "message";
+	private final String XML_HIERARCHY_NAME = "hierarchy";
+	private final String XML_SUBHIERARCHY_NAME = "subHierarchy";
+	private final String XML_METHOD_NAME = "method";
+	private final String XML_PREFERENCEMAP_NAME = "preferenceMap";
+
 	private PreferenceWeightMap preferenceMap;
 	private int code;
 	private String message;
@@ -52,6 +61,23 @@ public class Action implements Comparable<Action> {
 		this.method = method;
 		this.hierarchy = hierarchy;
 		this.subHierarchy = subHierarchy;
+	}
+
+	protected Action(Element action) throws IOException {
+		if (action.getNodeType() == Node.ELEMENT_NODE) {
+			Element actionElement = (Element) action;
+			code = Integer.parseInt(actionElement.getElementsByTagName(XML_CODE_NAME).item(0).getTextContent());
+			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
+			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
+			hierarchy = Integer
+					.parseInt(actionElement.getElementsByTagName(XML_HIERARCHY_NAME).item(0).getTextContent());
+			subHierarchy = Integer
+					.parseInt(actionElement.getElementsByTagName(XML_SUBHIERARCHY_NAME).item(0).getTextContent());
+			method = getMethodFromString(actionElement.getElementsByTagName(XML_METHOD_NAME).item(0).getTextContent());
+			preferenceMap = new PreferenceWeightMap(actionElement.getElementsByTagName(XML_PREFERENCEMAP_NAME));
+		} else {
+			throw new IOException("Could not instantiate action from node " + action.getNodeName());
+		}
 	}
 
 	@Override
@@ -161,31 +187,31 @@ public class Action implements Comparable<Action> {
 	}
 
 	public void saveTo(Document document, Element action) {
-		Element code = document.createElement("code");
+		Element code = document.createElement(XML_CODE_NAME);
 		code.appendChild(document.createTextNode("" + this.code));
 		action.appendChild(code);
 
-		Element weight = document.createElement("weight");
+		Element weight = document.createElement(XML_WEIGHT_NAME);
 		weight.appendChild(document.createTextNode("" + this.weight));
 		action.appendChild(weight);
 
-		Element message = document.createElement("message");
-		message.appendChild(document.createTextNode("" + this.message));
+		Element message = document.createElement(XML_MESSAGE_NAME);
+		message.appendChild(document.createTextNode(this.message));
 		action.appendChild(message);
 
-		Element hierarchy = document.createElement("hierarchy");
+		Element hierarchy = document.createElement(XML_HIERARCHY_NAME);
 		hierarchy.appendChild(document.createTextNode("" + this.hierarchy));
 		action.appendChild(hierarchy);
 
-		Element subHierarchy = document.createElement("subHierarchy");
+		Element subHierarchy = document.createElement(XML_SUBHIERARCHY_NAME);
 		subHierarchy.appendChild(document.createTextNode("" + this.subHierarchy));
 		action.appendChild(subHierarchy);
 
-		Element method = document.createElement("method");
+		Element method = document.createElement(XML_METHOD_NAME);
 		method.appendChild(document.createTextNode(getMethodAsString()));
 		action.appendChild(method);
-		
-		Element preferenceMap = document.createElement("preferenceMap");
+
+		Element preferenceMap = document.createElement(XML_PREFERENCEMAP_NAME);
 		action.appendChild(preferenceMap);
 		this.preferenceMap.saveTo(document, preferenceMap);
 	}
@@ -208,12 +234,25 @@ public class Action implements Comparable<Action> {
 		return "ERROR WRITING METHOD AS STRING";
 	}
 
-	/** Read the object from Base64 string. */
-	private static Object fromString(String s) throws IOException, ClassNotFoundException {
-		byte[] data = Base64.getDecoder().decode(s);
-		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-		Object o = ois.readObject();
-		ois.close();
-		return o;
+	/**
+	 * Read the object from Base64 string.
+	 * 
+	 * @throws IOException 
+	 */
+	private SerializableMethod getMethodFromString(String methodAsString) throws IOException {
+		Object object = null;
+		try {
+			byte[] data = Base64.getDecoder().decode(methodAsString);
+			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			object = ois.readObject();
+			ois.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (object instanceof SerializableMethod) {
+			return (SerializableMethod) object;
+		}
+		return null;
 	}
 }

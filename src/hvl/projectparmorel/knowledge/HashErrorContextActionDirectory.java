@@ -1,5 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.w3c.dom.Document;
@@ -66,6 +67,10 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 
 	@Override
 	protected void loadFrom(Document document) {
-		errors.loadFrom(document);		
+		try {
+			errors.loadFrom(document);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 }

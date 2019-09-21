@@ -1,9 +1,9 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -18,7 +18,6 @@ class ErrorMap {
 	 * A map containing the context for the given error codes.
 	 */
 	private Map<Integer, ContextMap> contexts;
-	private Logger logger = Logger.getGlobal();
 
 	protected ErrorMap() {
 		contexts = new HashMap<>();
@@ -182,8 +181,9 @@ class ErrorMap {
 	 * Loads the content from the specified document.
 	 * 
 	 * @param document
+	 * @throws IOException 
 	 */
-	protected void loadFrom(Document document) {
+	protected void loadFrom(Document document) throws IOException {
 		NodeList errorList = document.getElementsByTagName(XML_NODE_NAME);
 		for (int i = 0; i < errorList.getLength(); i++) {
 			Node error = errorList.item(i);
@@ -193,7 +193,7 @@ class ErrorMap {
 				ContextMap contextMap = new ContextMap(errorElement);
 				contexts.put(errorCode, contextMap);
 			} else {
-				logger.warning("The node " + error.getNodeName() + " is not correctly formated.");
+				throw new IOException("Could not instantiate error from node " + error.getNodeName());
 			}
 		}
 	}

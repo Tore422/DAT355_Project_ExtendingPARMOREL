@@ -1,10 +1,10 @@
 package hvl.projectparmorel.knowledge;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -19,7 +19,6 @@ class ActionMap {
 	 * A map containing the actions for the given context.
 	 */
 	private Map<Integer, Action> actions;
-	private Logger logger = Logger.getGlobal();
 
 	protected ActionMap() {
 		actions = new HashMap<>();
@@ -30,21 +29,20 @@ class ActionMap {
 		actions.put(actionId, action);
 	}
 
-	protected ActionMap(Element context) {
+	protected ActionMap(Element context) throws IOException {
 		this();
 		NodeList actionList = context.getElementsByTagName(XML_NODE_NAME);
 		for(int i = 0; i < actionList.getLength(); i++) {
-			Node action = actionList.item(i);
-			if(action.getNodeType() == Node.ELEMENT_NODE) {
-				Element contextElement = (Element) action;
-				Integer contextId = Integer.parseInt(contextElement.getAttribute(XML_ID_NAME));
-//				ActionMap<T> contextMap = new ActionMap<>(contextElement);
-//				actions.put(contextId, contextMap);
+			Node actionNode = actionList.item(i);
+			if(actionNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element actionElement = (Element) actionNode;
+				Integer actionId = Integer.parseInt(actionElement.getAttribute(XML_ID_NAME));
+				Action action = new Action(actionElement);
+				actions.put(actionId, action);
 			} else {
-				logger.warning("The node " + action.getNodeName() + " is not correctly formated.");
+				throw new IOException("Could not instantiate action map from node " + actionNode.getNodeName());
 			}
 		}
-		
 	}
 
 //	/**
