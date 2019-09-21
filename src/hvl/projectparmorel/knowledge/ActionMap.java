@@ -1,7 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -13,22 +12,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class ActionMap<T extends Comparable<T> & Savable> {
+class ActionMap {
 	private final String XML_NODE_NAME = "action";
 	private final String XML_ID_NAME = "id";
 	/**
 	 * A map containing the actions for the given context.
 	 */
-	private Map<Integer, T> actions;
+	private Map<Integer, Action> actions;
 	private Logger logger = Logger.getGlobal();
 
 	protected ActionMap() {
 		actions = new HashMap<>();
 	}
 
-	protected ActionMap(Integer actionId, T value) {
+	protected ActionMap(Integer actionId, Action action) {
 		this();
-		actions.put(actionId, value);
+		actions.put(actionId, action);
 	}
 
 	protected ActionMap(Element context) {
@@ -48,44 +47,44 @@ class ActionMap<T extends Comparable<T> & Savable> {
 		
 	}
 
-	/**
-	 * Clears all the values, setting them to the provided value.
-	 * 
-	 * @param value to set
-	 */
-	protected void setAllValuesTo(T value) {
-		for (Integer actionKey : actions.keySet()) {
-			actions.put(actionKey, value);
-		}
-	}
+//	/**
+//	 * Clears all the values, setting them to the provided value.
+//	 * 
+//	 * @param value to set
+//	 */
+//	protected void setAllValuesTo(T value) {
+//		for (Integer actionKey : actions.keySet()) {
+//			actions.put(actionKey, value);
+//		}
+//	}
 
-	/**
-	 * Influences the weights in the QTable from the action map if the action is in
-	 * the preferences.
-	 * 
-	 * @param actionMapForContext
-	 * @param preferences
-	 */
-	@SuppressWarnings("unchecked")
-	protected void influenceWeightsByPreferedScores(ActionMap<Action> actionMapForContext, List<Integer> preferences) {
-		for (Integer actionId : actions.keySet()) {
-			Action action = actionMapForContext.getValue(actionId);
-			PreferenceWeightMap tagDictionary = action.getTagDictionary();
-			for (Integer tagId : tagDictionary.getAllPreferenceIds()) {
-				if (preferences.contains(tagId)) {
-					Double value = tagDictionary.getWeightFor(tagId) * 0.2;
-					value += (double) actions.get(actionId);
-
-					if (actions.values().toArray()[0] instanceof Double) {
-						actions.put(actionId, (T) value);
-					} else {
-						throw new IllegalStateException("The QTable must be parametrized with Double.");
-					}
-
-				}
-			}
-		}
-	}
+//	/**
+//	 * Influences the weights in the QTable from the action map if the action is in
+//	 * the preferences.
+//	 * 
+//	 * @param actionMapForContext
+//	 * @param preferences
+//	 */
+//	@SuppressWarnings("unchecked")
+//	protected void influenceWeightsByPreferedScores(ActionMap<Action> actionMapForContext, List<Integer> preferences) {
+//		for (Integer actionId : actions.keySet()) {
+//			Action action = actionMapForContext.getValue(actionId);
+//			PreferenceWeightMap tagDictionary = action.getTagDictionary();
+//			for (Integer tagId : tagDictionary.getAllPreferenceIds()) {
+//				if (preferences.contains(tagId)) {
+//					Double value = tagDictionary.getWeightFor(tagId) * 0.2;
+//					value += (double) actions.get(actionId);
+//
+//					if (actions.values().toArray()[0] instanceof Double) {
+//						actions.put(actionId, (T) value);
+//					} else {
+//						throw new IllegalStateException("The QTable must be parametrized with Double.");
+//					}
+//
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * Checks that the action map contains a given action id.
@@ -98,12 +97,12 @@ class ActionMap<T extends Comparable<T> & Savable> {
 	}
 
 	/**
-	 * Gets the key for highest value
+	 * Gets the key for optimal action
 	 * 
 	 * @return the highest value in the action map. If two are equal, one of them is
 	 *         returned. If the set is empty, null is returned.
 	 */
-	protected Integer getHihgestValueKey() {
+	protected Integer getBestActionKey() {
 		Set<Integer> actionIdSet = actions.keySet();
 		Integer[] actionIds = new Integer[actionIdSet.size()];
 		actionIds = actionIdSet.toArray(actionIds);
@@ -111,8 +110,8 @@ class ActionMap<T extends Comparable<T> & Savable> {
 			Integer optimalActionId = actionIds[0];
 
 			for (int i = 1; i < actionIds.length; i++) {
-				T optimalAction = actions.get(optimalActionId);
-				T action = actions.get(actionIds[i]);
+				Action optimalAction = actions.get(optimalActionId);
+				Action action = actions.get(actionIds[i]);
 				if (action.compareTo(optimalAction) > 0) {
 					optimalActionId = actionIds[i];
 				}
@@ -123,11 +122,11 @@ class ActionMap<T extends Comparable<T> & Savable> {
 	}
 
 	/**
-	 * Gets a random value
+	 * Gets a random action
 	 * 
-	 * @return a random value
+	 * @return a random action
 	 */
-	protected T getRandomValue() {
+	protected Action getRandomAction() {
 		Random randomGenerator = new Random();
 		Integer[] actionIds = new Integer[actions.keySet().size()];
 		actionIds = actions.keySet().toArray(actionIds);
@@ -136,23 +135,23 @@ class ActionMap<T extends Comparable<T> & Savable> {
 	}
 	
 	/**
-	 * Sets the value for the specified action. If the action is not in the
+	 * Sets the action for the specified action id. If the action is not in the
 	 * hierarchy, it will be added.
 	 * 
 	 * @param actionId
-	 * @param value
+	 * @param action
 	 */
-	protected void setValue(Integer actionId, T value) {
-		actions.put(actionId, value);
+	protected void setAction(Integer actionId, Action action) {
+		actions.put(actionId, action);
 	}
 	
 	/**
-	 * Gets the value for the specified action
+	 * Gets the value for the specified action id
 	 * 
 	 * @param actionId
-	 * @return the value for the specified action
+	 * @return the action for the specified action
 	 */
-	protected T getValue(Integer actionId) {
+	protected Action getAction(Integer actionId) {
 		return actions.get(actionId);
 	}
 

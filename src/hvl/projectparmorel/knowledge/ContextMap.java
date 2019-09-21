@@ -1,7 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -13,22 +12,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
-class ContextMap<T extends Comparable<T> & Savable> {
+class ContextMap {
 	private final String XML_NODE_NAME = "context";
 	private final String XML_ID_NAME = "id";
 	/**
 	 * A map containing the actions for the given context.
 	 */
-	private Map<Integer, ActionMap<T>> actions;
+	private Map<Integer, ActionMap> actions;
 	private Logger logger = Logger.getGlobal();
 
 	protected ContextMap() {
 		actions = new HashMap<>();
 	}
 
-	protected ContextMap(Integer contextId, Integer actionId, T value) {
+	protected ContextMap(Integer contextId, Integer actionId, Action action) {
 		this();
-		actions.put(contextId, new ActionMap<T>(actionId, value));
+		actions.put(contextId, new ActionMap(actionId, action));
 	}
 
 	protected ContextMap(Element error) {
@@ -39,7 +38,7 @@ class ContextMap<T extends Comparable<T> & Savable> {
 			if(context.getNodeType() == Node.ELEMENT_NODE) {
 				Element contextElement = (Element) context;
 				Integer contextId = Integer.parseInt(contextElement.getAttribute(XML_ID_NAME));
-				ActionMap<T> contextMap = new ActionMap<>(contextElement);
+				ActionMap contextMap = new ActionMap(contextElement);
 				actions.put(contextId, contextMap);
 			} else {
 				logger.warning("The node " + context.getNodeName() + " is not correctly formated.");
@@ -47,42 +46,42 @@ class ContextMap<T extends Comparable<T> & Savable> {
 		}
 	}
 
-	/**
-	 * Clears all the values, setting them to the provided value.
-	 * 
-	 * @param value to set
-	 */
-	protected void setAllValuesTo(T value) {
-		for (ActionMap<T> action : actions.values()) {
-			action.setAllValuesTo(value);
-		}
-	}
+//	/**
+//	 * Clears all the values, setting them to the provided value.
+//	 * 
+//	 * @param value to set
+//	 */
+//	protected void setAllValuesTo(T value) {
+//		for (ActionMap<T> action : actions.values()) {
+//			action.setAllValuesTo(value);
+//		}
+//	}
 
-	/**
-	 * Influence the weight of the scores by the once stored in prefereneScores if
-	 * the preference is in preferences.
-	 * 
-	 * @param contextMapForErrorCode
-	 * @param preferences
-	 */
-	protected void influenceWeightsByPreferedScores(ContextMap<Action> contextMapForErrorCode,
-			List<Integer> preferences) {
-		for (Integer contextId : actions.keySet()) {
-			ActionMap<T> actionMapForContext = actions.get(contextId);
-			actionMapForContext.influenceWeightsByPreferedScores(
-					contextMapForErrorCode.getActionMapForContext(contextId), preferences);
-		}
-	}
+//	/**
+//	 * Influence the weight of the scores by the once stored in prefereneScores if
+//	 * the preference is in preferences.
+//	 * 
+//	 * @param contextMapForErrorCode
+//	 * @param preferences
+//	 */
+//	protected void influenceWeightsByPreferedScores(ContextMap<Action> contextMapForErrorCode,
+//			List<Integer> preferences) {
+//		for (Integer contextId : actions.keySet()) {
+//			ActionMap<T> actionMapForContext = actions.get(contextId);
+//			actionMapForContext.influenceWeightsByPreferedScores(
+//					contextMapForErrorCode.getActionMapForContext(contextId), preferences);
+//		}
+//	}
 
-	/**
-	 * Gets the action map for the specified context
-	 * 
-	 * @param contextId, the contextId to get the actionMap for.
-	 * @return the corresponding actionMap
-	 */
-	private ActionMap<T> getActionMapForContext(Integer contextId) {
-		return actions.get(contextId);
-	}
+//	/**
+//	 * Gets the action map for the specified context
+//	 * 
+//	 * @param contextId, the contextId to get the actionMap for.
+//	 * @return the corresponding actionMap
+//	 */
+//	private ActionMap<T> getActionMapForContext(Integer contextId) {
+//		return actions.get(contextId);
+//	}
 
 	/**
 	 * Checks that the provided context id is stored in the Context Map.
@@ -101,7 +100,7 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 * @param actionId
 	 * @return true if the action ID is found for the given context, false otherwise.
 	 */
-	protected boolean containsValueForContext(int contextId, int actionId) {
+	protected boolean containsActionForContext(int contextId, int actionId) {
 		if (actions.containsKey(contextId)) {
 			return actions.get(contextId).containsValue(actionId);
 		} else {
@@ -115,19 +114,19 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 * @return the location of highest value in the context map. If two are equal,
 	 *         one of them is returned. If the set is empty, null is returned.
 	 */
-	protected T getOptimalAction() {
+	protected Action getOptimalAction() {
 		Set<Integer> contextIdSet = actions.keySet();
 		Integer[] contextIds = new Integer[contextIdSet.size()];
 		contextIds = contextIdSet.toArray(contextIds);
 
 		if (contextIds.length > 0) {
 			Integer optimalContextId = contextIds[0];
-			Integer optimalActionId = actions.get(optimalContextId).getHihgestValueKey();
-			T optimalAction = actions.get(optimalContextId).getValue(optimalActionId);
+			Integer optimalActionId = actions.get(optimalContextId).getBestActionKey();
+			Action optimalAction = actions.get(optimalContextId).getAction(optimalActionId);
 
 			for (int i = 1; i < contextIds.length; i++) {
-				Integer optimalActionIdForContext = actions.get(contextIds[i]).getHihgestValueKey();
-				T action = actions.get(contextIds[i]).getValue(optimalActionIdForContext);
+				Integer optimalActionIdForContext = actions.get(contextIds[i]).getBestActionKey();
+				Action action = actions.get(contextIds[i]).getAction(optimalActionIdForContext);
 				if (action.compareTo(optimalAction) > 0) {
 					optimalContextId = contextIds[i];
 					optimalActionId = optimalActionIdForContext;
@@ -164,12 +163,12 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 * 
 	 * @return a random value
 	 */
-	protected T getRandomValueInRandomContext() {
+	protected Action getRandomActionInRandomContext() {
 		Random randomGenerator = new Random();
 		Integer[] contextIds = new Integer[actions.keySet().size()];
 		contextIds = actions.keySet().toArray(contextIds);
 		int randomContextIndex = randomGenerator.nextInt(contextIds.length);
-		return actions.get(contextIds[randomContextIndex]).getRandomValue();
+		return actions.get(contextIds[randomContextIndex]).getRandomAction();
 	}
 	
 	/**
@@ -179,8 +178,8 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 * @param actionId
 	 * @return the corresponding value
 	 */
-	protected T getValue(Integer contextId, Integer actionId) {
-		return actions.get(contextId).getValue(actionId);
+	protected Action getAction(Integer contextId, Integer actionId) {
+		return actions.get(contextId).getAction(actionId);
 	}
 
 	/**
@@ -189,13 +188,13 @@ class ContextMap<T extends Comparable<T> & Savable> {
 	 * 
 	 * @param contextId
 	 * @param actionId
-	 * @param value
+	 * @param action
 	 */
-	protected void setValue(Integer contextId, Integer actionId, T value) {
+	protected void setAction(Integer contextId, Integer actionId, Action action) {
 		if (actions.containsKey(contextId)) {
-			actions.get(contextId).setValue(actionId, value);
+			actions.get(contextId).setAction(actionId, action);
 		} else {
-			actions.put(contextId, new ActionMap<T>(actionId, value));
+			actions.put(contextId, new ActionMap(actionId, action));
 		}
 	}
 

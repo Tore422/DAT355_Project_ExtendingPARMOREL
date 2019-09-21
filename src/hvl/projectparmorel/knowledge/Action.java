@@ -20,7 +20,7 @@ import hvl.projectparmorel.ml.SerializableMethod;
  * 
  *         Western Norway University of Applied Sciences Bergen - Norway
  */
-public class Action implements Comparable<Action>, Savable {
+public class Action implements Comparable<Action> {
 	private PreferenceWeightMap preferenceMap;
 	private int code;
 	private String message;
@@ -160,7 +160,6 @@ public class Action implements Comparable<Action>, Savable {
 
 	}
 
-	@Override
 	public void saveTo(Document document, Element action) {
 		Element code = document.createElement("code");
 		code.appendChild(document.createTextNode("" + this.code));

@@ -1,11 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -36,18 +32,18 @@ public class Knowledge {
 	public Knowledge() {
 		actionDirectory = new QTable();
 	}
-
-	/**
-	 * Adds 20% of the scores set in the preferences to the QTable. We only add 20
-	 * %, so we don't influence the scores to much. This allows for new learnings to
-	 * be acquired.
-	 * 
-	 * @param the preferences to influence. Only these preferences will be affected.
-	 */
-	public void influenceQTableFromPreferenceScores(List<Integer> preferences) {
-		ErrorContextActionDirectory<Action> preferenceScores = actionDirectory.getActionDirectory();
-		preferenceScores.influenceWeightsByPreferedScores(preferenceScores, preferences);
-	}
+//
+//	/**
+//	 * Adds 20% of the scores set in the preferences to the QTable. We only add 20
+//	 * %, so we don't influence the scores to much. This allows for new learnings to
+//	 * be acquired.
+//	 * 
+//	 * @param the preferences to influence. Only these preferences will be affected.
+//	 */
+//	public void influenceQTableFromPreferenceScores(List<Integer> preferences) {
+//		ErrorContextActionDirectory preferenceScores = actionDirectory.getActionDirectory();
+//		preferenceScores.influenceWeightsByPreferedScores(preferenceScores, preferences);
+//	}
 
 	/**
 	 * Gets the action directory

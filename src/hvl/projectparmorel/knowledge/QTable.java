@@ -6,10 +6,10 @@ import org.w3c.dom.Element;
 import hvl.projectparmorel.ml.ErrorAction;
 
 public class QTable {
-	ErrorContextActionDirectory<Action> qTable;
+	ErrorContextActionDirectory qTable;
 
 	protected QTable() {
-		qTable = new HashErrorContextActionDirectory<>();
+		qTable = new HashErrorContextActionDirectory();
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class QTable {
 	 * @param weight
 	 */
 	public void setWeight(Integer errorCode, Integer contextId, Integer actionId, Double weight) {
-		Action action = qTable.getValue(errorCode, contextId, actionId);
+		Action action = qTable.getAction(errorCode, contextId, actionId);
 		action.setWeight(weight);
 	}
 
@@ -60,7 +60,7 @@ public class QTable {
 	 * @return the weight
 	 */
 	public double getWeight(Integer errorCode, Integer contextId, Integer actionId) {
-		return qTable.getValue(errorCode, contextId, actionId).getWeight();
+		return qTable.getAction(errorCode, contextId, actionId).getWeight();
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class QTable {
 	 * 
 	 * @return the qTalbe
 	 */
-	protected ErrorContextActionDirectory<Action> getActionDirectory() {
+	protected ErrorContextActionDirectory getActionDirectory() {
 		return qTable;
 	}
 
@@ -79,7 +79,7 @@ public class QTable {
 	 * @return a random action
 	 */
 	public Action getRandomActionForError(int errorCode) {
-		return qTable.getRandomValueForError(errorCode);
+		return qTable.getRandomActionForError(errorCode);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class QTable {
 	 * @param action
 	 */
 	public void setAction(int errorCode, int contextId, Action action) {
-		qTable.setValue(errorCode, contextId, action.getCode(), action);
+		qTable.setAction(errorCode, contextId, action.getCode(), action);
 	}
 	
 	/**
@@ -131,7 +131,7 @@ public class QTable {
 	 * @return the corresponding value
 	 */
 	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
-		return qTable.getValue(errorCode, contextId, actionId);
+		return qTable.getAction(errorCode, contextId, actionId);
 	}
 
 	/**

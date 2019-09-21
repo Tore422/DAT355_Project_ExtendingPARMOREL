@@ -1,7 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -12,29 +11,29 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
-class ErrorMap<T extends Comparable<T> & Savable> {
+class ErrorMap {
 	private final String XML_NODE_NAME = "error";
 	private final String XML_CODE_NAME = "code";
 	/**
 	 * A map containing the context for the given error codes.
 	 */
-	private Map<Integer, ContextMap<T>> contexts;
+	private Map<Integer, ContextMap> contexts;
 	private Logger logger = Logger.getGlobal();
 
 	protected ErrorMap() {
 		contexts = new HashMap<>();
 	}
-	
-	/**
-	 * Clears all the values, setting them to the provided value.
-	 * 
-	 * @param value to set
-	 */
-	protected void setAllValuesTo(T value) {
-		for (ContextMap<T> context : contexts.values()) {
-			context.setAllValuesTo(value);
-		}
-	}
+//	
+//	/**
+//	 * Clears all the values, setting them to the provided value.
+//	 * 
+//	 * @param value to set
+//	 */
+//	protected void setAllValuesTo(T value) {
+//		for (ContextMap context : contexts.values()) {
+//			context.setAllValuesTo(value);
+//		}
+//	}
 
 	/**
 	 * Gets all the error codes
@@ -45,31 +44,31 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 		return contexts.keySet();
 	}
 
-	/**
-	 * Influence the weight of the scores by the once stored in prefereneScores if
-	 * the preference is in preferences.
-	 * 
-	 * @param preferenceScores, the ErrorMap that should influence the QTable
-	 * @param preferences, the preferences to be affected. Only preferences listed
-	 *        hwere will be affected.
-	 */
-	protected void influenceWeightsByPreferedScores(ErrorMap<Action> preferenceScores, List<Integer> preferences) {
-		for (Integer errorCode : getAllErrorCodes()) {
-			ContextMap<T> context = contexts.get(errorCode);
-			context.influenceWeightsByPreferedScores(preferenceScores.getContextMapForErrorCode(errorCode),
-					preferences);
-		}
-	}
-
-	/**
-	 * Returns the ContextMap for the given errorCode
-	 * 
-	 * @param errorCode
-	 * @return the corresponding context map.
-	 */
-	private ContextMap<T> getContextMapForErrorCode(Integer errorCode) {
-		return contexts.get(errorCode);
-	}
+//	/**
+//	 * Influence the weight of the scores by the once stored in prefereneScores if
+//	 * the preference is in preferences.
+//	 * 
+//	 * @param preferenceScores, the ErrorMap that should influence the QTable
+//	 * @param preferences, the preferences to be affected. Only preferences listed
+//	 *        where will be affected.
+//	 */
+//	protected void influenceWeightsByPreferedScores(ErrorMap preferenceScores, List<Integer> preferences) {
+//		for (Integer errorCode : getAllErrorCodes()) {
+//			ContextMap context = contexts.get(errorCode);
+//			context.influenceWeightsByPreferedScores(preferenceScores.getContextMapForErrorCode(errorCode),
+//					preferences);
+//		}
+//	}
+//
+//	/**
+//	 * Returns the ContextMap for the given errorCode
+//	 * 
+//	 * @param errorCode
+//	 * @return the corresponding context map.
+//	 */
+//	private ContextMap getContextMapForErrorCode(Integer errorCode) {
+//		return contexts.get(errorCode);
+//	}
 
 	/**
 	 * Checks that the provided error code is stored in the ErrorMap.
@@ -89,9 +88,9 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 * @param actionId
 	 * @return true if the action ID if found for the specified errorCode and contextId, false otherwise.
 	 */
-	protected boolean containsValueForErrorCodeAndContextId(int errorCode, int contextId, int actionId) {
+	protected boolean containsActionForErrorCodeAndContextId(int errorCode, int contextId, int actionId) {
 		if(contexts.containsKey(errorCode)) {
-			return contexts.get(errorCode).containsValueForContext(contextId, actionId);
+			return contexts.get(errorCode).containsActionForContext(contextId, actionId);
 		} else {
 			return false;
 		}
@@ -104,8 +103,8 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 * @param errorCode
 	 * @return the location of highest value in the context map. If two are equal, one of them is returned. If the set is empty, null is returned.
 	 */
-	protected T getOptimalActionForErrorCode(Integer errorCode) {
-		ContextMap<T> contextForErrorCode = contexts.get(errorCode);
+	protected Action getOptimalActionForErrorCode(Integer errorCode) {
+		ContextMap contextForErrorCode = contexts.get(errorCode);
 		return contextForErrorCode.getOptimalAction();
 	}
 
@@ -125,9 +124,9 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 * @param errorCode 
 	 * @return a random context
 	 */
-	protected T getRandomActionInRandomContextForError(int errorCode) {
-		ContextMap<T> contextsForError = contexts.get(errorCode);
-		return contextsForError.getRandomValueInRandomContext();
+	protected Action getRandomActionInRandomContextForError(int errorCode) {
+		ContextMap contextsForError = contexts.get(errorCode);
+		return contextsForError.getRandomActionInRandomContext();
 	}
 	
 	/**
@@ -138,8 +137,8 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 * @param actionId
 	 * @return the corresponding value
 	 */
-	protected T getValue(Integer errorCode, Integer contextId, Integer actionId) {
-		return contexts.get(errorCode).getValue(contextId, actionId);
+	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
+		return contexts.get(errorCode).getAction(contextId, actionId);
 	}
 	
 	/**
@@ -152,11 +151,11 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 	 * @param actionId
 	 * @param value
 	 */
-	protected void setValue(Integer errorCode, Integer contextId, Integer actionId, T value) {
+	protected void setAction(Integer errorCode, Integer contextId, Integer actionId, Action action) {
 		if (contexts.containsKey(errorCode)) {
-			contexts.get(errorCode).setValue(contextId, actionId, value);
+			contexts.get(errorCode).setAction(contextId, actionId, action);
 		} else {
-			contexts.put(errorCode, new ContextMap<T>(contextId, actionId, value));
+			contexts.put(errorCode, new ContextMap(contextId, actionId, action));
 		}
 	}
 
@@ -191,12 +190,11 @@ class ErrorMap<T extends Comparable<T> & Savable> {
 			if(error.getNodeType() == Node.ELEMENT_NODE) {
 				Element errorElement = (Element) error;
 				Integer errorCode = Integer.parseInt(errorElement.getAttribute(XML_CODE_NAME));
-				ContextMap<T> contextMap = new ContextMap<>(errorElement);
+				ContextMap contextMap = new ContextMap(errorElement);
 				contexts.put(errorCode, contextMap);
 			} else {
 				logger.warning("The node " + error.getNodeName() + " is not correctly formated.");
 			}
 		}
-
 	}
 }
