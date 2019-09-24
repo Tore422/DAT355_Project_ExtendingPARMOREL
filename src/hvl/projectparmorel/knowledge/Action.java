@@ -66,8 +66,6 @@ public class Action implements Comparable<Action> {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
 			Element actionElement = (Element) action;
 			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
-
-//			code = Integer.parseInt(actionElement.getElementsByTagName(XML_CODE_NAME).item(0).getTextContent());
 			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
 			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
 			hierarchy = Integer
@@ -113,60 +111,6 @@ public class Action implements Comparable<Action> {
 	 */
 	public boolean handlesMissingArgumentForGenericType(Error error) {
 		return String.valueOf(code).startsWith("888") && error.getCode() == 4;
-	}
-
-	/**
-	 * Checks if the action is a delete action
-	 * 
-	 * @return true if the action is a delete action, false otherwise
-	 */
-	public boolean isDelete() {
-		return String.valueOf(code).startsWith("9999");
-	}
-
-	/**
-	 * Gets the context id
-	 * 
-	 * @return the context ID
-	 */
-	public int getContextId() {
-		return hierarchy;
-	}
-
-	public double getWeight() {
-		return weight;
-	}
-
-	public void setWeight(double weight) {
-		this.weight = weight;
-	}
-
-	public int getCode() {
-		return code;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public SerializableMethod getMethod() {
-		return method;
-	}
-
-	public int getHierarchy() {
-		return hierarchy;
-	}
-
-	public void setCode(int code) {
-		this.code = code;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	protected PreferenceWeightMap getTagDictionary() {
-		return preferenceMap;
 	}
 
 	public void savePreferenceWeights() {
@@ -256,5 +200,59 @@ public class Action implements Comparable<Action> {
 				weight += oldPreferenceValue * factor;
 			}
 		}
+	}
+	
+	/**
+	 * Checks if the action is a delete action
+	 * 
+	 * @return true if the action is a delete action, false otherwise
+	 */
+	public boolean isDelete() {
+		return String.valueOf(code).startsWith("9999");
+	}
+
+	/**
+	 * Gets the context id
+	 * 
+	 * @return the context ID
+	 */
+	public int getContextId() {
+		return hierarchy;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public SerializableMethod getMethod() {
+		return method;
+	}
+
+	public int getHierarchy() {
+		return hierarchy;
+	}
+
+	public void setCode(int code) {
+		this.code = code;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	protected PreferenceWeightMap getTagDictionary() {
+		return preferenceMap;
 	}
 }

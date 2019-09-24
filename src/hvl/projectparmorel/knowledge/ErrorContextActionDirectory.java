@@ -55,7 +55,6 @@ public abstract class ErrorContextActionDirectory {
 	 * 
 	 * @param errorCode
 	 * @param contextId
-	 * @param actionId
 	 * @return the corresponding action
 	 */
 	protected abstract Action getAction(Integer errorCode, Integer contextId, Integer actionId);
@@ -70,7 +69,7 @@ public abstract class ErrorContextActionDirectory {
 	 * @param actionId
 	 * @param value
 	 */
-	public abstract void setAction(Integer errorCode, Integer contextId, Integer actionId, Action action);
+	public abstract void setAction(Integer errorCode, Integer contextId, Action action);
 
 	/**
 	 * Saves content to the document under the root element

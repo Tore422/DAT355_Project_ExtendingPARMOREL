@@ -121,7 +121,7 @@ public class QTable {
 	 * @param action
 	 */
 	public void setAction(int errorCode, int contextId, Action action) {
-		qTable.setAction(errorCode, contextId, action.getCode(), action);
+		qTable.setAction(errorCode, contextId, action);
 	}
 	
 	/**

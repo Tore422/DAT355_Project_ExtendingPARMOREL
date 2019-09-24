@@ -25,9 +25,9 @@ class ContextMap {
 		actions = new HashMap<>();
 	}
 
-	protected ContextMap(Integer contextId, Integer actionId, Action action) {
+	protected ContextMap(Integer contextId, Action action) {
 		this();
-		actions.put(contextId, new ActionMap(actionId, action));
+		actions.put(contextId, new ActionMap(action));
 	}
 
 	protected ContextMap(Element error) throws IOException {
@@ -150,14 +150,13 @@ class ContextMap {
 	 * context or action is not in the hierarchy, they will be added.
 	 * 
 	 * @param contextId
-	 * @param actionId
 	 * @param action
 	 */
-	protected void setAction(Integer contextId, Integer actionId, Action action) {
+	protected void setAction(Integer contextId, Action action) {
 		if (actions.containsKey(contextId)) {
-			actions.get(contextId).setAction(actionId, action);
+			actions.get(contextId).setAction(action.getCode(), action);
 		} else {
-			actions.put(contextId, new ActionMap(actionId, action));
+			actions.put(contextId, new ActionMap(action));
 		}
 	}
 

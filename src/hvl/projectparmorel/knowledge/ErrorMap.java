@@ -111,14 +111,13 @@ class ErrorMap {
 	 * 
 	 * @param errorCode
 	 * @param contextId
-	 * @param actionId
 	 * @param value
 	 */
-	protected void setAction(Integer errorCode, Integer contextId, Integer actionId, Action action) {
+	protected void setAction(Integer errorCode, Integer contextId, Action action) {
 		if (contexts.containsKey(errorCode)) {
-			contexts.get(errorCode).setAction(contextId, actionId, action);
+			contexts.get(errorCode).setAction(contextId, action);
 		} else {
-			contexts.put(errorCode, new ContextMap(contextId, actionId, action));
+			contexts.put(errorCode, new ContextMap(contextId, action));
 		}
 	}
 

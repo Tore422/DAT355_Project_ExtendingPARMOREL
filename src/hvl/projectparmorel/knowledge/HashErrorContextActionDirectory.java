@@ -16,8 +16,8 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 	}
 	
 	@Override
-	public void setAction(Integer errorCode, Integer contextId, Integer actionId, Action action) {
-		errors.setAction(errorCode, contextId, actionId, action);
+	public void setAction(Integer errorCode, Integer contextId, Action action) {
+		errors.setAction(errorCode, contextId, action);
 	}
 
 	@Override

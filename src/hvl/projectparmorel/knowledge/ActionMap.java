@@ -23,9 +23,9 @@ class ActionMap {
 		actions = new HashMap<>();
 	}
 
-	protected ActionMap(Integer actionId, Action action) {
+	protected ActionMap(Action action) {
 		this();
-		actions.put(actionId, action);
+		actions.put(action.getCode(), action);
 	}
 
 	protected ActionMap(Element context) throws IOException {
