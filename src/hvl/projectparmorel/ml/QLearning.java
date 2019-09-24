@@ -27,7 +27,7 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
-	
+
 	private Knowledge knowledge;
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
@@ -64,13 +64,13 @@ public class QLearning {
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
-	
+
 	public QLearning(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
-	
+
 	public ResourceSet getResourceSet() {
 		return resourceSet;
 	}
@@ -92,18 +92,22 @@ public class QLearning {
 	}
 
 	/**
-	 * Loads knowledge from file and influences the weights in the q-table from this based on preferences.
+	 * Loads knowledge from file and influences the weights in the q-table from this
+	 * based on preferences. Only 20 % of the value from before is loaded. This allows for new learnings to be aqcuired.
+	 * 
+	 * This also reduces the number of episodes and the chance
+	 * for taking random actions. More previous knowledge reduces the need for many episodes and randomness.
 	 */
 	public void loadKnowledge() {
 		boolean success = knowledge.load();
-		if(success) {
+		if (success) {
 			knowledge.clearWeights();
 			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
 			numberOfEpisodes = 12;
 			randomFactor = 0.15;
 		}
 	}
-	
+
 	private static double[] linspace(double min, double max, int points) {
 		double[] d = new double[points];
 		for (int i = 0; i < points; i++) {
@@ -158,7 +162,7 @@ public class QLearning {
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
 			handleEpisode(modelCopy, episode);
-			
+
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
 			modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
@@ -169,8 +173,8 @@ public class QLearning {
 		Sequence bestSequence = bestSequence(solvingMap);
 
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
-				+ "\nDISCARDED SEQUENCES: " + discardedSequences + "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n"
-				+ bestSequence);
+				+ "\nDISCARDED SEQUENCES: " + discardedSequences
+				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
@@ -185,14 +189,14 @@ public class QLearning {
 		}
 		return bestSequence;
 	}
-	
+
 	/**
 	 * Sets the initial error codes
 	 * 
 	 * @param errors
 	 */
 	private void setInitialErrors(List<Error> errors) {
-		for(Error error : errors) {
+		for (Error error : errors) {
 			initialErrorCodes.add(error.getCode());
 		}
 	}
@@ -208,12 +212,12 @@ public class QLearning {
 		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
-		
+
 		while (step < MAX_EPISODE_STEPS) {
 			if (errorsToFix.size() != 0) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
-				
+
 				step++;
 			} else {
 				break;
@@ -242,7 +246,7 @@ public class QLearning {
 			discardedSequences++;
 		}
 
-		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);	
+		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);
 	}
 
 	/**
@@ -385,8 +389,8 @@ public class QLearning {
 					} else {
 						index2 = 0;
 					}
-					if (ea.get(i).getError().getContexts().get(index).getClass() == nums.get(i - 2).getContexts().get(index2)
-							.getClass()) {
+					if (ea.get(i).getError().getContexts().get(index).getClass() == nums.get(i - 2).getContexts()
+							.get(index2).getClass()) {
 						value++;
 					}
 				}
