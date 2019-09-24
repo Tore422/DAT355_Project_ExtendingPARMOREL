@@ -47,8 +47,6 @@ public class ErrorExtractor {
 	/**
 	 * Gets the error for the specified diagnostic
 	 * 
-	 * TODO : sons now ignored, fix if it breaks
-	 * 
 	 * @param diagnostic
 	 * @param sons
 	 * @return the error for the specified diagnostic

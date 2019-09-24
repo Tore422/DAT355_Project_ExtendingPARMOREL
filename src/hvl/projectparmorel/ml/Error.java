@@ -19,10 +19,10 @@ public class Error {
 	public Error() {
 	}
 
-	public Error(int code, String message, List<?> where) {
+	public Error(int code, String message, List<?> contexts) {
 		this.code = code;
 		this.message = message;
-		this.contexts = where;
+		this.contexts = contexts;
 	}
 
 	@Override

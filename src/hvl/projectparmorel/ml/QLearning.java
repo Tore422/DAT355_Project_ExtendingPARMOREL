@@ -27,6 +27,7 @@ public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
+	private final double[] ALPHAS;
 
 	private Knowledge knowledge;
 	private QTable qTable;
@@ -63,12 +64,21 @@ public class QLearning {
 		solvingMap = new ArrayList<Sequence>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 	}
 
 	public QLearning(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+	}
+	
+	private double[] linspace(double min, double max, int points) {
+		double[] d = new double[points];
+		for (int i = 0; i < points; i++) {
+			d[i] = min + i * (max - min) / (points - 1);
+		}
+		return d;
 	}
 
 	public ResourceSet getResourceSet() {
@@ -106,17 +116,7 @@ public class QLearning {
 			numberOfEpisodes = 12;
 			randomFactor = 0.15;
 		}
-	}
-
-	private static double[] linspace(double min, double max, int points) {
-		double[] d = new double[points];
-		for (int i = 0; i < points; i++) {
-			d[i] = min + i * (max - min) / (points - 1);
-		}
-		return d;
-	}
-
-	double[] alphas = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+	}	
 
 	/**
 	 * Chooses an action for the specified error. The action is either the best
@@ -154,10 +154,9 @@ public class QLearning {
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
-		// FILTER ACTIONS AND INITIALICES QTABLE
-
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
-		// START with initial model its errors and actions
+
+
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
@@ -217,7 +216,6 @@ public class QLearning {
 			if (errorsToFix.size() != 0) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
-
 				step++;
 			} else {
 				break;
@@ -232,7 +230,7 @@ public class QLearning {
 
 		int val;
 		if (sequence.getSequence().size() > 7) {
-			val = loopChecker(sequence.getSequence());
+			val = checkForLoopsIn(sequence.getSequence());
 			if (val > 1) {
 				totalReward -= val * 1000;
 			}
@@ -261,7 +259,7 @@ public class QLearning {
 	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) {
 		Action action = chooseAction(currentErrorToFix);
 		int sizeBefore = errorsToFix.size();
-		double alpha = alphas[episode];
+		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
 		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy()); // removed
@@ -328,7 +326,7 @@ public class QLearning {
 		return modelCopy;
 	}
 
-	boolean uniqueSequence(Sequence s) {
+	private boolean uniqueSequence(Sequence s) {
 		boolean check = true;
 		int same = 0;
 		for (Sequence seq : solvingMap) {
@@ -350,36 +348,25 @@ public class QLearning {
 		return check;
 	}
 
-	boolean checkWeight(Sequence s) {
-		boolean check = false;
-		for (Sequence seq : solvingMap) {
-			if (seq.getWeight() == s.getWeight()) {
-				check = true;
-				break;
-			}
-		}
-		return check;
-	}
-
-	int loopChecker(List<ErrorAction> ea) {
-		List<Error> nums = new ArrayList<Error>();
+	private int checkForLoopsIn(List<ErrorAction> performedActions) {
+		List<Error> errors = new ArrayList<Error>();
 		int value = 0;
 		int index, index2 = 0;
-		for (int i = 0; i < ea.size(); i++) {
-			nums.add(ea.get(i).getError());
-			if (nums.size() > 2) {
-				if (ea.get(i).getError().getCode() == nums.get(i - 2).getCode()) {
-					if (ea.get(i).getError().getContexts().get(0) == null) {
+		for (int i = 0; i < performedActions.size(); i++) {
+			errors.add(performedActions.get(i).getError());
+			if (errors.size() > 2) {
+				if (performedActions.get(i).getError().getCode() == errors.get(i - 2).getCode()) {
+					if (performedActions.get(i).getError().getContexts().get(0) == null) {
 						index = 1;
 					} else {
 						index = 0;
 					}
-					if (nums.get(i - 2).getContexts().get(0) == null) {
+					if (errors.get(i - 2).getContexts().get(0) == null) {
 						index2 = 1;
 					} else {
 						index2 = 0;
 					}
-					if (ea.get(i).getError().getContexts().get(index).getClass() == nums.get(i - 2).getContexts()
+					if (performedActions.get(i).getError().getContexts().get(index).getClass() == errors.get(i - 2).getContexts()
 							.get(index2).getClass()) {
 						value++;
 					}
@@ -389,7 +376,7 @@ public class QLearning {
 		return value;
 	}
 
-	Sequence bestSequence(List<Sequence> sm) {
+	private Sequence bestSequence(List<Sequence> sm) {
 		double max = -1;
 		rewardCalculator.rewardBasedOnSequenceLength(sm);
 		Sequence maxS = new Sequence();
@@ -402,13 +389,4 @@ public class QLearning {
 		}
 		return maxS;
 	}
-
-//	/**
-//	 * Gets the knowledge
-//	 * 
-//	 * @return the knowledge
-//	 */
-//	public Knowledge getKnowledge() {
-//		return knowledge;
-//	}
 }

@@ -10,8 +10,8 @@ import hvl.projectparmorel.knowledge.Action;
  */
 public class ErrorAction {
 
-	Error error;
-	Action action;
+	private Error error;
+	private Action action;
 
 	public ErrorAction(Error error, Action action) {
 		super();
