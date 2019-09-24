@@ -1,5 +1,6 @@
 package hvl.projectparmorel.knowledge;
 
+import java.util.List;
 import java.util.Set;
 
 import org.w3c.dom.Document;
@@ -10,30 +11,12 @@ public abstract class ErrorContextActionDirectory {
 
 	}
 
-//	/**
-//	 * Sets all the values to the provided value.
-//	 * 
-//	 * @param value to set
-//	 */
-//	public abstract void setAllValuesTo(T value);
-
 	/**
 	 * Gets all the error codes
 	 * 
 	 * @return a Set containing all the error codes.
 	 */
 	public abstract Set<Integer> getAllErrorCodes();
-
-//	/**
-//	 * Influence the weight of the scores by the once stored in prefereneScores if
-//	 * the preference is in preferences.
-//	 * 
-//	 * @param preferenceScores, the scores that should influence the QTable
-//	 * @param preferences, the preferences to be affected. Only preferences listed
-//	 *        where will be affected.
-//	 */
-//	public abstract void influenceWeightsByPreferedScores(ErrorContextActionDirectory<Action> preferenceScores,
-//			List<Integer> preferences);
 	
 	/**
 	 * Gets the error map from the directory;
@@ -103,4 +86,17 @@ public abstract class ErrorContextActionDirectory {
 	 * @param root
 	 */
 	protected abstract void loadFrom(Document document);
+
+	/**
+	 * Sets all the weights in the q-table to zero.
+	 */
+	protected abstract void clearWeights();
+
+	/**
+	 * Influences the weights in the q-table from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	protected abstract void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences);
 }

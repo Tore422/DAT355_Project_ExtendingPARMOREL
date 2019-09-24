@@ -2,6 +2,7 @@ package hvl.projectparmorel.knowledge;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -44,45 +45,6 @@ class ActionMap {
 			}
 		}
 	}
-
-//	/**
-//	 * Clears all the values, setting them to the provided value.
-//	 * 
-//	 * @param value to set
-//	 */
-//	protected void setAllValuesTo(T value) {
-//		for (Integer actionKey : actions.keySet()) {
-//			actions.put(actionKey, value);
-//		}
-//	}
-
-//	/**
-//	 * Influences the weights in the QTable from the action map if the action is in
-//	 * the preferences.
-//	 * 
-//	 * @param actionMapForContext
-//	 * @param preferences
-//	 */
-//	@SuppressWarnings("unchecked")
-//	protected void influenceWeightsByPreferedScores(ActionMap<Action> actionMapForContext, List<Integer> preferences) {
-//		for (Integer actionId : actions.keySet()) {
-//			Action action = actionMapForContext.getValue(actionId);
-//			PreferenceWeightMap tagDictionary = action.getTagDictionary();
-//			for (Integer tagId : tagDictionary.getAllPreferenceIds()) {
-//				if (preferences.contains(tagId)) {
-//					Double value = tagDictionary.getWeightFor(tagId) * 0.2;
-//					value += (double) actions.get(actionId);
-//
-//					if (actions.values().toArray()[0] instanceof Double) {
-//						actions.put(actionId, (T) value);
-//					} else {
-//						throw new IllegalStateException("The QTable must be parametrized with Double.");
-//					}
-//
-//				}
-//			}
-//		}
-//	}
 
 	/**
 	 * Checks that the action map contains a given action id.
@@ -169,6 +131,27 @@ class ActionMap {
             
             actions.get(key).saveTo(document, action);
             context.appendChild(action);
+		}
+	}
+
+	/**
+	 * Sets all the weights to zero.
+	 */
+	protected void clearWeights() {
+		for(Action action : actions.values()) {
+			action.setWeight(0);
+		}
+	}
+
+	/**
+	 * Influences the action weights from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+		for(Action action : actions.values()) {
+			action.influenceWeightFromPreferencesBy(factor, preferences);
 		}
 	}
 }

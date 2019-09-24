@@ -66,7 +66,7 @@ public class ModelProcesser {
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
 
 		for (Error error : errors) {
-			if (!knowledge.getActionDirectory().containsErrorCode(error.getCode())) {
+			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
 				for (int i = 0; i < error.getContexts().size(); i++) {
 					if (error.getContexts().get(i) != null) {
 						for (Action action : possibleActions) {
@@ -397,7 +397,7 @@ public class ModelProcesser {
 	 * @param action
 	 */
 	private void initializeQTableForAction(Error error, Action action) {
-		QTable actionDirectory = knowledge.getActionDirectory();
+		QTable actionDirectory = knowledge.getQTable();
 
 		int contextId = action.getContextId();
 

@@ -139,7 +139,7 @@ public class RewardCalculator {
 	 * @param value
 	 */
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
-		QTable qTable = knowledge.getActionDirectory();
+		QTable qTable = knowledge.getQTable();
 		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
 	}
 
@@ -192,7 +192,7 @@ public class RewardCalculator {
 	 * @param preferenceId
 	 */
 	public void rewardSequence(Sequence sequence, int preferenceId) {
-		QTable qTable = knowledge.getActionDirectory();
+		QTable qTable = knowledge.getQTable();
 		int contextId;
 		for (int i = 0; i < sequence.getSequence().size(); i++) {
 			if (sequence.getSequence().get(i).getAction().getSubHierarchy() > -1) {
@@ -279,5 +279,9 @@ public class RewardCalculator {
 
 	public List<Integer> getPreferences() {
 		return new ArrayList<Integer>(preferences);
+	}
+
+	public void influenceWeightsFromPreferencesBy(double factor) {
+		knowledge.influenceWeightsFromPreferencesBy(factor, preferences);
 	}
 }

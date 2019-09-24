@@ -27,7 +27,7 @@ public class ActionExtractor {
 		Map<Integer, Action> actionsFound = new HashMap<Integer, Action>();
 
 		for (Error error : errors) {
-			if (!knowledge.getActionDirectory().containsErrorCode(error.getCode())) {
+			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
 				List<?> contexts = (List<?>) error.getContexts();
 				actionsFound = addMethodsFromContextList(actionsFound, contexts);
 			}

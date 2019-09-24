@@ -1,6 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.w3c.dom.Document;
@@ -19,21 +20,10 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 		errors.setAction(errorCode, contextId, actionId, action);
 	}
 
-//	@Override
-//	public void setAllValuesTo(T value) {
-//		errors.setAllValuesTo(value);
-//	}
-
 	@Override
 	public Set<Integer> getAllErrorCodes() {
 		return errors.getAllErrorCodes();
 	}
-
-//	@Override
-//	public void influenceWeightsByPreferedScores(ErrorContextActionDirectory<Action> preferenceScores,
-//			List<Integer> preferences) {
-//		errors.influenceWeightsByPreferedScores(preferenceScores.getErrorMap(), preferences);
-//	}
 	
 	@Override
 	protected ErrorMap getErrorMap() {
@@ -72,5 +62,15 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
+	}
+
+	@Override
+	protected void clearWeights() {
+		errors.clearActionWeights();
+	}
+
+	@Override
+	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+		errors.influenceActionWeightsFromPreferencesBy(factor, preferences);
 	}
 }

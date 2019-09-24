@@ -2,6 +2,7 @@ package hvl.projectparmorel.knowledge;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,17 +23,6 @@ class ErrorMap {
 	protected ErrorMap() {
 		contexts = new HashMap<>();
 	}
-//	
-//	/**
-//	 * Clears all the values, setting them to the provided value.
-//	 * 
-//	 * @param value to set
-//	 */
-//	protected void setAllValuesTo(T value) {
-//		for (ContextMap context : contexts.values()) {
-//			context.setAllValuesTo(value);
-//		}
-//	}
 
 	/**
 	 * Gets all the error codes
@@ -42,32 +32,6 @@ class ErrorMap {
 	protected Set<Integer> getAllErrorCodes() {
 		return contexts.keySet();
 	}
-
-//	/**
-//	 * Influence the weight of the scores by the once stored in prefereneScores if
-//	 * the preference is in preferences.
-//	 * 
-//	 * @param preferenceScores, the ErrorMap that should influence the QTable
-//	 * @param preferences, the preferences to be affected. Only preferences listed
-//	 *        where will be affected.
-//	 */
-//	protected void influenceWeightsByPreferedScores(ErrorMap preferenceScores, List<Integer> preferences) {
-//		for (Integer errorCode : getAllErrorCodes()) {
-//			ContextMap context = contexts.get(errorCode);
-//			context.influenceWeightsByPreferedScores(preferenceScores.getContextMapForErrorCode(errorCode),
-//					preferences);
-//		}
-//	}
-//
-//	/**
-//	 * Returns the ContextMap for the given errorCode
-//	 * 
-//	 * @param errorCode
-//	 * @return the corresponding context map.
-//	 */
-//	private ContextMap getContextMapForErrorCode(Integer errorCode) {
-//		return contexts.get(errorCode);
-//	}
 
 	/**
 	 * Checks that the provided error code is stored in the ErrorMap.
@@ -195,6 +159,27 @@ class ErrorMap {
 			} else {
 				throw new IOException("Could not instantiate error from node " + error.getNodeName());
 			}
+		}
+	}
+
+	/**
+	 * Sets all the weights in the q-table to zero.
+	 */
+	protected void clearActionWeights() {
+		for(ContextMap context : contexts.values()) {
+			context.clearActionWeights();
+		}
+	}
+
+	/**
+	 * Influences the action weights from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	protected void influenceActionWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+		for(ContextMap context : contexts.values()) {
+			context.influenceActionWeightsFromPreferencesBy(factor, preferences);
 		}
 	}
 }

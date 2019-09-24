@@ -1,5 +1,7 @@
 package hvl.projectparmorel.knowledge;
 
+import java.util.List;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -172,5 +174,22 @@ public class QTable {
 	 */
 	protected void loadFrom(Document document) {
 		qTable.loadFrom(document);
+	}
+
+	/**
+	 * Sets all the weights in the q-table to zero.
+	 */
+	protected void clearWeights() {
+		qTable.clearWeights();
+	}
+
+	/**
+	 * Influences the weights in the q-table from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+		qTable.influenceWeightsFromPreferencesBy(factor, preferences);
 	}
 }

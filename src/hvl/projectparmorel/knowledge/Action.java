@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Base64;
+import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -19,7 +20,7 @@ import hvl.projectparmorel.ml.SerializableMethod;
  * @author Angela Barriga Rodriguez - 2019, abar@hvl.no
  * @author Magnus Marthinsen
  * 
- *         Western Norway University of Applied Sciences Bergen - Norway
+ * Western Norway University of Applied Sciences Bergen - Norway
  */
 public class Action implements Comparable<Action> {
 	private final String XML_CODE_NAME = "code";
@@ -254,5 +255,20 @@ public class Action implements Comparable<Action> {
 			return (SerializableMethod) object;
 		}
 		return null;
+	}
+
+	/**
+	 * Influences the weights from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	protected void influenceWeightFromPreferencesBy(double factor, List<Integer> preferences) {
+		for (Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
+			if(preferences.contains(preferenceId)) {
+				int oldPreferenceValue = preferenceMap.getWeightFor(preferenceId);
+				weight += oldPreferenceValue * factor;
+			}
+		}
 	}
 }

@@ -3,6 +3,7 @@ package hvl.projectparmorel.knowledge;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -27,31 +28,19 @@ import org.xml.sax.SAXException;
 public class Knowledge {
 	private Logger logger = Logger.getGlobal();
 	private final String knowledgeFileName = "knowledge.xml";
-	private QTable actionDirectory;
+	private QTable qTable;
 
 	public Knowledge() {
-		actionDirectory = new QTable();
+		qTable = new QTable();
 	}
-//
-//	/**
-//	 * Adds 20% of the scores set in the preferences to the QTable. We only add 20
-//	 * %, so we don't influence the scores to much. This allows for new learnings to
-//	 * be acquired.
-//	 * 
-//	 * @param the preferences to influence. Only these preferences will be affected.
-//	 */
-//	public void influenceQTableFromPreferenceScores(List<Integer> preferences) {
-//		ErrorContextActionDirectory preferenceScores = actionDirectory.getActionDirectory();
-//		preferenceScores.influenceWeightsByPreferedScores(preferenceScores, preferences);
-//	}
 
 	/**
 	 * Gets the action directory
 	 * 
 	 * @return the action directory
 	 */
-	public QTable getActionDirectory() {
-		return actionDirectory;
+	public QTable getQTable() {
+		return qTable;
 	}
 
 	/**
@@ -61,7 +50,7 @@ public class Knowledge {
 	 * @return the action for the specified error code with the highest weight.
 	 */
 	public Action getOptimalActionForErrorCode(Integer errorCode) {
-		return actionDirectory.getOptimalActionForErrorCode(errorCode);
+		return qTable.getOptimalActionForErrorCode(errorCode);
 	}
 
 	/**
@@ -78,7 +67,7 @@ public class Knowledge {
 			Element root = document.createElement("knowledge");
 			document.appendChild(root);
 
-			actionDirectory.saveTo(document, root);
+			qTable.saveTo(document, root);
 
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
@@ -93,7 +82,11 @@ public class Knowledge {
 		}
 	}
 
-	public void load() {
+	/**
+	 * Loads the knowledge
+	 * @return true if the file is successfully loaded, false otherwise 
+	 */
+	public boolean load() {
 		try {
 			logger.info("Loading initialized");
 			File fXmlFile = new File(knowledgeFileName);
@@ -104,7 +97,8 @@ public class Knowledge {
 			doc.getDocumentElement().normalize();
 
 			logger.info("Root found: " + doc.getDocumentElement().getNodeName());
-			actionDirectory.loadFrom(doc);
+			qTable.loadFrom(doc);
+			return true;
 		} catch (FileNotFoundException e) {
 			logger.info("File not found");
 		} catch (ParserConfigurationException e) {
@@ -114,5 +108,23 @@ public class Knowledge {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
+		return false;
+	}
+
+	/**
+	 * Sets all the weights in the q-table to zero.
+	 */
+	public void clearWeights() {
+		qTable.clearWeights();
+	}
+
+	/**
+	 * Influences the weights in the q-table from the preferences and previous learning by the specified factor.
+	 * 
+	 * @param factor
+	 * @param preferences 
+	 */
+	public void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+		qTable.influenceWeightsFromPreferencesBy(factor, preferences);		
 	}
 }

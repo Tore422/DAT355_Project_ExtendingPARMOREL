@@ -26,7 +26,6 @@ import hvl.projectparmorel.reward.RewardCalculator;
 public class QLearning {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
-	private final int NUMBER_OF_EPISODES = 25;
 	private final int MAX_EPISODE_STEPS = 20;
 	
 	private Knowledge knowledge;
@@ -34,7 +33,8 @@ public class QLearning {
 	private ActionExtractor actionExtractor;
 	private ModelProcesser modelProcesser;
 
-	private double randomfactor = 0.25;
+	private double randomFactor = 0.25;
+	private int numberOfEpisodes = 25;
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
@@ -55,12 +55,14 @@ public class QLearning {
 				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
-		qTable = knowledge.getActionDirectory();
+		qTable = knowledge.getQTable();
 		actionExtractor = new ActionExtractor(knowledge);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		solvingMap = new ArrayList<Sequence>();
+		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 	
 	public QLearning(List<Integer> preferences) {
@@ -90,10 +92,16 @@ public class QLearning {
 	}
 
 	/**
-	 * Loads knowledge from file
+	 * Loads knowledge from file and influences the weights in the q-table from this based on preferences.
 	 */
 	public void loadKnowledge() {
-		knowledge.load();
+		boolean success = knowledge.load();
+		if(success) {
+			knowledge.clearWeights();
+			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
+			numberOfEpisodes = 12;
+			randomFactor = 0.15;
+		}
 	}
 	
 	private static double[] linspace(double min, double max, int points) {
@@ -104,7 +112,7 @@ public class QLearning {
 		return d;
 	}
 
-	double[] alphas = linspace(1.0, MIN_ALPHA, NUMBER_OF_EPISODES);
+	double[] alphas = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 
 	/**
 	 * Chooses an action for the specified error. The action is either the best
@@ -114,8 +122,8 @@ public class QLearning {
 	 * @return a fitting action
 	 */
 	private Action chooseAction(Error error) {
-		if (Math.random() < randomfactor) {
-			return knowledge.getActionDirectory().getRandomActionForError(error.getCode());
+		if (Math.random() < randomFactor) {
+			return knowledge.getQTable().getRandomActionForError(error.getCode());
 		} else {
 			return knowledge.getOptimalActionForErrorCode(error.getCode());
 		}
@@ -147,8 +155,8 @@ public class QLearning {
 		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 		// START with initial model its errors and actions
 		logger.info("Errors to fix: " + errorsToFix.toString());
-		logger.info("Number of episodes: " + NUMBER_OF_EPISODES);
-		while (episode < NUMBER_OF_EPISODES) {
+		logger.info("Number of episodes: " + numberOfEpisodes);
+		while (episode < numberOfEpisodes) {
 			handleEpisode(modelCopy, episode);
 			
 			// RESET initial model and extract actions + errors
