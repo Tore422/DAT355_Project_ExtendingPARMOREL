@@ -154,7 +154,7 @@ class ContextMap {
 	 */
 	protected void setAction(Integer contextId, Action action) {
 		if (actions.containsKey(contextId)) {
-			actions.get(contextId).setAction(action.getCode(), action);
+			actions.get(contextId).addAction(action);
 		} else {
 			actions.put(contextId, new ActionMap(action));
 		}

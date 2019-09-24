@@ -31,9 +31,9 @@ class ActionMap {
 	protected ActionMap(Element context) throws IOException {
 		this();
 		NodeList actionList = context.getElementsByTagName(XML_NODE_NAME);
-		for(int i = 0; i < actionList.getLength(); i++) {
+		for (int i = 0; i < actionList.getLength(); i++) {
 			Node actionNode = actionList.item(i);
-			if(actionNode.getNodeType() == Node.ELEMENT_NODE) {
+			if (actionNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element actionElement = (Element) actionNode;
 				Action action = new Action(actionElement);
 				actions.put(action.getCode(), action);
@@ -90,18 +90,17 @@ class ActionMap {
 		int randomActionIndex = randomGenerator.nextInt(actionIds.length);
 		return actions.get(actionIds[randomActionIndex]);
 	}
-	
+
 	/**
-	 * Sets the action for the specified action id. If the action is not in the
-	 * hierarchy, it will be added.
+	 * Adds the action to the map if it does not exist. It the map allready contains
+	 * an action with the same code it will be updated.
 	 * 
-	 * @param actionId
 	 * @param action
 	 */
-	protected void setAction(Integer actionId, Action action) {
-		actions.put(actionId, action);
+	protected void addAction(Action action) {
+		actions.put(action.getCode(), action);
 	}
-	
+
 	/**
 	 * Gets the value for the specified action id
 	 * 
@@ -119,11 +118,11 @@ class ActionMap {
 	 * @param context
 	 */
 	protected void saveTo(Document document, Element context) {
-		for(Integer key : actions.keySet()) {
-            Element action = document.createElement(XML_NODE_NAME);
-            
-            actions.get(key).saveTo(document, action);
-            context.appendChild(action);
+		for (Integer key : actions.keySet()) {
+			Element action = document.createElement(XML_NODE_NAME);
+
+			actions.get(key).saveTo(document, action);
+			context.appendChild(action);
 		}
 	}
 
@@ -131,19 +130,20 @@ class ActionMap {
 	 * Sets all the weights to zero.
 	 */
 	protected void clearWeights() {
-		for(Action action : actions.values()) {
+		for (Action action : actions.values()) {
 			action.setWeight(0);
 		}
 	}
 
 	/**
-	 * Influences the action weights from the preferences and previous learning by the specified factor.
+	 * Influences the action weights from the preferences and previous learning by
+	 * the specified factor.
 	 * 
 	 * @param factor
-	 * @param preferences 
+	 * @param preferences
 	 */
 	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
-		for(Action action : actions.values()) {
+		for (Action action : actions.values()) {
 			action.influenceWeightFromPreferencesBy(factor, preferences);
 		}
 	}
