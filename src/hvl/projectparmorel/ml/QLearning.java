@@ -277,12 +277,7 @@ public class QLearning {
 		sequence.setSequence(errorActionList);
 		sequence.setURI(uri);
 
-		int code;
-		if (action.getSubHierarchy() != -1) {
-			code = Integer.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
-		} else {
-			code = action.getHierarchy();
-		}
+		int code = action.getHierarchy();
 
 		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
 				code, action);
@@ -301,12 +296,7 @@ public class QLearning {
 			nextErrorToFix = errorsToFix.get(0);
 			Action a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
 
-			int code2;
-			if (a.getSubHierarchy() != -1) {
-				code2 = Integer.valueOf(String.valueOf(a.getHierarchy()) + String.valueOf(a.getSubHierarchy()));
-			} else {
-				code2 = a.getHierarchy();
-			}
+			int code2 = a.getHierarchy();
 			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
 					+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
 					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());

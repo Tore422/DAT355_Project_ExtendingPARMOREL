@@ -20,14 +20,13 @@ import hvl.projectparmorel.ml.SerializableMethod;
  * @author Angela Barriga Rodriguez - 2019, abar@hvl.no
  * @author Magnus Marthinsen
  * 
- * Western Norway University of Applied Sciences Bergen - Norway
+ *         Western Norway University of Applied Sciences Bergen - Norway
  */
 public class Action implements Comparable<Action> {
 	private final String XML_CODE_NAME = "code";
 	private final String XML_WEIGHT_NAME = "weight";
 	private final String XML_MESSAGE_NAME = "message";
 	private final String XML_HIERARCHY_NAME = "hierarchy";
-	private final String XML_SUBHIERARCHY_NAME = "subHierarchy";
 	private final String XML_METHOD_NAME = "method";
 	private final String XML_PREFERENCEMAP_NAME = "preferenceMap";
 
@@ -36,7 +35,6 @@ public class Action implements Comparable<Action> {
 	private String message;
 	private SerializableMethod method;
 	private int hierarchy;
-	private int subHierarchy;
 	private double weight;
 
 	/**
@@ -55,13 +53,12 @@ public class Action implements Comparable<Action> {
 	 * @param hierarchy
 	 * @param subHierarchy
 	 */
-	public Action(int code, String message, SerializableMethod method, int hierarchy, int subHierarchy) {
+	public Action(int code, String message, SerializableMethod method, int hierarchy) {
 		this();
 		this.code = code;
 		this.message = message;
 		this.method = method;
 		this.hierarchy = hierarchy;
-		this.subHierarchy = subHierarchy;
 	}
 
 	protected Action(Element action) throws IOException {
@@ -72,8 +69,6 @@ public class Action implements Comparable<Action> {
 			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
 			hierarchy = Integer
 					.parseInt(actionElement.getElementsByTagName(XML_HIERARCHY_NAME).item(0).getTextContent());
-			subHierarchy = Integer
-					.parseInt(actionElement.getElementsByTagName(XML_SUBHIERARCHY_NAME).item(0).getTextContent());
 			method = getMethodFromString(actionElement.getElementsByTagName(XML_METHOD_NAME).item(0).getTextContent());
 			preferenceMap = new PreferenceWeightMap(actionElement.getElementsByTagName(XML_PREFERENCEMAP_NAME));
 		} else {
@@ -91,8 +86,7 @@ public class Action implements Comparable<Action> {
 		if (other instanceof Action) {
 			Action otherAction = (Action) other;
 			return otherAction.getCode() == code && otherAction.getMessage().equals(message)
-					&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy
-					&& otherAction.getSubHierarchy() == subHierarchy;
+					&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy;
 		}
 		return false;
 	}
@@ -133,11 +127,7 @@ public class Action implements Comparable<Action> {
 	 * @return the context ID
 	 */
 	public int getContextId() {
-		if (subHierarchy > -1) {
-			return Integer.valueOf(String.valueOf(hierarchy) + String.valueOf(subHierarchy));
-		} else {
-			return hierarchy;
-		}
+		return hierarchy;
 	}
 
 	public double getWeight() {
@@ -162,10 +152,6 @@ public class Action implements Comparable<Action> {
 
 	public int getHierarchy() {
 		return hierarchy;
-	}
-
-	public int getSubHierarchy() {
-		return subHierarchy;
 	}
 
 	public void setCode(int code) {
@@ -204,10 +190,6 @@ public class Action implements Comparable<Action> {
 		hierarchy.appendChild(document.createTextNode("" + this.hierarchy));
 		action.appendChild(hierarchy);
 
-		Element subHierarchy = document.createElement(XML_SUBHIERARCHY_NAME);
-		subHierarchy.appendChild(document.createTextNode("" + this.subHierarchy));
-		action.appendChild(subHierarchy);
-
 		Element method = document.createElement(XML_METHOD_NAME);
 		method.appendChild(document.createTextNode(getMethodAsString()));
 		action.appendChild(method);
@@ -238,7 +220,7 @@ public class Action implements Comparable<Action> {
 	/**
 	 * Read the object from Base64 string.
 	 * 
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private SerializableMethod getMethodFromString(String methodAsString) throws IOException {
 		Object object = null;
@@ -258,14 +240,15 @@ public class Action implements Comparable<Action> {
 	}
 
 	/**
-	 * Influences the weights from the preferences and previous learning by the specified factor.
+	 * Influences the weights from the preferences and previous learning by the
+	 * specified factor.
 	 * 
 	 * @param factor
-	 * @param preferences 
+	 * @param preferences
 	 */
 	protected void influenceWeightFromPreferencesBy(double factor, List<Integer> preferences) {
 		for (Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
-			if(preferences.contains(preferenceId)) {
+			if (preferences.contains(preferenceId)) {
 				int oldPreferenceValue = preferenceMap.getWeightFor(preferenceId);
 				weight += oldPreferenceValue * factor;
 			}

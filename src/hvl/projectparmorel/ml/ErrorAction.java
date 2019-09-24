@@ -38,7 +38,7 @@ public class ErrorAction {
 	@Override
 	public String toString() {
 		return "ErrorAction [Error: " + error.getCode() + " " + error.getMessage() +", Action: "
-				+ action.getMessage() + ", Error hierarchy: " + action.getHierarchy() + ", " + action.getSubHierarchy() + "]"
+				+ action.getMessage() + ", Error hierarchy: " + action.getHierarchy() + ", " + "]"
 				+ System.getProperty("line.separator");
 	}
 
@@ -46,8 +46,7 @@ public class ErrorAction {
 		boolean yes = false;
 		if (this.getAction().getCode() == ea.getAction().getCode()
 				&& this.getError().getCode() == ea.getError().getCode()
-				&& this.getAction().getHierarchy() == ea.getAction().getHierarchy()
-				&& this.getAction().getSubHierarchy() == ea.getAction().getSubHierarchy()) {
+				&& this.getAction().getHierarchy() == ea.getAction().getHierarchy()) {
 			yes = true;
 		}
 		return yes;

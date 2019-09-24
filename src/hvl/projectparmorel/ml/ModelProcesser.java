@@ -76,7 +76,7 @@ public class ModelProcesser {
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error, i )) {
 										Action newAction = new Action(action.getCode(), action.getMessage(), action.getMethod(),
-												i, -1);
+												i);
 										initializeQTableForAction(error, newAction);
 									}
 									modelCopy.getContents().clear();

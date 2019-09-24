@@ -74,14 +74,7 @@ public class RewardCalculator {
 	 */
 	public int calculateRewardFor(Error currentErrorToFix, Action action) {
 		int reward = 0;
-		int contextId;
-
-		if (action.getSubHierarchy() > -1) {
-			contextId = Integer
-					.valueOf(String.valueOf(action.getHierarchy()) + String.valueOf(action.getSubHierarchy()));
-		} else {
-			contextId = action.getHierarchy();
-		}
+		int contextId = action.getHierarchy();
 
 		if (preferences.contains(2)) {
 			if (action.getHierarchy() == 1) {
@@ -193,21 +186,14 @@ public class RewardCalculator {
 	 */
 	public void rewardSequence(Sequence sequence, int preferenceId) {
 		QTable qTable = knowledge.getQTable();
-		int contextId;
 		for (int i = 0; i < sequence.getSequence().size(); i++) {
-			if (sequence.getSequence().get(i).getAction().getSubHierarchy() > -1) {
-				contextId = Integer.valueOf(String.valueOf(sequence.getSequence().get(i).getAction().getHierarchy())
-						+ String.valueOf(sequence.getSequence().get(i).getAction().getSubHierarchy()));
-			} else {
-				contextId = sequence.getSequence().get(i).getAction().getHierarchy();
-			}
+			int contextId = sequence.getSequence().get(i).getAction().getHierarchy();
 			int errorCode = sequence.getSequence().get(i).getError().getCode();
 			int actionId = sequence.getSequence().get(i).getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
 			if (preferenceId > -1) {
-
 				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
 				} else {
@@ -216,7 +202,6 @@ public class RewardCalculator {
 				}
 			}
 			qTable.updateReward(sequence.getSequence().get(i), contextId);
-//			tagMap.updateRewardInActionDirectory(actionDirectory, sequence.getSeq().get(i), contextId);
 		}
 	}
 

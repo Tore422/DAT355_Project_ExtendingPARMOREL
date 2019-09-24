@@ -70,13 +70,13 @@ public class ActionExtractor {
 			for (Method method : methods) {
 				if (methodCanPerformChange(method) && !actions.containsKey(method.hashCode())) {
 					Action action = new Action(method.hashCode(), method.getName(), new SerializableMethod(method),
-							hierarchy + 1, 0);
+							hierarchy + 1);
 					actions.put(method.hashCode(), action);
 				}
 			}
 
 			if (!actions.containsKey(99999)) {
-				Action a = new Action(99999, "delete", null, hierarchy + 1, 0);
+				Action a = new Action(99999, "delete", null, hierarchy + 1);
 				actions.put(99999, a);
 			}
 		}
