@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.Base64;
 import java.util.List;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,7 +65,9 @@ public class Action implements Comparable<Action> {
 	protected Action(Element action) throws IOException {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
 			Element actionElement = (Element) action;
-			code = Integer.parseInt(actionElement.getElementsByTagName(XML_CODE_NAME).item(0).getTextContent());
+			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
+
+//			code = Integer.parseInt(actionElement.getElementsByTagName(XML_CODE_NAME).item(0).getTextContent());
 			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
 			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
 			hierarchy = Integer
@@ -174,9 +177,9 @@ public class Action implements Comparable<Action> {
 	}
 
 	public void saveTo(Document document, Element action) {
-		Element code = document.createElement(XML_CODE_NAME);
-		code.appendChild(document.createTextNode("" + this.code));
-		action.appendChild(code);
+		Attr code = document.createAttribute(XML_CODE_NAME);
+		code.setValue("" + this.code);
+		action.setAttributeNode(code);
 
 		Element weight = document.createElement(XML_WEIGHT_NAME);
 		weight.appendChild(document.createTextNode("" + this.weight));

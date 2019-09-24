@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -15,7 +14,6 @@ import org.w3c.dom.NodeList;
 
 class ActionMap {
 	private final String XML_NODE_NAME = "action";
-	private final String XML_ID_NAME = "id";
 	/**
 	 * A map containing the actions for the given context.
 	 */
@@ -37,9 +35,8 @@ class ActionMap {
 			Node actionNode = actionList.item(i);
 			if(actionNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element actionElement = (Element) actionNode;
-				Integer actionId = Integer.parseInt(actionElement.getAttribute(XML_ID_NAME));
 				Action action = new Action(actionElement);
-				actions.put(actionId, action);
+				actions.put(action.getCode(), action);
 			} else {
 				throw new IOException("Could not instantiate action map from node " + actionNode.getNodeName());
 			}
@@ -124,10 +121,6 @@ class ActionMap {
 	protected void saveTo(Document document, Element context) {
 		for(Integer key : actions.keySet()) {
             Element action = document.createElement(XML_NODE_NAME);
-            
-            Attr contextId = document.createAttribute(XML_ID_NAME);
-            contextId.setValue("" + key);
-            action.setAttributeNode(contextId);
             
             actions.get(key).saveTo(document, action);
             context.appendChild(action);
