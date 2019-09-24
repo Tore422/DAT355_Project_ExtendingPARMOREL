@@ -146,13 +146,13 @@ class ContextMap {
 	}
 
 	/**
-	 * Sets the value for the specified action in the specified context. If the
-	 * context or action is not in the hierarchy, they will be added.
+	 * Adds the value for the specified action in the specified context. If the
+	 * context or action is in the hierarchy, they will be updated.
 	 * 
 	 * @param contextId
 	 * @param action
 	 */
-	protected void setAction(Integer contextId, Action action) {
+	protected void addAction(Integer contextId, Action action) {
 		if (actions.containsKey(contextId)) {
 			actions.get(contextId).addAction(action);
 		} else {

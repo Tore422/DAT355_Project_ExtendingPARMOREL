@@ -60,16 +60,16 @@ public abstract class ErrorContextActionDirectory {
 	protected abstract Action getAction(Integer errorCode, Integer contextId, Integer actionId);
 	
 	/**
-	 * Sets the value for the specified action in the specified context for the
-	 * specified error. If the error, context or action is not in the hierarchy,
-	 * they will be added.
+	 * Adds the value for the specified action in the specified context for the
+	 * specified error. If the error, context or action is in the hierarchy,
+	 * they will be updated.
 	 * 
 	 * @param errorCode
 	 * @param contextId
 	 * @param actionId
 	 * @param value
 	 */
-	public abstract void setAction(Integer errorCode, Integer contextId, Action action);
+	public abstract void addAction(Integer errorCode, Integer contextId, Action action);
 
 	/**
 	 * Saves content to the document under the root element

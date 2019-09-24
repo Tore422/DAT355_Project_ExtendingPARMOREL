@@ -105,17 +105,17 @@ class ErrorMap {
 	}
 	
 	/**
-	 * Sets the value for the specified action in the specified context for the
-	 * specified error. If the error, context or action is not in the hierarchy,
-	 * they will be added.
+	 * Adds the value for the specified action in the specified context for the
+	 * specified error. If the error, context or action is in the hierarchy,
+	 * they will be updated.
 	 * 
 	 * @param errorCode
 	 * @param contextId
 	 * @param value
 	 */
-	protected void setAction(Integer errorCode, Integer contextId, Action action) {
+	protected void addAction(Integer errorCode, Integer contextId, Action action) {
 		if (contexts.containsKey(errorCode)) {
-			contexts.get(errorCode).setAction(contextId, action);
+			contexts.get(errorCode).addAction(contextId, action);
 		} else {
 			contexts.put(errorCode, new ContextMap(contextId, action));
 		}
