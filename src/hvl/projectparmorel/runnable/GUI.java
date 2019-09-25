@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -12,10 +13,10 @@ import javax.swing.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
 import hvl.projectparmorel.ml.Error;
+import hvl.projectparmorel.ml.ErrorExtractor;
 import hvl.projectparmorel.ml.QLearning;
+import hvl.projectparmorel.ml.Sequence;
 
 public class GUI extends JPanel {
 
@@ -38,10 +39,11 @@ public class GUI extends JPanel {
 	private File dest;
 	static JFrame frame;
 	JPanel newPanel = new JPanel();
-
-	QLearning ql = new QLearning();
+	private URI uri;
+	private QLearning ql;
 	List<Error> errors = null;
 	Resource auxModel;
+	Resource myMetaModel;
 
 	private JButton exportButton;
 	private JTextArea sequenceDisplay;
@@ -71,6 +73,7 @@ public class GUI extends JPanel {
 	}
 
 	public GUI() {
+		ql = new QLearning();
 		// construct components
 		importButton = new JButton("Import model");
 		repairButton = new JButton("Repair");
@@ -196,17 +199,17 @@ public class GUI extends JPanel {
 
 		Files.copy(files[0].toPath(), dest.toPath());
 	
-		ql.uri = URI.createFileURI(dest.getAbsolutePath());
-		ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
-		ql.myMetaModel = ql.resourceSet.getResource(ql.uri, true);
+		uri = URI.createFileURI(dest.getAbsolutePath());
+//		ql.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+//				new EcoreResourceFactoryImpl());
+		myMetaModel = ql.getResourceSet().getResource(uri, true);
 
-		Resource auxModel = ql.resourceSet.createResource(ql.uri);
-		auxModel.getContents().addAll(EcoreUtil.copyAll(ql.myMetaModel.getContents()));
+		Resource auxModel = ql.getResourceSet().createResource(uri);
+		auxModel.getContents().addAll(EcoreUtil.copyAll(myMetaModel.getContents()));
 
 		
-		errors = ql.errorsExtractor(auxModel);
-		ql.nuQueue = errors;
+		errors = ErrorExtractor.extractErrorsFrom(auxModel);
+//		ql.nuQueue = errors;
 		
 
 		String errorsFound = "Errors found in model " + files[0].getName() + ":" + System.getProperty("line.separator")
@@ -217,25 +220,25 @@ public class GUI extends JPanel {
 
 	void repairButtonPressed() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, IOException {
+		List<Integer> preferences = new ArrayList<>();
 		if (groupSeq.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupSeq.getSelection().getActionCommand()));
 		}
 		if (groupHierar.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupHierar.getSelection().getActionCommand()));
 		}
 		if (groupMod.getSelection() != null) {
-			QLearning.preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
+			preferences.add(Integer.parseInt(groupMod.getSelection().getActionCommand()));
 		}
 		if (tag4.isSelected()) {
-			QLearning.preferences.add(Integer.parseInt(tag4.getActionCommand()));
+			preferences.add(Integer.parseInt(tag4.getActionCommand()));
 		}
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
-		QLearning.loadKnowledge();
-		ql.actionsExtractor(errors);
-		ql.modelFixer(auxModel);
-		QLearning.save(QLearning.getNewXp(), "././knowledge.properties");
-	
+		ql.setPreferences(preferences);
+		System.out.println("PREFERENCES: " + preferences.toString());
+		Sequence bestSequence = ql.fixModel(myMetaModel, uri);
+//		ql.saveKnowledge();	
 
 		frame.getContentPane().removeAll();
 		frame.getContentPane().add(secondGUI());
@@ -244,7 +247,7 @@ public class GUI extends JPanel {
 
 		String seqFound = "Best sequence found to repair model " + files[0].getName() + ":"
 				+ System.getProperty("line.separator") + System.getProperty("line.separator");
-		getSequenceDisplay().insert(seqFound + ql.getBestSeq().toString(), 0);
+		getSequenceDisplay().insert(seqFound + bestSequence.toString(), 0);
 		
 		endTime = System.currentTimeMillis();
 		long timeneeded = (endTime - startTime);

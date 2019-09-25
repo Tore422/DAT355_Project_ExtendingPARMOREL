@@ -1,13 +1,4 @@
 package hvl.projectparmorel.ml;
-/*
- * Angela Barriga Rodriguez - 2019
- * abar@hvl.no
- * Western Norway University of Applied Sciences
- * Bergen - Norway
- */
-
-
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,33 +10,34 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+/**
+ * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
+ *         of Applied Sciences Bergen - Norway
+ */
 public class Sequence {
+	private int id;
+	private List<AppliedAction> sequence;
+	private double weight;
+	private Resource model;
+	private ResourceSet resourceSet;
+	private URI uri;
 
-	int id;
-	List <ErrorAction> seq;
-	double weight;
-	Resource model;
-	ResourceSet rs;
-	URI u;
-	
 	public Sequence() {
 		super();
-		seq = new ArrayList<ErrorAction>();
+		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
-		rs =  new ResourceSetImpl();
-		rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
+		resourceSet = new ResourceSetImpl();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 	}
 
-	public Sequence(int id, List<ErrorAction> seq, double weight, URI u) {
+	public Sequence(int id, List<AppliedAction> seq, double weight, URI u) {
 		super();
 		this.id = id;
-		this.seq = seq;
+		this.sequence = seq;
 		this.weight = weight;
-		this.u = u;
-		rs.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
-		this.model = rs.createResource(this.u);
+		this.uri = u;
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
+		this.model = resourceSet.createResource(this.uri);
 	}
 
 	public int getId() {
@@ -56,12 +48,12 @@ public class Sequence {
 		this.id = id;
 	}
 
-	public List<ErrorAction> getSeq() {
-		return seq;
+	public List<AppliedAction> getSequence() {
+		return sequence;
 	}
 
-	public void setSeq(List<ErrorAction> seq) {
-		this.seq = seq;
+	public void setSequence(List<AppliedAction> sequence) {
+		this.sequence = sequence;
 	}
 
 	public double getWeight() {
@@ -74,22 +66,21 @@ public class Sequence {
 
 	@Override
 	public String toString() {
-		return "Sequence [id=" + id + ", seq=" + seq + ", weight=" + weight + "]" + System.getProperty("line.separator") + System.getProperty("line.separator");
+		return "Sequence [id=" + id + ", seq=" + sequence + ", weight=" + weight + "]" + System.getProperty("line.separator")
+				+ System.getProperty("line.separator");
 	}
 
 	public void setModel(Resource model) {
 		this.model.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
 	}
 
-	public void setU(URI u) {
-		this.u = u;
-		model = rs.createResource(this.u);
+	public void setURI(URI uri) {
+		this.uri = uri;
+		model = resourceSet.createResource(this.uri);
 	}
 
 	public Resource getModel() {
 		return model;
 	}
-	
-	
-	
+
 }
