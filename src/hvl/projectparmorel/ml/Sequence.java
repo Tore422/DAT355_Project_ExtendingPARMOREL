@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
  */
 public class Sequence {
 	private int id;
-	private List<ErrorAction> sequence;
+	private List<AppliedAction> sequence;
 	private double weight;
 	private Resource model;
 	private ResourceSet resourceSet;
@@ -24,13 +24,13 @@ public class Sequence {
 
 	public Sequence() {
 		super();
-		sequence = new ArrayList<ErrorAction>();
+		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 	}
 
-	public Sequence(int id, List<ErrorAction> seq, double weight, URI u) {
+	public Sequence(int id, List<AppliedAction> seq, double weight, URI u) {
 		super();
 		this.id = id;
 		this.sequence = seq;
@@ -48,11 +48,11 @@ public class Sequence {
 		this.id = id;
 	}
 
-	public List<ErrorAction> getSequence() {
+	public List<AppliedAction> getSequence() {
 		return sequence;
 	}
 
-	public void setSequence(List<ErrorAction> sequence) {
+	public void setSequence(List<AppliedAction> sequence) {
 		this.sequence = sequence;
 	}
 

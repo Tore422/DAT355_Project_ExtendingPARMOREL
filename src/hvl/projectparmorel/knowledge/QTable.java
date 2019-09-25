@@ -5,7 +5,7 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.ml.ErrorAction;
+import hvl.projectparmorel.ml.AppliedAction;
 
 public class QTable {
 	ErrorContextActionDirectory qTable;
@@ -147,7 +147,7 @@ public class QTable {
 		return qTable.getOptimalActionForErrorCode(errorCode);
 	}
 
-	public void updateReward(ErrorAction errorAction, int contextId) {
+	public void updateReward(AppliedAction errorAction, int contextId) {
 		int errorCode = errorAction.getError().getCode();
 		int actionId = errorAction.getAction().getCode();
 		

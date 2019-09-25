@@ -269,10 +269,10 @@ public class QLearning {
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
-		List<ErrorAction> errorActionList = sequence.getSequence();
-		errorActionList.add(new ErrorAction(currentErrorToFix, action));
+		List<AppliedAction> appliedActions = sequence.getSequence();
+		appliedActions.add(new AppliedAction(currentErrorToFix, action));
 
-		sequence.setSequence(errorActionList);
+		sequence.setSequence(appliedActions);
 		sequence.setURI(uri);
 
 		int code = action.getHierarchy();
@@ -326,20 +326,20 @@ public class QLearning {
 		return modelCopy;
 	}
 
-	private boolean uniqueSequence(Sequence s) {
+	private boolean uniqueSequence(Sequence sequence) {
 		boolean check = true;
 		int same = 0;
-		for (Sequence seq : solvingMap) {
-			if (seq.getWeight() == s.getWeight()) {
-				for (ErrorAction ea : s.getSequence()) {
-					for (ErrorAction ea2 : seq.getSequence()) {
+		for (Sequence otherSequence : solvingMap) {
+			if (otherSequence.getWeight() == sequence.getWeight()) {
+				for (AppliedAction ea : sequence.getSequence()) {
+					for (AppliedAction ea2 : otherSequence.getSequence()) {
 						if (ea.equals(ea2)) {
 							same++;
 						}
 					}
 				} // for ea
 					// if all elements in list are the same
-				if (same == s.getSequence().size()) {
+				if (same == sequence.getSequence().size()) {
 					check = false;
 					break;
 				}
@@ -348,7 +348,7 @@ public class QLearning {
 		return check;
 	}
 
-	private int checkForLoopsIn(List<ErrorAction> performedActions) {
+	private int checkForLoopsIn(List<AppliedAction> performedActions) {
 		List<Error> errors = new ArrayList<Error>();
 		int value = 0;
 		int index, index2 = 0;
