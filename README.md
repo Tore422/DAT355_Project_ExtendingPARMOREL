@@ -9,6 +9,6 @@ Executing GUI.java launches a graphical application in where users can introduce
 
 Be aware of the random nature of Reinforcement Learning algorithm, this can lead to different results in different executions.
 
-If you want to reset the algorithm's knowledge, just delete all content inside knowledge.properties.
+If you want to reset the algorithm's knowledge, just delete all content inside knowledge.xml.
 
 Contact: abar@hvl.no
