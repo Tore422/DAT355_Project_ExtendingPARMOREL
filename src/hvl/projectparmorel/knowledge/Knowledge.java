@@ -62,7 +62,7 @@ public class Knowledge {
 			DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
 			Document document = documentBuilder.newDocument();
-			logger.info("document created");
+			logger.info("document prepared");
 
 			Element root = document.createElement("knowledge");
 			document.appendChild(root);
@@ -72,9 +72,10 @@ public class Knowledge {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource domSource = new DOMSource(document);
-			StreamResult streamResult = new StreamResult(new File(knowledgeFileName));
+			File file = new File(knowledgeFileName);
+			StreamResult streamResult = new StreamResult(file);
 			transformer.transform(domSource, streamResult);
-			logger.info("Saving completed");
+			logger.info("Saving completed to " + file.getAbsolutePath());
 		} catch (ParserConfigurationException pce) {
 			pce.printStackTrace();
 		} catch (TransformerException tfe) {
@@ -90,7 +91,7 @@ public class Knowledge {
 		try {
 			logger.info("Loading initialized");
 			File fXmlFile = new File(knowledgeFileName);
-			logger.info("File found");
+			logger.info("File created: " + fXmlFile.getAbsolutePath());
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);

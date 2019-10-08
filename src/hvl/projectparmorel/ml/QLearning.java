@@ -65,6 +65,7 @@ public class QLearning {
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+		loadKnowledge();
 	}
 
 	public QLearning(List<Integer> preferences) {
@@ -186,6 +187,7 @@ public class QLearning {
 				e.printStackTrace();
 			}
 		}
+		saveKnowledge();
 		return bestSequence;
 	}
 
@@ -213,7 +215,7 @@ public class QLearning {
 		int step = 0;
 
 		while (step < MAX_EPISODE_STEPS) {
-			if (errorsToFix.size() != 0) {
+			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
 				step++;
@@ -257,6 +259,12 @@ public class QLearning {
 	 * @return the reward from the step
 	 */
 	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) {
+		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
+			errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+			actionExtractor.extractActionsFor(errorsToFix);
+			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+		}
+		
 		Action action = chooseAction(currentErrorToFix);
 		int sizeBefore = errorsToFix.size();
 		double alpha = ALPHAS[episode];
@@ -280,7 +288,7 @@ public class QLearning {
 		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
 				code, action);
 
-		if (errorsToFix.size() != 0) {
+		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
 
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
