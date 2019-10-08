@@ -98,7 +98,7 @@ public class QLearning {
 	/**
 	 * Saves the knowledge
 	 */
-	public void saveKnowledge() {
+	private void saveKnowledge() {
 		knowledge.save();
 	}
 
@@ -109,7 +109,7 @@ public class QLearning {
 	 * This also reduces the number of episodes and the chance
 	 * for taking random actions. More previous knowledge reduces the need for many episodes and randomness.
 	 */
-	public void loadKnowledge() {
+	private void loadKnowledge() {
 		boolean success = knowledge.load();
 		if (success) {
 			knowledge.clearWeights();
