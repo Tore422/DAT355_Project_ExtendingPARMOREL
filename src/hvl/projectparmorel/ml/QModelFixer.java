@@ -13,17 +13,19 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.knowledge.Action;
-import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.knowledge.Knowledge;
+import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
+ * A model fixer that uses QLearning.
+ * 
  * Western Norway University of Applied Sciences Bergen, Norway
  * 
  * @author Angela Barriga Rodriguez abar@hvl.no
  * @author Magnus Marthinsen
  */
-public class QLearning {
+public class QModelFixer implements ModelFixer {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
@@ -50,7 +52,7 @@ public class QLearning {
 	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
 
-	public QLearning() {
+	public QModelFixer() {
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
@@ -68,7 +70,7 @@ public class QLearning {
 		loadKnowledge();
 	}
 
-	public QLearning(List<Integer> preferences) {
+	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
@@ -134,13 +136,7 @@ public class QLearning {
 		}
 	}
 
-	/**
-	 * Attempts to fix the model
-	 * 
-	 * @param model
-	 * @param uri
-	 * @return the best possible sequence
-	 */
+	@Override
 	public Sequence fixModel(Resource model, URI uri) {
 		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
@@ -397,4 +393,10 @@ public class QLearning {
 		}
 		return maxS;
 	}
+
+	@Override
+	public Resource getModel(URI uri) {
+		return resourceSet.getResource(uri, true);
+	}
+
 }
