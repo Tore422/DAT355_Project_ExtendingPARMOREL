@@ -30,5 +30,13 @@ public interface ModelFixer {
 	 */
 	public Resource getModel(URI uri);
 
+	/**
+	 * Checks that there exists error in the model
+	 * 
+	 * @param model
+	 * @return true if errors exist in the model, false otherwise
+	 */
+	public boolean modelIsBroken(Resource model);
+
 	
 }

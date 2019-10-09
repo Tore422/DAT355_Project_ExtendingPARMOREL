@@ -399,4 +399,10 @@ public class QModelFixer implements ModelFixer {
 		return resourceSet.getResource(uri, true);
 	}
 
+	@Override
+	public boolean modelIsBroken(Resource model) {
+		List<Error> errors = ErrorExtractor.extractErrorsFrom(model);
+		return !errors.isEmpty();
+	}
+
 }
