@@ -268,10 +268,7 @@ public class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy()); // removed
-																													// subHirerarchy
-																													// -
-																													// effect?
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy());
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
