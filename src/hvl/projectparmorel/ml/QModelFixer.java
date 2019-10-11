@@ -138,6 +138,8 @@ public class QModelFixer implements ModelFixer {
 
 	@Override
 	public Sequence fixModel(Resource model, URI uri) {
+		logger.info("Running with preferences " + getPreferences().toString());
+		
 		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
