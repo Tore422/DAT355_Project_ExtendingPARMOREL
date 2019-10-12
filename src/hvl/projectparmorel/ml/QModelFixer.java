@@ -88,10 +88,7 @@ public class QModelFixer implements ModelFixer {
 		return resourceSet;
 	}
 
-	public List<Integer> getPreferences() {
-		return rewardCalculator.getPreferences();
-	}
-
+	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
@@ -138,7 +135,7 @@ public class QModelFixer implements ModelFixer {
 
 	@Override
 	public Sequence fixModel(Resource model, URI uri) {
-		logger.info("Running with preferences " + getPreferences().toString());
+		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 		
 		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
@@ -323,7 +320,8 @@ public class QModelFixer implements ModelFixer {
 	 * @param       uri, the Uniform Resource Identifier for the copy
 	 * @return a copy
 	 */
-	private Resource copy(Resource model, URI uri) {
+	@Override
+	public Resource copy(Resource model, URI uri) {
 		Resource modelCopy = resourceSet.createResource(uri);
 		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
 		return modelCopy;
