@@ -323,7 +323,8 @@ public class QModelFixer implements ModelFixer {
 	@Override
 	public Resource copy(Resource model, URI uri) {
 		Resource modelCopy = resourceSet.createResource(uri);
-		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+//		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+		modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
 		return modelCopy;
 	}
 
