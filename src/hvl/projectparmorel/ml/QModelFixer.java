@@ -2,7 +2,6 @@ package hvl.projectparmorel.ml;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,7 +44,6 @@ public class QModelFixer implements ModelFixer {
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
-	private static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));
 	
 	private Logger logger = Logger.getGlobal();
 
@@ -219,7 +217,7 @@ public class QModelFixer implements ModelFixer {
 		int step = 0;
 
 		while (step < MAX_EPISODE_STEPS) {
-			while(!errorsToFix.isEmpty() && unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+			while(!errorsToFix.isEmpty() && ErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
 				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: " + errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
 			}
