@@ -5,25 +5,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.knowledge.Action;
-import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.knowledge.Knowledge;
+import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
+ * A model fixer that uses QLearning.
+ * 
  * Western Norway University of Applied Sciences Bergen, Norway
  * 
  * @author Angela Barriga Rodriguez abar@hvl.no
  * @author Magnus Marthinsen
  */
-public class QLearning {
+public class QModelFixer implements ModelFixer {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
@@ -39,7 +44,7 @@ public class QLearning {
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
-
+	
 	private Logger logger = Logger.getGlobal();
 
 	private int reward = 0;
@@ -50,7 +55,7 @@ public class QLearning {
 	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
 
-	public QLearning() {
+	public QModelFixer() {
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
@@ -65,9 +70,10 @@ public class QLearning {
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+		loadKnowledge();
 	}
 
-	public QLearning(List<Integer> preferences) {
+	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
@@ -85,10 +91,7 @@ public class QLearning {
 		return resourceSet;
 	}
 
-	public List<Integer> getPreferences() {
-		return rewardCalculator.getPreferences();
-	}
-
+	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
@@ -97,7 +100,7 @@ public class QLearning {
 	/**
 	 * Saves the knowledge
 	 */
-	public void saveKnowledge() {
+	private void saveKnowledge() {
 		knowledge.save();
 	}
 
@@ -108,7 +111,7 @@ public class QLearning {
 	 * This also reduces the number of episodes and the chance
 	 * for taking random actions. More previous knowledge reduces the need for many episodes and randomness.
 	 */
-	public void loadKnowledge() {
+	private void loadKnowledge() {
 		boolean success = knowledge.load();
 		if (success) {
 			knowledge.clearWeights();
@@ -124,23 +127,22 @@ public class QLearning {
 	 * 
 	 * @param error
 	 * @return a fitting action
+	 * @throws UnsupportedErrorException if the error is not in the Q-table
 	 */
-	private Action chooseAction(Error error) {
+	private Action chooseAction(Error error) throws UnsupportedErrorException {
 		if (Math.random() < randomFactor) {
+			logger.info("Choosing random action.");
 			return knowledge.getQTable().getRandomActionForError(error.getCode());
 		} else {
+			logger.info("Choosing optimal action");
 			return knowledge.getOptimalActionForErrorCode(error.getCode());
 		}
 	}
 
-	/**
-	 * Attempts to fix the model
-	 * 
-	 * @param model
-	 * @param uri
-	 * @return the best possible sequence
-	 */
+	@Override
 	public Sequence fixModel(Resource model, URI uri) {
+		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
+		
 		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
@@ -164,7 +166,8 @@ public class QLearning {
 
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
-			modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+			EObject content = model.getContents().get(0);
+			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
 			episode++;
@@ -186,6 +189,7 @@ public class QLearning {
 				e.printStackTrace();
 			}
 		}
+		saveKnowledge();
 		return bestSequence;
 	}
 
@@ -213,9 +217,18 @@ public class QLearning {
 		int step = 0;
 
 		while (step < MAX_EPISODE_STEPS) {
-			if (errorsToFix.size() != 0) {
+			while(!errorsToFix.isEmpty() && ErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: " + errorsToFix.get(0).getMessage());
+				errorsToFix.remove(0);
+			}
+			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
-				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+				try {
+					totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+				} catch (UnsupportedErrorException e) {
+					logger.warning("Encountered error that could not be resolved. + \nCode:" + currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
+					errorsToFix.remove(0);
+				}
 				step++;
 			} else {
 				break;
@@ -255,17 +268,28 @@ public class QLearning {
 	 * @param episode
 	 * @param currentErrorToFix
 	 * @return the reward from the step
+	 * @throws UnsupportedErrorException if the error code is not in the Q-table, and cannot be added
 	 */
-	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) {
+	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) throws UnsupportedErrorException {
+		logger.info("Fixing error " + currentErrorToFix.getCode() + " int episode " + episode);
+		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
+			logger.info("Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
+			errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+			actionExtractor.extractActionsFor(errorsToFix);
+			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
+				logger.info("Action for error code not found.");
+			} else {
+				logger.info("Action for error code found and added to Q-table.");
+			}
+		}
+		
 		Action action = chooseAction(currentErrorToFix);
 		int sizeBefore = errorsToFix.size();
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy()); // removed
-																													// subHirerarchy
-																													// -
-																													// effect?
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy());
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
@@ -280,26 +304,37 @@ public class QLearning {
 		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
 				code, action);
 
-		if (errorsToFix.size() != 0) {
+		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
-
+			logger.info("Next error code: " + nextErrorToFix.getCode());
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
+				logger.info("Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 				errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 				actionExtractor.extractActionsFor(errorsToFix);
 				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
+					logger.info("Action for error code not found.");
+				} else {
+					logger.info("Action for error code found and added to Q-table.");
+				}
 			}
 
 			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
 
 			nextErrorToFix = errorsToFix.get(0);
-			Action a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
+			Action a;
+			try {
+				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
+				int code2 = a.getHierarchy();
+				double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
+						+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
+						- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
-			int code2 = a.getHierarchy();
-			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
-					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+				qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
+			} catch (UnsupportedErrorException e) {
+				// next error is not in the Q-table
+			}
 
-			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 			currentErrorToFix = nextErrorToFix;
 		} // it has reached the end
 
@@ -320,9 +355,12 @@ public class QLearning {
 	 * @param       uri, the Uniform Resource Identifier for the copy
 	 * @return a copy
 	 */
-	private Resource copy(Resource model, URI uri) {
+	@Override
+	public Resource copy(Resource model, URI uri) {
 		Resource modelCopy = resourceSet.createResource(uri);
-		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+//		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+		EList<EObject> contents = model.getContents();
+		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
 		return modelCopy;
 	}
 
@@ -389,4 +427,16 @@ public class QLearning {
 		}
 		return maxS;
 	}
+
+	@Override
+	public Resource getModel(URI uri) {
+		return resourceSet.getResource(uri, true);
+	}
+
+	@Override
+	public boolean modelIsBroken(Resource model) {
+		List<Error> errors = ErrorExtractor.extractErrorsFrom(model);
+		return !errors.isEmpty();
+	}
+
 }

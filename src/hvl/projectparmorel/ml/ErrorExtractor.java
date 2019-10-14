@@ -2,9 +2,12 @@ package hvl.projectparmorel.ml;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.Diagnostic;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 import org.eclipse.emf.ecore.impl.EReferenceImpl;
@@ -13,6 +16,9 @@ import org.eclipse.emf.ecore.util.Diagnostician;
 
 public class ErrorExtractor {
 
+	public static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));
+	private static Logger logger = Logger.getGlobal();
+	
 	/**
 	 * Extracts the errors from the provided model.
 	 * 
@@ -27,7 +33,11 @@ public class ErrorExtractor {
 			for (Diagnostic child : diagnostic.getChildren()) {
 				Error error = getErrorFor(child);
 				if (error != null) {
-					errors.add(error);
+					if(unsuportedErrorCodes.contains(error.getCode())){
+						logger.warning("Encounteded unsupported error " + error.getCode() + ". Message: " + error.getMessage() + ". Skipping error.");
+					} else {
+						errors.add(error);
+					}
 				}
 			}
 		}
@@ -41,7 +51,8 @@ public class ErrorExtractor {
 	 * @return the diagnostic for the model
 	 */
 	private static Diagnostic validateMode(Resource model) {
-		return Diagnostician.INSTANCE.validate(model.getContents().get(0));
+		EObject object = model.getContents().get(0);
+		return Diagnostician.INSTANCE.validate(object);
 	}
 
 	/**

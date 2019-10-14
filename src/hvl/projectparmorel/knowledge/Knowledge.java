@@ -19,6 +19,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import hvl.projectparmorel.exceptions.UnsupportedErrorException;
+
 /**
  * Represents the algorithms knowledge.
  * 
@@ -48,9 +50,15 @@ public class Knowledge {
 	 * 
 	 * @param errorCode
 	 * @return the action for the specified error code with the highest weight.
+	 * @throws UnsupportedErrorException if the error code is not in the Q-table
 	 */
-	public Action getOptimalActionForErrorCode(Integer errorCode) {
-		return qTable.getOptimalActionForErrorCode(errorCode);
+	public Action getOptimalActionForErrorCode(Integer errorCode) throws UnsupportedErrorException {
+		if(qTable.containsErrorCode(errorCode)) {
+			return qTable.getOptimalActionForErrorCode(errorCode);
+		} else {
+			logger.warning("Error code " + errorCode + " is not in the Q-table.");
+			throw new UnsupportedErrorException("The error code " + errorCode + " was not in the QTable.");
+		}
 	}
 
 	/**
@@ -62,7 +70,7 @@ public class Knowledge {
 			DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
 			Document document = documentBuilder.newDocument();
-			logger.info("document created");
+			logger.info("document prepared");
 
 			Element root = document.createElement("knowledge");
 			document.appendChild(root);
@@ -72,9 +80,10 @@ public class Knowledge {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource domSource = new DOMSource(document);
-			StreamResult streamResult = new StreamResult(new File(knowledgeFileName));
+			File file = new File(knowledgeFileName);
+			StreamResult streamResult = new StreamResult(file);
 			transformer.transform(domSource, streamResult);
-			logger.info("Saving completed");
+			logger.info("Saving completed to " + file.getAbsolutePath());
 		} catch (ParserConfigurationException pce) {
 			pce.printStackTrace();
 		} catch (TransformerException tfe) {
@@ -90,7 +99,7 @@ public class Knowledge {
 		try {
 			logger.info("Loading initialized");
 			File fXmlFile = new File(knowledgeFileName);
-			logger.info("File found");
+			logger.info("File created: " + fXmlFile.getAbsolutePath());
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
