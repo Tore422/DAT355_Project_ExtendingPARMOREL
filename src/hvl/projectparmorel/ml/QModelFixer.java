@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -160,7 +162,8 @@ public class QModelFixer implements ModelFixer {
 
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
-			modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+			EObject content = model.getContents().get(0);
+			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
 			episode++;
@@ -324,7 +327,8 @@ public class QModelFixer implements ModelFixer {
 	public Resource copy(Resource model, URI uri) {
 		Resource modelCopy = resourceSet.createResource(uri);
 //		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
-		modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
+		EList<EObject> contents = model.getContents();
+		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
 		return modelCopy;
 	}
 

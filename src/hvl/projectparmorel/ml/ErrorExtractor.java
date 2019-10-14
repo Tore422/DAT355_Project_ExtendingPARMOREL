@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.common.util.Diagnostic;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 import org.eclipse.emf.ecore.impl.EReferenceImpl;
@@ -41,7 +42,8 @@ public class ErrorExtractor {
 	 * @return the diagnostic for the model
 	 */
 	private static Diagnostic validateMode(Resource model) {
-		return Diagnostician.INSTANCE.validate(model.getContents().get(0));
+		EObject object = model.getContents().get(0);
+		return Diagnostician.INSTANCE.validate(object);
 	}
 
 	/**
