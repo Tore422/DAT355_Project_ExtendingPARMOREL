@@ -2,6 +2,7 @@ package hvl.projectparmorel.ml;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
@@ -43,7 +45,8 @@ public class QModelFixer implements ModelFixer {
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
-
+	private static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));
+	
 	private Logger logger = Logger.getGlobal();
 
 	private int reward = 0;
@@ -126,11 +129,14 @@ public class QModelFixer implements ModelFixer {
 	 * 
 	 * @param error
 	 * @return a fitting action
+	 * @throws UnsupportedErrorException if the error is not in the Q-table
 	 */
-	private Action chooseAction(Error error) {
+	private Action chooseAction(Error error) throws UnsupportedErrorException {
 		if (Math.random() < randomFactor) {
+			logger.info("Choosing random action.");
 			return knowledge.getQTable().getRandomActionForError(error.getCode());
 		} else {
+			logger.info("Choosing optimal action");
 			return knowledge.getOptimalActionForErrorCode(error.getCode());
 		}
 	}
@@ -213,9 +219,18 @@ public class QModelFixer implements ModelFixer {
 		int step = 0;
 
 		while (step < MAX_EPISODE_STEPS) {
+			while(!errorsToFix.isEmpty() && unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: " + errorsToFix.get(0).getMessage());
+				errorsToFix.remove(0);
+			}
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
-				totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+				try {
+					totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+				} catch (UnsupportedErrorException e) {
+					logger.warning("Encountered error that could not be resolved. + \nCode:" + currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
+					errorsToFix.remove(0);
+				}
 				step++;
 			} else {
 				break;
@@ -255,12 +270,20 @@ public class QModelFixer implements ModelFixer {
 	 * @param episode
 	 * @param currentErrorToFix
 	 * @return the reward from the step
+	 * @throws UnsupportedErrorException if the error code is not in the Q-table, and cannot be added
 	 */
-	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) {
+	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) throws UnsupportedErrorException {
+		logger.info("Fixing error " + currentErrorToFix.getCode() + " int episode " + episode);
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
+			logger.info("Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 			errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 			actionExtractor.extractActionsFor(errorsToFix);
 			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
+				logger.info("Action for error code not found.");
+			} else {
+				logger.info("Action for error code found and added to Q-table.");
+			}
 		}
 		
 		Action action = chooseAction(currentErrorToFix);
@@ -285,24 +308,35 @@ public class QModelFixer implements ModelFixer {
 
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
-
+			logger.info("Next error code: " + nextErrorToFix.getCode());
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
+				logger.info("Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 				errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 				actionExtractor.extractActionsFor(errorsToFix);
 				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
+					logger.info("Action for error code not found.");
+				} else {
+					logger.info("Action for error code found and added to Q-table.");
+				}
 			}
 
 			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
 
 			nextErrorToFix = errorsToFix.get(0);
-			Action a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
+			Action a;
+			try {
+				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
+				int code2 = a.getHierarchy();
+				double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
+						+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
+						- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
 
-			int code2 = a.getHierarchy();
-			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
-					- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+				qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
+			} catch (UnsupportedErrorException e) {
+				// next error is not in the Q-table
+			}
 
-			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 			currentErrorToFix = nextErrorToFix;
 		} // it has reached the end
 

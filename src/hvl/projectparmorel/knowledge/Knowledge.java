@@ -19,6 +19,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import hvl.projectparmorel.exceptions.UnsupportedErrorException;
+
 /**
  * Represents the algorithms knowledge.
  * 
@@ -48,9 +50,15 @@ public class Knowledge {
 	 * 
 	 * @param errorCode
 	 * @return the action for the specified error code with the highest weight.
+	 * @throws UnsupportedErrorException if the error code is not in the Q-table
 	 */
-	public Action getOptimalActionForErrorCode(Integer errorCode) {
-		return qTable.getOptimalActionForErrorCode(errorCode);
+	public Action getOptimalActionForErrorCode(Integer errorCode) throws UnsupportedErrorException {
+		if(qTable.containsErrorCode(errorCode)) {
+			return qTable.getOptimalActionForErrorCode(errorCode);
+		} else {
+			logger.warning("Error code " + errorCode + " is not in the Q-table.");
+			throw new UnsupportedErrorException("The error code " + errorCode + " was not in the QTable.");
+		}
 	}
 
 	/**
