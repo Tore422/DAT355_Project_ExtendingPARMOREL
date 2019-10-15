@@ -5,9 +5,9 @@ import java.util.List;
 
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.moderrepair.Error;
-import hvl.projectparmorel.moderrepair.Preferences;
-import hvl.projectparmorel.moderrepair.Sequence;
+import hvl.projectparmorel.modelrepair.Error;
+import hvl.projectparmorel.modelrepair.Preferences;
+import hvl.projectparmorel.modelrepair.Sequence;
 import hvl.projectparmorel.knowledge.Knowledge;
 
 public class RewardCalculator {

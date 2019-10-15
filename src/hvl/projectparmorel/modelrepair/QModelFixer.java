@@ -1,4 +1,4 @@
-package hvl.projectparmorel.moderrepair;
+package hvl.projectparmorel.modelrepair;
 
 import java.io.IOException;
 import java.util.ArrayList;
