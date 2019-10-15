@@ -5,10 +5,10 @@ import java.util.List;
 
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.moderrepair.Error;
+import hvl.projectparmorel.moderrepair.Preferences;
+import hvl.projectparmorel.moderrepair.Sequence;
 import hvl.projectparmorel.knowledge.Knowledge;
-import hvl.projectparmorel.ml.Error;
-import hvl.projectparmorel.ml.Preferences;
-import hvl.projectparmorel.ml.Sequence;
 
 public class RewardCalculator {
 	private Knowledge knowledge;

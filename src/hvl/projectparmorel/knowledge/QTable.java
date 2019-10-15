@@ -5,7 +5,7 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.ml.AppliedAction;
+import hvl.projectparmorel.moderrepair.AppliedAction;
 
 public class QTable {
 	ErrorContextActionDirectory qTable;

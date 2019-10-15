@@ -1,4 +1,4 @@
-package hvl.projectparmorel.ml;
+package hvl.projectparmorel.moderrepair;
 
 import hvl.projectparmorel.knowledge.Action;
 
