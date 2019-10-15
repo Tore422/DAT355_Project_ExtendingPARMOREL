@@ -51,7 +51,7 @@ public class QModelFixer implements ModelFixer {
 	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
-	private List<Sequence> solvingMap;
+	private List<Solution> solvingMap;
 	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
 
@@ -66,7 +66,7 @@ public class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
-		solvingMap = new ArrayList<Sequence>();
+		solvingMap = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
@@ -140,7 +140,7 @@ public class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Sequence fixModel(Resource model, URI uri) {
+	public Solution fixModel(Resource model, URI uri) {
 		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 		
 		this.uri = uri;
@@ -172,7 +172,7 @@ public class QModelFixer implements ModelFixer {
 			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
-		Sequence bestSequence = bestSequence(solvingMap);
+		Solution bestSequence = bestSequence(solvingMap);
 
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
@@ -211,7 +211,7 @@ public class QModelFixer implements ModelFixer {
 	 * @param episode
 	 */
 	private void handleEpisode(Resource modelCopy, int episode) {
-		Sequence sequence = new Sequence();
+		Solution sequence = new Solution();
 		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
@@ -270,7 +270,7 @@ public class QModelFixer implements ModelFixer {
 	 * @return the reward from the step
 	 * @throws UnsupportedErrorException if the error code is not in the Q-table, and cannot be added
 	 */
-	private int handleStep(Resource modelCopy, Sequence sequence, int episode, Error currentErrorToFix) throws UnsupportedErrorException {
+	private int handleStep(Resource modelCopy, Solution sequence, int episode, Error currentErrorToFix) throws UnsupportedErrorException {
 		logger.info("Fixing error " + currentErrorToFix.getCode() + " int episode " + episode);
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info("Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
@@ -364,10 +364,10 @@ public class QModelFixer implements ModelFixer {
 		return modelCopy;
 	}
 
-	private boolean uniqueSequence(Sequence sequence) {
+	private boolean uniqueSequence(Solution sequence) {
 		boolean check = true;
 		int same = 0;
-		for (Sequence otherSequence : solvingMap) {
+		for (Solution otherSequence : solvingMap) {
 			if (otherSequence.getWeight() == sequence.getWeight()) {
 				for (AppliedAction ea : sequence.getSequence()) {
 					for (AppliedAction ea2 : otherSequence.getSequence()) {
@@ -414,11 +414,11 @@ public class QModelFixer implements ModelFixer {
 		return value;
 	}
 
-	private Sequence bestSequence(List<Sequence> sm) {
+	private Solution bestSequence(List<Solution> sm) {
 		double max = -1;
 		rewardCalculator.rewardBasedOnSequenceLength(sm);
-		Sequence maxS = new Sequence();
-		for (Sequence s : sm) {
+		Solution maxS = new Solution();
+		for (Solution s : sm) {
 			// normalize weights so that longer rewards dont get priority
 			if (s.getWeight() > max) {
 				max = s.getWeight();
@@ -440,7 +440,7 @@ public class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public List<Sequence> getPossibleSolutions() {
+	public List<Solution> getPossibleSolutions() {
 		return solvingMap;
 	}
 

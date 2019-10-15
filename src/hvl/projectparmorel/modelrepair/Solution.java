@@ -14,7 +14,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
  * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
  *         of Applied Sciences Bergen - Norway
  */
-public class Sequence {
+public class Solution {
 	private int id;
 	private List<AppliedAction> sequence;
 	private double weight;
@@ -22,7 +22,7 @@ public class Sequence {
 	private ResourceSet resourceSet;
 	private URI uri;
 
-	public Sequence() {
+	public Solution() {
 		super();
 		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
@@ -30,7 +30,7 @@ public class Sequence {
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 	}
 
-	public Sequence(int id, List<AppliedAction> seq, double weight, URI u) {
+	public Solution(int id, List<AppliedAction> seq, double weight, URI u) {
 		super();
 		this.id = id;
 		this.sequence = seq;

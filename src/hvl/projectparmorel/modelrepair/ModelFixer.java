@@ -15,7 +15,7 @@ public interface ModelFixer {
 	 * @param ur
 	 * @return the optimal sequence of actions
 	 */
-	public Sequence fixModel(Resource model, URI uri);
+	public Solution fixModel(Resource model, URI uri);
 
 	/**
 	 * Gets the model specified by the uri
@@ -56,5 +56,5 @@ public interface ModelFixer {
 	 * 
 	 * @return a list of possible solutions.
 	 */
-	public List<Sequence> getPossibleSolutions();
+	public List<Solution> getPossibleSolutions();
 }

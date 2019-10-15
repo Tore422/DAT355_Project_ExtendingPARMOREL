@@ -7,7 +7,7 @@ import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.Error;
 import hvl.projectparmorel.modelrepair.Preferences;
-import hvl.projectparmorel.modelrepair.Sequence;
+import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 
 public class RewardCalculator {
@@ -185,7 +185,7 @@ public class RewardCalculator {
 	 * @param sequence
 	 * @param preferenceId
 	 */
-	public void rewardSequence(Sequence sequence, int preferenceId) {
+	public void rewardSequence(Solution sequence, int preferenceId) {
 		QTable qTable = knowledge.getQTable();
 		for (int i = 0; i < sequence.getSequence().size(); i++) {
 			int contextId = sequence.getSequence().get(i).getAction().getHierarchy();
@@ -212,7 +212,7 @@ public class RewardCalculator {
 	 * 
 	 * @param sequences
 	 */
-	public void rewardBasedOnSequenceLength(List<Sequence> sequences) {
+	public void rewardBasedOnSequenceLength(List<Solution> sequences) {
 		if (preferences.contains(0)) {
 			handlePreferShortSequences(sequences);
 		}
@@ -226,11 +226,11 @@ public class RewardCalculator {
 	 * 
 	 * @param sequences
 	 */
-	private void handlePreferShortSequences(List<Sequence> sequences) {
-		Sequence optimalSequence = null;
+	private void handlePreferShortSequences(List<Solution> sequences) {
+		Solution optimalSequence = null;
 		int smallestSequenceSize = 9999;
 
-		for (Sequence sequence : sequences) {
+		for (Solution sequence : sequences) {
 			if (sequence.getSequence().size() < smallestSequenceSize && sequence.getWeight() > 0) {
 				smallestSequenceSize = sequence.getSequence().size();
 				optimalSequence = sequence;
@@ -251,11 +251,11 @@ public class RewardCalculator {
 	 * 
 	 * @param sequences
 	 */
-	private void handlePreferLongSequences(List<Sequence> sequences) {
-		Sequence optimalSequence = null;
+	private void handlePreferLongSequences(List<Solution> sequences) {
+		Solution optimalSequence = null;
 		int largestSequenceSize = 0;
 		
-		for (Sequence sequence : sequences) {
+		for (Solution sequence : sequences) {
 			if (sequence.getSequence().size() > largestSequenceSize && sequence.getWeight() > 0) {
 				largestSequenceSize = sequence.getSequence().size();
 				optimalSequence = sequence;
