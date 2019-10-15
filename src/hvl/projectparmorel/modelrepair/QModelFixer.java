@@ -439,4 +439,9 @@ public class QModelFixer implements ModelFixer {
 		return !errors.isEmpty();
 	}
 
+	@Override
+	public List<Sequence> getPossibleSolutions() {
+		return solvingMap;
+	}
+
 }
