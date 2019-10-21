@@ -1,6 +1,8 @@
 package hvl.projectparmorel.modelrepair;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,6 +50,7 @@ public class QModelFixer implements ModelFixer {
 	private Logger logger = Logger.getGlobal();
 
 	private int reward = 0;
+	private File originalModel;
 	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
@@ -140,16 +143,20 @@ public class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(Resource model, URI uri) {
+	public Solution fixModel(File model) {
+		originalModel = model;
+		File destinationFile = createDuplicateFile();
+		this.uri = URI.createFileURI(destinationFile.getAbsolutePath());
+		Resource modelResource = getModel(uri);
+		
 		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 		
-		this.uri = uri;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
 
-		Resource modelCopy = copy(model, uri);
+		Resource modelCopy = copy(modelResource, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 		setInitialErrors(errorsToFix);
 		solvingMap.clear();
@@ -166,7 +173,7 @@ public class QModelFixer implements ModelFixer {
 
 			// RESET initial model and extract actions + errors
 			modelCopy.getContents().clear();
-			EObject content = model.getContents().get(0);
+			EObject content = modelResource.getContents().get(0);
 			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
@@ -177,20 +184,44 @@ public class QModelFixer implements ModelFixer {
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
+		
+//		removeSolutionsWithSameResult(solvingMap);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// THIS SAVES THE REPAIRED MODEL
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if (bestSequence.getSequence().size() != 0) {
 			rewardCalculator.rewardSequence(bestSequence, -1);
-			try {
-				bestSequence.getModel().save(null);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 		saveKnowledge();
 		return bestSequence;
+	}
+
+	/**
+	 * Takes the original model-file and creates a duplicate of the file that will
+	 * represent the repaired model.
+	 * 
+	 * @param path to the new copy
+	 * @return the created duplicate
+	 */
+	private File createDuplicateFile(String path) {
+		File destinationFile = new File(path);
+		try {
+			Files.copy(originalModel.toPath(), destinationFile.toPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return destinationFile;
+	}
+	
+	/**
+	 * Takes the original model-file and creates a duplicate of the file that will
+	 * represent the repaired model.
+	 * 
+	 * @return the created duplicate
+	 */
+	private File createDuplicateFile() {
+		return createDuplicateFile(originalModel.getParent() + "_temp_" + originalModel.getName());
 	}
 
 	/**
@@ -236,7 +267,7 @@ public class QModelFixer implements ModelFixer {
 		}
 
 		try {
-			sequence.setModel(modelCopy);
+			sequence.setModel(createDuplicateFile(originalModel.getParent() + "parmorel_temp_solution_" + sequence.getId()));
 		} catch (NullPointerException exception) {
 			errorOcurred = true;
 		}
@@ -253,7 +284,15 @@ public class QModelFixer implements ModelFixer {
 
 		if (!errorOcurred && uniqueSequence(sequence)) {
 			solvingMap.add(sequence);
+			URI bestSequenecUri = URI.createFileURI(sequence.getModel().getAbsolutePath());
+			Resource bestSequqnceResource = getModel(bestSequenecUri);
+			try {
+				bestSequqnceResource.save(null);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		} else {
+			sequence.discard();
 			discardedSequences++;
 		}
 
@@ -297,7 +336,6 @@ public class QModelFixer implements ModelFixer {
 		appliedActions.add(new AppliedAction(currentErrorToFix, action));
 
 		sequence.setSequence(appliedActions);
-		sequence.setURI(uri);
 
 		int code = action.getHierarchy();
 
@@ -427,6 +465,24 @@ public class QModelFixer implements ModelFixer {
 		}
 		return maxS;
 	}
+	
+//	private void removeSolutionsWithSameResult(List<Solution> possibleSolutions) {
+//		for(int i = 0; i < possibleSolutions.size(); i++) {
+//			for(int j = 1; j < possibleSolutions.size(); j++) {
+//				if(i != j) {
+//					Solution solution1 = possibleSolutions.get(i);
+//					Solution solution2 = possibleSolutions.get(i);
+//					URI uri1 = URI.createFileURI(solution1.getModel().getAbsolutePath());
+//					URI uri2 = URI.createFileURI(solution2.getModel().getAbsolutePath());
+//					Resource model1 = getModel(uri1);
+//					Resource model2 = getModel(uri2);
+////					org.eclipse.emf.ecore.util.EcoreUtil.equals(model1, model2);
+//					
+//				}
+//			}
+//		}
+//		
+//	}
 
 	@Override
 	public Resource getModel(URI uri) {

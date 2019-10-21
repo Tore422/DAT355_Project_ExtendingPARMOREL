@@ -1,5 +1,6 @@
 package hvl.projectparmorel.modelrepair;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -15,7 +16,7 @@ public interface ModelFixer {
 	 * @param ur
 	 * @return the optimal sequence of actions
 	 */
-	public Solution fixModel(Resource model, URI uri);
+	public Solution fixModel(File model);
 
 	/**
 	 * Gets the model specified by the uri
