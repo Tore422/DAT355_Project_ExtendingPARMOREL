@@ -173,12 +173,14 @@ public class QModelFixer implements ModelFixer {
 		while (episode < numberOfEpisodes) {
 			File episodeModel = createDuplicateFile(duplicateFile, originalModel.getParent()
 					+ "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
+			
 			URI episodeModelUri = URI.createFileURI(episodeModel.getAbsolutePath());
 			Resource episodeModelResource = getModel(episodeModelUri);
 			
 			Solution sequence = handleEpisode(episodeModelResource, episode);
 
 			if (sequence != null) {
+				episodeModel.deleteOnExit();
 				try {
 					episodeModelResource.save(null);
 					sequence.setModel(episodeModel);
