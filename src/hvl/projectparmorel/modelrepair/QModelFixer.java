@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class QModelFixer implements ModelFixer {
 	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
-	private List<Solution> solvingMap;
+	private List<Solution> possibleSolutions;
 	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
 
@@ -69,7 +70,7 @@ public class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
-		solvingMap = new ArrayList<Solution>();
+		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
@@ -159,7 +160,7 @@ public class QModelFixer implements ModelFixer {
 		Resource modelCopy = copy(modelResource, uri);
 		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
 		setInitialErrors(errorsToFix);
-		solvingMap.clear();
+		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
@@ -179,9 +180,9 @@ public class QModelFixer implements ModelFixer {
 			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
-		Solution bestSequence = bestSequence(solvingMap);
+		Solution bestSequence = bestSequence(possibleSolutions);
 
-		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + solvingMap.size()
+		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
 		
@@ -283,7 +284,7 @@ public class QModelFixer implements ModelFixer {
 		sequence.setWeight(totalReward);
 
 		if (!errorOcurred && uniqueSequence(sequence)) {
-			solvingMap.add(sequence);
+			possibleSolutions.add(sequence);
 			URI bestSequenecUri = URI.createFileURI(sequence.getModel().getAbsolutePath());
 			Resource bestSequqnceResource = getModel(bestSequenecUri);
 			try {
@@ -405,7 +406,7 @@ public class QModelFixer implements ModelFixer {
 	private boolean uniqueSequence(Solution sequence) {
 		boolean check = true;
 		int same = 0;
-		for (Solution otherSequence : solvingMap) {
+		for (Solution otherSequence : possibleSolutions) {
 			if (otherSequence.getWeight() == sequence.getWeight()) {
 				for (AppliedAction ea : sequence.getSequence()) {
 					for (AppliedAction ea2 : otherSequence.getSequence()) {
@@ -497,7 +498,8 @@ public class QModelFixer implements ModelFixer {
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
-		return solvingMap;
+		Collections.sort(possibleSolutions, Collections.reverseOrder());
+		return possibleSolutions;
 	}
 
 }

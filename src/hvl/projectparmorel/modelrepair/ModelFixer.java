@@ -52,8 +52,7 @@ public interface ModelFixer {
 
 	/**
 	 * Gets the list of possible solutions. Requires that
-	 * {@link ModelFixer#fixModel(Resource, URI)}-method has been called. All the
-	 * provided solutions create a unique model.
+	 * {@link ModelFixer#fixModel}-method has been called.
 	 * 
 	 * @return a list of possible solutions.
 	 */

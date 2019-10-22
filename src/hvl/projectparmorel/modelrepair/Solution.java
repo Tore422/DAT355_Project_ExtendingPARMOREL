@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
  * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
  *         of Applied Sciences Bergen - Norway
  */
-public class Solution {
+public class Solution implements Comparable<Solution> {
 	private int id;
 	private List<AppliedAction> sequence;
 	private double weight;
@@ -79,5 +79,10 @@ public class Solution {
 
 	public File getModel() {
 		return model;
+	}
+
+	@Override
+	public int compareTo(Solution solution) {
+		return Double.compare(weight, solution.getWeight());
 	}
 }
