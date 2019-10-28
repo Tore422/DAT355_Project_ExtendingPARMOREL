@@ -19,6 +19,7 @@ public class Solution implements Comparable<Solution> {
 	private List<AppliedAction> sequence;
 	private double weight;
 	private File model;
+	private File original;
 	private ResourceSet resourceSet;
 
 	public Solution() {
@@ -86,5 +87,22 @@ public class Solution implements Comparable<Solution> {
 	@Override
 	public int compareTo(Solution solution) {
 		return Double.compare(weight, solution.getWeight());
+	}
+
+	/**
+	 * Set the original model
+	 * 
+	 * @param originalModel
+	 */
+	public void setOriginal(File originalModel) {
+		original = originalModel;
+	}
+	
+	/**
+	 * Gets the original file
+	 * @return
+	 */
+	public File getOriginal() {
+		return original;
 	}
 }

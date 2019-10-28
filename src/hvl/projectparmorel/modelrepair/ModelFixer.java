@@ -57,11 +57,4 @@ public interface ModelFixer {
 	 * @return a list of possible solutions.
 	 */
 	public List<Solution> getPossibleSolutions();
-
-	/**
-	 * Gets the original model file
-	 * 
-	 * @return the original model file
-	 */
-	public File getOriginalModel();
 }

@@ -300,6 +300,7 @@ public class QModelFixer implements ModelFixer {
 		}
 
 		sequence.setWeight(totalReward);
+		sequence.setOriginal(originalModel);
 
 		if (!errorOcurred && uniqueSequence(sequence)) {
 			possibleSolutions.add(sequence);
@@ -518,10 +519,4 @@ public class QModelFixer implements ModelFixer {
 		solutions.sort(Collections.reverseOrder());
 		return solutions;
 	}
-
-	@Override
-	public File getOriginalModel() {
-		return originalModel;
-	}
-
 }
