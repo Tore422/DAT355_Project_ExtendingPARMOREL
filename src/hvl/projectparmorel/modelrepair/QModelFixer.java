@@ -519,4 +519,9 @@ public class QModelFixer implements ModelFixer {
 		return solutions;
 	}
 
+	@Override
+	public File getOriginalModel() {
+		return originalModel;
+	}
+
 }

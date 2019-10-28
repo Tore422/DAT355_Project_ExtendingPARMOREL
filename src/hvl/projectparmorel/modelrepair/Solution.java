@@ -9,8 +9,10 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 /**
- * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
- *         of Applied Sciences Bergen - Norway
+ * @author Magnus Marthinsen
+ * @author Angela Barriga Rodriguez, abar@hvl.no 
+ * 2019 
+ * Western Norway University of Applied Sciences Bergen - Norway
  */
 public class Solution implements Comparable<Solution> {
 	private int id;
