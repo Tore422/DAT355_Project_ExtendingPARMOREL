@@ -514,8 +514,9 @@ public class QModelFixer implements ModelFixer {
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
-		Collections.sort(possibleSolutions, Collections.reverseOrder());
-		return possibleSolutions;
+		List<Solution> solutions = new ArrayList<>(possibleSolutions);
+		solutions.sort(Collections.reverseOrder());
+		return solutions;
 	}
 
 }
