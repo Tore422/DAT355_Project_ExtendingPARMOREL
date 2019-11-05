@@ -13,8 +13,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import hvl.projectparmorel.ml.Error;
-import hvl.projectparmorel.ml.SerializableMethod;
+import hvl.projectparmorel.modelrepair.Error;
+import hvl.projectparmorel.modelrepair.SerializableMethod;
 
 /**
  * 

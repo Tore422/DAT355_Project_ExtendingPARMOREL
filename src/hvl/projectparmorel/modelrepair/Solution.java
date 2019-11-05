@@ -1,28 +1,28 @@
-package hvl.projectparmorel.ml;
+package hvl.projectparmorel.modelrepair;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 /**
- * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
- *         of Applied Sciences Bergen - Norway
+ * @author Magnus Marthinsen
+ * @author Angela Barriga Rodriguez, abar@hvl.no 
+ * 2019 
+ * Western Norway University of Applied Sciences Bergen - Norway
  */
-public class Sequence {
+public class Solution implements Comparable<Solution> {
 	private int id;
 	private List<AppliedAction> sequence;
 	private double weight;
-	private Resource model;
+	private File model;
+	private File original;
 	private ResourceSet resourceSet;
-	private URI uri;
 
-	public Sequence() {
+	public Solution() {
 		super();
 		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
@@ -30,14 +30,20 @@ public class Sequence {
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 	}
 
-	public Sequence(int id, List<AppliedAction> seq, double weight, URI u) {
+	public Solution(int id, List<AppliedAction> seq, double weight, File model) {
 		super();
 		this.id = id;
 		this.sequence = seq;
 		this.weight = weight;
-		this.uri = u;
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
-		this.model = resourceSet.createResource(this.uri);
+		this.model = model;
+	}
+	
+	/**
+	 * Discards the sequence and deletes the associated file;
+	 */
+	public void discard() {
+		model.delete();
 	}
 
 	public int getId() {
@@ -70,17 +76,33 @@ public class Sequence {
 				+ System.getProperty("line.separator");
 	}
 
-	public void setModel(Resource model) {
-		this.model.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
+	public void setModel(File model) {
+		this.model = model;
 	}
 
-	public void setURI(URI uri) {
-		this.uri = uri;
-		model = resourceSet.createResource(this.uri);
-	}
-
-	public Resource getModel() {
+	public File getModel() {
 		return model;
 	}
 
+	@Override
+	public int compareTo(Solution solution) {
+		return Double.compare(weight, solution.getWeight());
+	}
+
+	/**
+	 * Set the original model
+	 * 
+	 * @param originalModel
+	 */
+	public void setOriginal(File originalModel) {
+		original = originalModel;
+	}
+	
+	/**
+	 * Gets the original file
+	 * @return
+	 */
+	public File getOriginal() {
+		return original;
+	}
 }
