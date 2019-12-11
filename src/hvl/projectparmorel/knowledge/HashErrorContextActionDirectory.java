@@ -7,11 +7,10 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class HashErrorContextActionDirectory extends ErrorContextActionDirectory {
+public class HashErrorContextActionDirectory implements ErrorContextActionDirectory {
 	private ErrorMap errors;
 
 	public HashErrorContextActionDirectory() {
-		super();
 		errors = new ErrorMap();
 	}
 	
@@ -26,37 +25,37 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 	}
 	
 	@Override
-	protected ErrorMap getErrorMap() {
+	public ErrorMap getErrorMap() {
 		return errors;
 	}
 
 	@Override
-	protected Action getOptimalActionForErrorCode(Integer errorCode) {
+	public Action getOptimalActionForErrorCode(Integer errorCode) {
 		return errors.getOptimalActionForErrorCode(errorCode);
 	}
 
 	@Override
-	protected Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
+	public Action getAction(Integer errorCode, Integer contextId, Integer actionId) {
 		return errors.getAction(errorCode, contextId, actionId);
 	}
 
 	@Override
-	protected Action getRandomActionForError(int errorCode) {
+	public Action getRandomActionForError(int errorCode) {
 		return errors.getRandomActionInRandomContextForError(errorCode);
 	}
 
 	@Override
-	protected boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId) {
+	public boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId) {
 		return errors.containsActionForErrorCodeAndContextId(errorCode, contextId, actionId);
 	}
 
 	@Override
-	protected void saveTo(Document document, Element root) {
+	public void saveTo(Document document, Element root) {
 		errors.saveTo(document, root);		
 	}
 
 	@Override
-	protected void loadFrom(Document document) {
+	public void loadFrom(Document document) {
 		try {
 			errors.loadFrom(document);
 		} catch (IOException e) {
@@ -65,12 +64,12 @@ public class HashErrorContextActionDirectory extends ErrorContextActionDirectory
 	}
 
 	@Override
-	protected void clearWeights() {
+	public void clearWeights() {
 		errors.clearActionWeights();
 	}
 
 	@Override
-	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	public void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
 		errors.influenceActionWeightsFromPreferencesBy(factor, preferences);
 	}
 }

@@ -6,11 +6,7 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public abstract class ErrorContextActionDirectory {
-	public ErrorContextActionDirectory() {
-
-	}
-
+public interface ErrorContextActionDirectory {
 	/**
 	 * Gets all the error codes
 	 * 
@@ -19,9 +15,11 @@ public abstract class ErrorContextActionDirectory {
 	public abstract Set<Integer> getAllErrorCodes();
 	
 	/**
-	 * Gets the error map from the directory;
+	 * Gets the error map from the directory.
+	 * 
+	 * WARNING: Do not make any changes to the error map. All changes should be made through the {@link QTable hvl.projectparmorel.knowledge.QTable}-class.
 	 */
-	protected abstract ErrorMap getErrorMap();
+	abstract ErrorMap getErrorMap();
 	
 	/**
 	 * Gets the optimal context and action ID to handle the specified error.
@@ -30,7 +28,7 @@ public abstract class ErrorContextActionDirectory {
 	 * @return the location of highest value in the context map. If two are equal,
 	 *         one of them is returned. If the set is empty, null is returned.
 	 */
-	protected abstract Action getOptimalActionForErrorCode(Integer errorCode);
+	abstract Action getOptimalActionForErrorCode(Integer errorCode);
 
 	/**
 	 * Checks that the provided value exists for the specified error code and context id
@@ -40,7 +38,7 @@ public abstract class ErrorContextActionDirectory {
 	 * @param actionId
 	 * @return true if the value exists for the specified error code and context ID, false otherwise.
 	 */
-	protected abstract boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId);
+	abstract boolean containsValueForErrorAndContext(int errorCode, int contextId, int actionId);
 	
 	/**
 	 * Gets a random action for the specified error
@@ -48,7 +46,7 @@ public abstract class ErrorContextActionDirectory {
 	 * @param errorCode
 	 * @return a random action
 	 */
-	protected abstract Action getRandomActionForError(int errorCode);
+	abstract Action getRandomActionForError(int errorCode);
 	
 	/**
 	 * Gets the action for the specified error code, context id and action id.
@@ -57,7 +55,7 @@ public abstract class ErrorContextActionDirectory {
 	 * @param contextId
 	 * @return the corresponding action
 	 */
-	protected abstract Action getAction(Integer errorCode, Integer contextId, Integer actionId);
+	abstract Action getAction(Integer errorCode, Integer contextId, Integer actionId);
 	
 	/**
 	 * Adds the value for the specified action in the specified context for the
@@ -77,25 +75,29 @@ public abstract class ErrorContextActionDirectory {
 	 * @param document 
 	 * @param root
 	 */
-	protected abstract void saveTo(Document document, Element root);
+	abstract void saveTo(Document document, Element root);
 
 	/**
 	 * Loads content from the specified document from the root element.
 	 * 
 	 * @param root
 	 */
-	protected abstract void loadFrom(Document document);
+	abstract void loadFrom(Document document);
 
 	/**
 	 * Sets all the weights in the q-table to zero.
+	 * 
+	 * WARNING: This method is not intended to be called from outside the package. All changes to the q-table should be made through the {@link QTable hvl.projectparmorel.knowledge.QTable}-class.
 	 */
-	protected abstract void clearWeights();
+	abstract void clearWeights();
 
 	/**
 	 * Influences the weights in the q-table from the preferences and previous learning by the specified factor.
 	 * 
+	 * WARNING: This method is not intended to be called from outside the package. All changes to the q-table should be made through the {@link QTable hvl.projectparmorel.knowledge.QTable}-class.
+	 * 
 	 * @param factor
 	 * @param preferences 
 	 */
-	protected abstract void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences);
+	abstract void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences);
 }
