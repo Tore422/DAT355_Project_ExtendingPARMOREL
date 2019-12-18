@@ -34,22 +34,27 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
+import hvl.projectparmorel.ecore.EcoreErrorExtractor;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.ErrorExtractor;
+import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 public class ModelProcesser {
 	private ResourceSet resourceSet;
-	private hvl.projectparmorel.knowledge.Knowledge knowledge;
+	private Knowledge knowledge;
 	private List<Error> errors;
 	private RewardCalculator rewardCalculator;
+	private ErrorExtractor errorExtractor;
 
-	public ModelProcesser(ResourceSet resourceSet, hvl.projectparmorel.knowledge.Knowledge knowledge, RewardCalculator rewardCalculator) {
+	public ModelProcesser(ResourceSet resourceSet, Knowledge knowledge, RewardCalculator rewardCalculator) {
 		this.resourceSet = resourceSet;
 		this.knowledge = knowledge;
 		this.rewardCalculator = rewardCalculator;
+		errorExtractor = new EcoreErrorExtractor();
 	}
 
 	/**
@@ -63,7 +68,7 @@ public class ModelProcesser {
 		Resource modelCopy = resourceSet.createResource(destinationURI);
 		modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
 
-		errors = ErrorExtractor.extractErrorsFrom(model);
+		errors = errorExtractor.extractErrorsFrom(model);
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
@@ -141,7 +146,7 @@ public class ModelProcesser {
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
 				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
 			}
-			List<Error> newErrors = ErrorExtractor.extractErrorsFrom(model);
+			List<Error> newErrors = errorExtractor.extractErrorsFrom(model);
 			return newErrors;
 		}
 		return null;

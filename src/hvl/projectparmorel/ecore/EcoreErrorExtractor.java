@@ -1,4 +1,4 @@
-package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.ecore;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -15,11 +15,20 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 
 import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.ErrorExtractor;
 
-public class ErrorExtractor {
-
+public class EcoreErrorExtractor implements ErrorExtractor {
+	
 	public static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));
 	private static Logger logger = Logger.getGlobal();
+	
+	public List<Error> extractErrorsFrom(Object model) {
+		if(model instanceof Resource) {
+			Resource modelAsResource = (Resource) model;
+			return extractErrorsFrom(modelAsResource);
+		}
+		throw new IllegalArgumentException("The model has to be of type org.eclipse.emf.ecore.resource.Resource");
+	}
 	
 	/**
 	 * Extracts the errors from the provided model.
@@ -27,7 +36,7 @@ public class ErrorExtractor {
 	 * @param model
 	 * @return a list of errors found in the model
 	 */
-	public static List<Error> extractErrorsFrom(Resource model) {
+	private List<Error> extractErrorsFrom(Resource model) {
 		List<Error> errors = new ArrayList<Error>();
 
 		Diagnostic diagnostic = validateMode(model);

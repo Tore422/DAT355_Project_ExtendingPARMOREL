@@ -18,11 +18,13 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
+import hvl.projectparmorel.ecore.EcoreErrorExtractor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
@@ -45,6 +47,7 @@ public class QModelFixer implements ModelFixer {
 	private Knowledge knowledge;
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
+	private ErrorExtractor errorExtractor;
 	private ModelProcesser modelProcesser;
 
 	private double randomFactor = 0.25;
@@ -72,6 +75,7 @@ public class QModelFixer implements ModelFixer {
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
 		actionExtractor = new EcoreActionExtractor(knowledge);
+		errorExtractor = new EcoreErrorExtractor();
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
@@ -165,7 +169,7 @@ public class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		Resource modelCopy = copy(modelResource, uri);
-		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+		errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
@@ -276,7 +280,7 @@ public class QModelFixer implements ModelFixer {
 
 		while (step < MAX_EPISODE_STEPS) {
 			while (!errorsToFix.isEmpty()
-					&& ErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+					&& EcoreErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
 				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: "
 						+ errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
@@ -335,7 +339,7 @@ public class QModelFixer implements ModelFixer {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info(
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
-			errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+			errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
 			actionExtractor.extractActionsFor(errorsToFix);
 			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
@@ -370,7 +374,7 @@ public class QModelFixer implements ModelFixer {
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 				logger.info("Error code " + currentErrorToFix.getCode()
 						+ " does not exist in Q-table, attempting to solve...");
-				errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+				errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
 				actionExtractor.extractActionsFor(errorsToFix);
 				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
@@ -514,7 +518,7 @@ public class QModelFixer implements ModelFixer {
 
 	@Override
 	public boolean modelIsBroken(Resource model) {
-		List<Error> errors = ErrorExtractor.extractErrorsFrom(model);
+		List<Error> errors = errorExtractor.extractErrorsFrom(model);
 		return !errors.isEmpty();
 	}
 
