@@ -33,6 +33,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hvl.projectparmorel.ecore.EcoreActionExtractor;
+import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
@@ -62,7 +64,7 @@ public class ModelProcesser {
 
 		errors = ErrorExtractor.extractErrorsFrom(model);
 
-		ActionExtractor actionExtractor = new ActionExtractor(knowledge);
+		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
 
 		for (Error error : errors) {

@@ -17,7 +17,9 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.ecore.EcoreActionExtractor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
+import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.Knowledge;
@@ -67,7 +69,7 @@ public class QModelFixer implements ModelFixer {
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
-		actionExtractor = new ActionExtractor(knowledge);
+		actionExtractor = new EcoreActionExtractor(knowledge);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
