@@ -1,4 +1,4 @@
-package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.general;
 
 import java.util.List;
 

@@ -1,6 +1,4 @@
-package hvl.projectparmorel.modelrepair;
-
-import hvl.projectparmorel.knowledge.Action;
+package hvl.projectparmorel.general;
 
 /**
  * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University

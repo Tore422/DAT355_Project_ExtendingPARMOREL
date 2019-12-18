@@ -8,6 +8,8 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.general.AppliedAction;
+
 /**
  * @author Magnus Marthinsen
  * @author Angela Barriga Rodriguez, abar@hvl.no 

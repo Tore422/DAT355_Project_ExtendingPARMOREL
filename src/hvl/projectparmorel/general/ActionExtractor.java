@@ -2,9 +2,6 @@ package hvl.projectparmorel.general;
 
 import java.util.List;
 
-import hvl.projectparmorel.knowledge.Action;
-import hvl.projectparmorel.modelrepair.Error;
-
 public interface ActionExtractor {
 	
 	/**

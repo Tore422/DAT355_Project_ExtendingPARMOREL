@@ -19,9 +19,11 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
+import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
+import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ModelFixer;
-import hvl.projectparmorel.knowledge.Action;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;

@@ -14,6 +14,8 @@ import org.eclipse.emf.ecore.impl.EReferenceImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 
+import hvl.projectparmorel.general.Error;
+
 public class ErrorExtractor {
 
 	public static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));

@@ -34,7 +34,7 @@ public class PreferenceWeightMap {
 		storedPreferenceMap = new HashMap<Integer, Integer>();
 	}
 
-	protected PreferenceWeightMap(NodeList preferenceList) throws IOException {
+	public PreferenceWeightMap(NodeList preferenceList) throws IOException {
 		this();
 		for(int i = 0; i < preferenceList.getLength(); i++) {
 			Node context = preferenceList.item(i);
@@ -113,7 +113,7 @@ public class PreferenceWeightMap {
 	 * @param document
 	 * @param preferenceMap
 	 */
-	protected void saveTo(Document document, Element preferenceMap) {
+	public void saveTo(Document document, Element preferenceMap) {
 		for(Integer key : storedPreferenceMap.keySet()) {
 			Element preference = document.createElement("preference");
 			preferenceMap.appendChild(preference);

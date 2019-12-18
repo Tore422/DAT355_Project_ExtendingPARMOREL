@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import hvl.projectparmorel.general.Action;
+
 class ActionTest {
 	Action action1;
 	Action action2;

@@ -8,10 +8,10 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
+import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.knowledge.Action;
+import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.knowledge.Knowledge;
-import hvl.projectparmorel.modelrepair.Error;
 import hvl.projectparmorel.modelrepair.SerializableMethod;
 
 public class EcoreActionExtractor implements ActionExtractor {

@@ -34,8 +34,9 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
+import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.knowledge.Action;
+import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 

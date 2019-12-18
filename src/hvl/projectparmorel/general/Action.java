@@ -1,4 +1,4 @@
-package hvl.projectparmorel.knowledge;
+package hvl.projectparmorel.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import hvl.projectparmorel.modelrepair.Error;
+import hvl.projectparmorel.knowledge.PreferenceWeightMap;
 import hvl.projectparmorel.modelrepair.SerializableMethod;
 
 /**
@@ -62,7 +62,7 @@ public class Action implements Comparable<Action> {
 		this.hierarchy = hierarchy;
 	}
 
-	protected Action(Element action) throws IOException {
+	public Action(Element action) throws IOException {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
 			Element actionElement = (Element) action;
 			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
@@ -193,7 +193,7 @@ public class Action implements Comparable<Action> {
 	 * @param factor
 	 * @param preferences
 	 */
-	protected void influenceWeightFromPreferencesBy(double factor, List<Integer> preferences) {
+	public void influenceWeightFromPreferencesBy(double factor, List<Integer> preferences) {
 		for (Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
 			if (preferences.contains(preferenceId)) {
 				int oldPreferenceValue = preferenceMap.getWeightFor(preferenceId);
@@ -252,7 +252,7 @@ public class Action implements Comparable<Action> {
 		this.message = message;
 	}
 
-	protected PreferenceWeightMap getTagDictionary() {
+	public PreferenceWeightMap getPreferenceMap() {
 		return preferenceMap;
 	}
 }

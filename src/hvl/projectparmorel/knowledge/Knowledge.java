@@ -20,6 +20,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
+import hvl.projectparmorel.general.Action;
 
 /**
  * Represents the algorithms knowledge.
