@@ -2,8 +2,8 @@ package hvl.projectparmorel.ecore;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.Diagnostic;
@@ -18,18 +18,23 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 
 public class EcoreErrorExtractor implements ErrorExtractor {
-	
-	public static List<Integer> unsuportedErrorCodes = new ArrayList<>(Arrays.asList(4, 6));
-	private static Logger logger = Logger.getGlobal();
-	
+
+	private Set<Integer> unsuportedErrorCodes;
+	private Logger logger;
+
+	public EcoreErrorExtractor(Set<Integer> unsuportedErrorCodes) {
+		logger = Logger.getGlobal();
+		this.unsuportedErrorCodes = unsuportedErrorCodes;
+	}
+
 	public List<Error> extractErrorsFrom(Object model) {
-		if(model instanceof Resource) {
+		if (model instanceof Resource) {
 			Resource modelAsResource = (Resource) model;
 			return extractErrorsFrom(modelAsResource);
 		}
 		throw new IllegalArgumentException("The model has to be of type org.eclipse.emf.ecore.resource.Resource");
 	}
-	
+
 	/**
 	 * Extracts the errors from the provided model.
 	 * 
@@ -44,8 +49,9 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 			for (Diagnostic child : diagnostic.getChildren()) {
 				Error error = getErrorFor(child);
 				if (error != null) {
-					if(unsuportedErrorCodes.contains(error.getCode())){
-						logger.warning("Encounteded unsupported error " + error.getCode() + ". Message: " + error.getMessage() + ". Skipping error.");
+					if (unsuportedErrorCodes.contains(error.getCode())) {
+						logger.warning("Encounteded unsupported error " + error.getCode() + ". Message: "
+								+ error.getMessage() + ". Skipping error.");
 					} else {
 						errors.add(error);
 					}
@@ -61,7 +67,7 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * @param model
 	 * @return the diagnostic for the model
 	 */
-	private static Diagnostic validateMode(Resource model) {
+	private Diagnostic validateMode(Resource model) {
 		EObject object = model.getContents().get(0);
 		return Diagnostician.INSTANCE.validate(object);
 	}
@@ -73,7 +79,7 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * @param sons
 	 * @return the error for the specified diagnostic
 	 */
-	private static Error getErrorFor(Diagnostic diagnostic) {
+	private Error getErrorFor(Diagnostic diagnostic) {
 		if (diagnostic.getCode() != 1) { // we don't remember what error code 1 is. Could it be an error at package
 											// level?
 			if (isPackageOrTwoFeatures(diagnostic)) {
@@ -92,12 +98,12 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * @return true if the diagnostic is a package or has two features, false
 	 *         otherwise.
 	 */
-	private static boolean isPackageOrTwoFeatures(Diagnostic diagnostic) {
+	private boolean isPackageOrTwoFeatures(Diagnostic diagnostic) {
 		return diagnostic.getData().get(0).getClass() == EPackageImpl.class
 				|| diagnostic.getMessage().contains("two features");
 	}
 
-	private static Error getErrorFromErrorCode(Diagnostic diagnostic) {
+	private Error getErrorFromErrorCode(Diagnostic diagnostic) {
 		switch (diagnostic.getCode()) {
 		case 40: // The typed element must have a type
 			return handleError40(diagnostic);
@@ -113,16 +119,18 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	}
 
 	/**
-	 * Gets an error that fits if the error code is 40 (The typed element must have a type). 
+	 * Gets an error that fits if the error code is 40 (The typed element must have
+	 * a type).
 	 * 
-	 * It sets the error code of the return to 401 if it contains a EReferenceImpl, and 40 otherwise.
+	 * It sets the error code of the return to 401 if it contains a EReferenceImpl,
+	 * and 40 otherwise.
 	 * 
 	 * @param diagnostic
 	 * @throws IllegalArgumentException if the code of the diagnostic is not 40
 	 * @return an error object with code 40 or 401
 	 */
-	private static Error handleError40(Diagnostic diagnostic) {
-		if(diagnostic.getCode() != 40)
+	private Error handleError40(Diagnostic diagnostic) {
+		if (diagnostic.getCode() != 40)
 			throw new IllegalArgumentException("This method should only be called when diagnostic code is 40.");
 		String code = String.valueOf(diagnostic.getCode());
 		if (diagnostic.getData().get(0).getClass().toString().contains("EReferenceImpl")) {
@@ -132,23 +140,23 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 			return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 		}
 	}
-	
+
 	/**
-	 * Gets an error that fits if the error code is 44 (The name X is not well formed).
+	 * Gets an error that fits if the error code is 44 (The name X is not well
+	 * formed).
 	 * 
-	 *  The error code is 44 if the class is of EReferenceImpl.class.
-	 *  The error code is 441 if the class contains EClassImpl
-	 *  The error code is 442 if the class contains EOperation
-	 *  The error code is 443 if the class contains EAttribute
-	 *  The error code is 444 if the class contains ETypeParameterImpl
-	 *  The error code is 445 if the class contains EEnum
-	 *  
+	 * The error code is 44 if the class is of EReferenceImpl.class. The error code
+	 * is 441 if the class contains EClassImpl The error code is 442 if the class
+	 * contains EOperation The error code is 443 if the class contains EAttribute
+	 * The error code is 444 if the class contains ETypeParameterImpl The error code
+	 * is 445 if the class contains EEnum
+	 * 
 	 * @param diagnostic
 	 * @throws IllegalArgumentException if the code of the diagnostic is not 44
 	 * @return an error with specified code
 	 */
-	private static Error handleError44(Diagnostic diagnostic) {
-		if(diagnostic.getCode() != 44)
+	private Error handleError44(Diagnostic diagnostic) {
+		if (diagnostic.getCode() != 44)
 			throw new IllegalArgumentException("This method should only be called when diagnostic code is 44.");
 		String s = String.valueOf(44);
 		if (diagnostic.getData().get(0).getClass().toString().contains("EClassImpl")) {
@@ -181,7 +189,7 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * @param diagnostic
 	 * @return an Error for EReferenceImpl.class, null otherwise
 	 */
-	private static Error handleEReferenceImplError(Diagnostic diagnostic) {
+	private Error handleEReferenceImplError(Diagnostic diagnostic) {
 		if (diagnostic.getData().get(0).getClass() == EReferenceImpl.class) {
 			try {
 				Error e = new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());

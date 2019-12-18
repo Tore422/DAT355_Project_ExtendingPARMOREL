@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.eclipse.emf.common.notify.impl.NotificationChainImpl;
 import org.eclipse.emf.common.util.URI;
@@ -50,11 +51,11 @@ public class ModelProcesser {
 	private RewardCalculator rewardCalculator;
 	private ErrorExtractor errorExtractor;
 
-	public ModelProcesser(ResourceSet resourceSet, Knowledge knowledge, RewardCalculator rewardCalculator) {
+	public ModelProcesser(ResourceSet resourceSet, Knowledge knowledge, RewardCalculator rewardCalculator, Set<Integer> unsupportedErrorCodes) {
 		this.resourceSet = resourceSet;
 		this.knowledge = knowledge;
 		this.rewardCalculator = rewardCalculator;
-		errorExtractor = new EcoreErrorExtractor();
+		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 	}
 
 	/**

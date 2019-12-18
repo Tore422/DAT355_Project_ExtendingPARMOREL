@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.EList;
@@ -66,6 +68,8 @@ public class QModelFixer implements ModelFixer {
 	private List<Solution> possibleSolutions;
 	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
+	
+	private Set<Integer> unsupportedErrorCodes;
 
 	public QModelFixer() {
 		resourceSet = new ResourceSetImpl();
@@ -75,21 +79,25 @@ public class QModelFixer implements ModelFixer {
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
 		actionExtractor = new EcoreActionExtractor(knowledge);
-		errorExtractor = new EcoreErrorExtractor();
+		unsupportedErrorCodes = new HashSet<>();
+		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+		
+		unsupportedErrorCodes.add(4);
+		unsupportedErrorCodes.add(6);
 		loadKnowledge();
 	}
 
 	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -107,7 +115,7 @@ public class QModelFixer implements ModelFixer {
 	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 
 	/**
@@ -280,7 +288,7 @@ public class QModelFixer implements ModelFixer {
 
 		while (step < MAX_EPISODE_STEPS) {
 			while (!errorsToFix.isEmpty()
-					&& EcoreErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+					&& unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
 				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: "
 						+ errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
