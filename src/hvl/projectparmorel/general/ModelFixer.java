@@ -24,7 +24,7 @@ public interface ModelFixer {
 	 * @param uri
 	 * @return the coresponding model
 	 */
-	public Resource getModel(URI uri);
+//	public Resource getModel(URI uri);
 
 	/**
 	 * Checks that there exists error in the model
@@ -41,7 +41,7 @@ public interface ModelFixer {
 	 * @param       uri, the Uniform Resource Identifier for the copy
 	 * @return a copy
 	 */
-	public Resource copy(Resource myMetaModel, URI uri);
+//	public Resource copy(Resource myMetaModel, URI uri);
 
 	/**
 	 * Sets the user preferences used in the algorithm.

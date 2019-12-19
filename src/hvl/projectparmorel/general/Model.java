@@ -18,4 +18,9 @@ public interface Model {
 	 * @return a copy of the model representation
 	 */
 	public Object getRepresentationCopy();
+	
+	/**
+	 * Saves what is stored in the representation.
+	 */
+	public void save();
 }

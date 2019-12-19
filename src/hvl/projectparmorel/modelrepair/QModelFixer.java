@@ -65,19 +65,19 @@ public abstract class QModelFixer implements ModelFixer {
 
 	private int reward = 0;
 	private File originalModel;
-	private URI uri;
+//	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
-	private ResourceSet resourceSet;
+//	private ResourceSet resourceSet;
 	private RewardCalculator rewardCalculator;
 	
 	private Set<Integer> unsupportedErrorCodes;
 
 	public QModelFixer() {
-		resourceSet = new ResourceSetImpl();
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
+//		resourceSet = new ResourceSetImpl();
+//		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+//				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
@@ -164,18 +164,20 @@ public abstract class QModelFixer implements ModelFixer {
 	@Override
 	public Solution fixModel(File modelFile) {
 		originalModel = modelFile;
+		Model model = initializeModel();
+		
 		File duplicateFile = createDuplicateFile();
-		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
-		Resource modelResource = getModel(uri);
+//		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
+//		Resource modelResource = getModel(uri);
 
 		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
+//		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
+//				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
 		
-		Model model = new EcoreModel(resourceSet, modelResource, uri);
+//		Model model = new EcoreModel(resourceSet, modelResource, uri);
 
 //		Resource modelCopy = copy(modelResource, uri);
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
@@ -190,26 +192,22 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
-			File episodeModel = createDuplicateFile(duplicateFile, originalModel.getParent()
+			File episodeModelFile = createDuplicateFile(duplicateFile, originalModel.getParent()
 					+ "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 			
-			URI episodeModelUri = URI.createFileURI(episodeModel.getAbsolutePath());
-			Resource episodeModelResource = getModel(episodeModelUri);
+			Model episodeModel = getModel(episodeModelFile);
 			
-			Solution sequence = handleEpisode(episodeModelResource, episode);
+//			URI episodeModelUri = URI.createFileURI(episodeModelFile.getAbsolutePath());
+//			Resource episodeModelResource = getModel(episodeModelUri);
+			
+			Solution sequence = handleEpisode(episodeModel, episode);
 
 			if (sequence != null) {
-				episodeModel.deleteOnExit();
-				try {
-					episodeModelResource.save(null);
-					sequence.setModel(episodeModel);
-				} catch (NullPointerException exception) {
-					exception.printStackTrace();
-				} catch (IOException exception) {
-					exception.printStackTrace();
-				}
+				episodeModelFile.deleteOnExit();
+				episodeModel.save();
+				sequence.setModel(episodeModelFile);
 			} else {
-				episodeModel.delete();
+				episodeModelFile.delete();
 			}
 			
 
@@ -237,6 +235,10 @@ public abstract class QModelFixer implements ModelFixer {
 		return bestSequence;
 	}
 
+	protected abstract Model initializeModel();
+
+	protected abstract Model getModel(File model);
+	
 	/**
 	 * Takes the original file as parameter and creates a duplicate of the file that
 	 * will represent the repaired model.
@@ -261,7 +263,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * 
 	 * @return the created duplicate
 	 */
-	private File createDuplicateFile() {
+	protected File createDuplicateFile() {
 		return createDuplicateFile(originalModel, originalModel.getParent() + "_temp_" + originalModel.getName());
 	}
 
@@ -279,10 +281,10 @@ public abstract class QModelFixer implements ModelFixer {
 	/**
 	 * Handles a single episode
 	 * 
-	 * @param modelCopy
+	 * @param episodeModel
 	 * @param episode
 	 */
-	private Solution handleEpisode(Resource modelCopy, int episode) {
+	private Solution handleEpisode(Model episodeModel, int episode) {
 		Solution sequence = new Solution();
 		boolean errorOcurred = false;
 		int totalReward = 0;
@@ -298,7 +300,7 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				try {
-					totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+					totalReward += handleStep(episodeModel, sequence, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. + \nCode:"
 							+ currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
@@ -335,7 +337,7 @@ public abstract class QModelFixer implements ModelFixer {
 	/**
 	 * Handles a single step
 	 * 
-	 * @param modelCopy
+	 * @param episodeModel
 	 * @param sequence
 	 * @param episode
 	 * @param currentErrorToFix
@@ -343,16 +345,16 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @throws UnsupportedErrorException if the error code is not in the Q-table,
 	 *                                   and cannot be added
 	 */
-	private int handleStep(Resource modelCopy, Solution sequence, int episode, Error currentErrorToFix)
+	private int handleStep(Model episodeModel, Solution sequence, int episode, Error currentErrorToFix)
 			throws UnsupportedErrorException {
 		logger.info("Fixing error " + currentErrorToFix.getCode() + " int episode " + episode);
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info(
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
-			errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 			actionExtractor.extractActionsFor(errorsToFix);
-			Model model = new EcoreModel(resourceSet, modelCopy, uri);
-			modelProcesser.initializeQTableForErrorsInModel(model);
+//			Model model = new EcoreModel(resourceSet, episodeModel, uri);
+			modelProcesser.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
 			} else {
@@ -365,8 +367,8 @@ public abstract class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		Model modelCopy1 = new EcoreModel(resourceSet, modelCopy, uri);
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy1);
+//		Model modelCopy1 = new EcoreModel(resourceSet, episodeModel, uri);
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, episodeModel); // need to copy?
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
@@ -386,10 +388,10 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 				logger.info("Error code " + currentErrorToFix.getCode()
 						+ " does not exist in Q-table, attempting to solve...");
-				errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
+				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 				actionExtractor.extractActionsFor(errorsToFix);
-				Model model = new EcoreModel(resourceSet, modelCopy, uri);
-				modelProcesser.initializeQTableForErrorsInModel(model);
+//				Model model = new EcoreModel(resourceSet, episodeModel, uri);
+				modelProcesser.initializeQTableForErrorsInModel(episodeModel); // need to copy?
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
 				} else {
@@ -433,14 +435,14 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @param       uri, the Uniform Resource Identifier for the copy
 	 * @return a copy
 	 */
-	@Override
-	public Resource copy(Resource model, URI uri) {
-		Resource modelCopy = resourceSet.createResource(uri);
-//		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
-		EList<EObject> contents = model.getContents();
-		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
-		return modelCopy;
-	}
+//	@Override
+//	public Resource copy(Resource model, URI uri) {
+//		Resource modelCopy = resourceSet.createResource(uri);
+////		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
+//		EList<EObject> contents = model.getContents();
+//		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
+//		return modelCopy;
+//	}
 
 	private boolean uniqueSequence(Solution sequence) {
 		boolean check = true;
@@ -524,10 +526,10 @@ public abstract class QModelFixer implements ModelFixer {
 //		
 //	}
 
-	@Override
-	public Resource getModel(URI uri) {
-		return resourceSet.getResource(uri, true);
-	}
+//	@Override
+//	public Resource getModel(URI uri) {
+//		return resourceSet.getResource(uri, true);
+//	}
 
 	@Override
 	public boolean modelIsBroken(Resource model) {
