@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.eclipse.emf.ecore.resource.Resource;
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
 import hvl.projectparmorel.ecore.EcoreErrorExtractor;
 import hvl.projectparmorel.ecore.EcoreModelProcessor;
@@ -158,26 +157,18 @@ public abstract class QModelFixer implements ModelFixer {
 		Model model = initializeModel();
 		
 		File duplicateFile = createDuplicateFile();
-//		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
-//		Resource modelResource = getModel(uri);
 
 		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 
-//		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-//				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
-		
-//		Model model = new EcoreModel(resourceSet, modelResource, uri);
 
-//		Resource modelCopy = copy(modelResource, uri);
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
-//		Model modelCopy = new EcoreModel(resourceSet, modelCopy, uri);
 		modelProcesser.initializeQTableForErrorsInModel(model);
 
 		logger.info("Errors to fix: " + errorsToFix.toString());
@@ -187,10 +178,6 @@ public abstract class QModelFixer implements ModelFixer {
 					+ "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 			
 			Model episodeModel = getModel(episodeModelFile);
-			
-//			URI episodeModelUri = URI.createFileURI(episodeModelFile.getAbsolutePath());
-//			Resource episodeModelResource = getModel(episodeModelUri);
-			
 			Solution sequence = handleEpisode(episodeModel, episode);
 
 			if (sequence != null) {
@@ -203,9 +190,6 @@ public abstract class QModelFixer implements ModelFixer {
 			
 
 			// RESET initial model and extract actions + errors
-//			modelCopy.getContents().clear();
-//			EObject content = modelResource.getContents().get(0);
-//			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
 			episode++;
@@ -379,8 +363,7 @@ public abstract class QModelFixer implements ModelFixer {
 						+ " does not exist in Q-table, attempting to solve...");
 				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 				actionExtractor.extractActionsFor(errorsToFix);
-//				Model model = new EcoreModel(resourceSet, episodeModel, uri);
-				modelProcesser.initializeQTableForErrorsInModel(episodeModel); // need to copy?
+				modelProcesser.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
 				} else {
@@ -498,17 +481,6 @@ public abstract class QModelFixer implements ModelFixer {
 //		}
 //		
 //	}
-
-//	@Override
-//	public Resource getModel(URI uri) {
-//		return resourceSet.getResource(uri, true);
-//	}
-
-	@Override
-	public boolean modelIsBroken(Resource model) {
-		List<Error> errors = errorExtractor.extractErrorsFrom(model);
-		return !errors.isEmpty();
-	}
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
