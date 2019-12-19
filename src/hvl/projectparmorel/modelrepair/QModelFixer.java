@@ -111,10 +111,6 @@ public abstract class QModelFixer implements ModelFixer {
 		return d;
 	}
 
-	public ResourceSet getResourceSet() {
-		return resourceSet;
-	}
-
 	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
