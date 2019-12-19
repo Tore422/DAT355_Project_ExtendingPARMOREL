@@ -2,7 +2,6 @@ package hvl.projectparmorel.general;
 
 import java.io.File;
 import java.util.List;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import hvl.projectparmorel.modelrepair.Solution;

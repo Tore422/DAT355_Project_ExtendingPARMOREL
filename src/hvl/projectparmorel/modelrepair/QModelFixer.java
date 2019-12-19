@@ -10,18 +10,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
 import hvl.projectparmorel.ecore.EcoreErrorExtractor;
-import hvl.projectparmorel.ecore.EcoreModel;
 import hvl.projectparmorel.ecore.EcoreModelProcessor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
@@ -353,7 +344,6 @@ public abstract class QModelFixer implements ModelFixer {
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 			actionExtractor.extractActionsFor(errorsToFix);
-//			Model model = new EcoreModel(resourceSet, episodeModel, uri);
 			modelProcesser.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
@@ -367,8 +357,7 @@ public abstract class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-//		Model modelCopy1 = new EcoreModel(resourceSet, episodeModel, uri);
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, episodeModel); // need to copy?
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, episodeModel);
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
@@ -427,22 +416,6 @@ public abstract class QModelFixer implements ModelFixer {
 
 		return reward;
 	}
-
-	/**
-	 * Copies the model passed as a parameter
-	 * 
-	 * @param model
-	 * @param       uri, the Uniform Resource Identifier for the copy
-	 * @return a copy
-	 */
-//	@Override
-//	public Resource copy(Resource model, URI uri) {
-//		Resource modelCopy = resourceSet.createResource(uri);
-////		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
-//		EList<EObject> contents = model.getContents();
-//		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
-//		return modelCopy;
-//	}
 
 	private boolean uniqueSequence(Solution sequence) {
 		boolean check = true;
