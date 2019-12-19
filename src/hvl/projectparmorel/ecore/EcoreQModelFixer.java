@@ -1,6 +1,7 @@
 package hvl.projectparmorel.ecore;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -18,16 +19,30 @@ public class EcoreQModelFixer extends QModelFixer {
 	
 	public EcoreQModelFixer() {
 		super();
+		unsupportedErrorCodes = new HashSet<>();
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
+		actionExtractor = new EcoreActionExtractor(knowledge);
+		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+	
+		unsupportedErrorCodes.add(4);
+		unsupportedErrorCodes.add(6);
 	}
 	
 	public EcoreQModelFixer(List<Integer> preferences) {
 		super(preferences);
+		unsupportedErrorCodes = new HashSet<>();
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
+		actionExtractor = new EcoreActionExtractor(knowledge);
+		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+
+		unsupportedErrorCodes.add(4);
+		unsupportedErrorCodes.add(6);
 	}
 
 	@Override
@@ -49,5 +64,10 @@ public class EcoreQModelFixer extends QModelFixer {
 		Resource episodeModelResource = getModel(episodeModelUri);
 		
 		return new EcoreModel(resourceSet, episodeModelResource, uri);
+	}
+
+	@Override
+	protected void updateRewardCalculator() {
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 }

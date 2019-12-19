@@ -5,14 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import hvl.projectparmorel.ecore.EcoreActionExtractor;
-import hvl.projectparmorel.ecore.EcoreErrorExtractor;
-import hvl.projectparmorel.ecore.EcoreModelProcessor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
@@ -21,6 +17,7 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelFixer;
+import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
@@ -39,12 +36,13 @@ public abstract class QModelFixer implements ModelFixer {
 	private final int MAX_EPISODE_STEPS = 20;
 	private final double[] ALPHAS;
 
-	private Knowledge knowledge;
+	protected Knowledge knowledge;
 	private QTable qTable;
-	private ActionExtractor actionExtractor;
-	private ErrorExtractor errorExtractor;
-	private EcoreModelProcessor modelProcesser;
-
+	protected ActionExtractor actionExtractor;
+	protected ErrorExtractor errorExtractor;
+	protected ModelProcessor modelProcesser;
+	protected RewardCalculator rewardCalculator;
+	
 	private double randomFactor = 0.25;
 	private int numberOfEpisodes = 25;
 
@@ -55,42 +53,28 @@ public abstract class QModelFixer implements ModelFixer {
 
 	private int reward = 0;
 	private File originalModel;
-//	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
-//	private ResourceSet resourceSet;
-	private RewardCalculator rewardCalculator;
 	
-	private Set<Integer> unsupportedErrorCodes;
+	protected Set<Integer> unsupportedErrorCodes;
 
 	public QModelFixer() {
-//		resourceSet = new ResourceSetImpl();
-//		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-//				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
-		actionExtractor = new EcoreActionExtractor(knowledge);
-		unsupportedErrorCodes = new HashSet<>();
-		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
-		
-		unsupportedErrorCodes.add(4);
-		unsupportedErrorCodes.add(6);
 		loadKnowledge();
 	}
 
 	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -104,8 +88,13 @@ public abstract class QModelFixer implements ModelFixer {
 	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+		updateRewardCalculator();
 	}
+
+	/**
+	 * Updates the dependencies after reward calculator has changed.
+	 */
+	protected abstract void updateRewardCalculator();
 
 	/**
 	 * Saves the knowledge
