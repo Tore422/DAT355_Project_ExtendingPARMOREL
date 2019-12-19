@@ -4,9 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+import hvl.projectparmorel.general.AppliedAction;
 
 /**
  * @author Magnus Marthinsen
@@ -20,14 +18,11 @@ public class Solution implements Comparable<Solution> {
 	private double weight;
 	private File model;
 	private File original;
-	private ResourceSet resourceSet;
 
 	public Solution() {
 		super();
 		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
-		resourceSet = new ResourceSetImpl();
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 	}
 
 	public Solution(int id, List<AppliedAction> seq, double weight, File model) {
@@ -35,12 +30,11 @@ public class Solution implements Comparable<Solution> {
 		this.id = id;
 		this.sequence = seq;
 		this.weight = weight;
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
 		this.model = model;
 	}
 	
 	/**
-	 * Discards the sequence and deletes the associated file;
+	 * Deletes the associated file;
 	 */
 	public void discard() {
 		model.delete();
@@ -100,7 +94,7 @@ public class Solution implements Comparable<Solution> {
 	
 	/**
 	 * Gets the original file
-	 * @return
+	 * @return the original model
 	 */
 	public File getOriginal() {
 		return original;

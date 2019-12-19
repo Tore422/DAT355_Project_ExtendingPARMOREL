@@ -11,6 +11,9 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import hvl.projectparmorel.general.Action;
+
 import org.w3c.dom.Node;
 
 class ContextMap {

@@ -1,4 +1,4 @@
-  package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.ecore;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.eclipse.emf.common.notify.impl.NotificationChainImpl;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EGenericType;
 import org.eclipse.emf.ecore.EObject;
@@ -30,23 +30,39 @@ import org.eclipse.emf.ecore.impl.EOperationImpl;
 import org.eclipse.emf.ecore.impl.EParameterImpl;
 import org.eclipse.emf.ecore.impl.EReferenceImpl;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import hvl.projectparmorel.knowledge.Action;
+import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.general.ActionExtractor;
+import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.ErrorExtractor;
+import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.ModelProcessor;
+import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
 
-public class ModelProcesser {
-	private ResourceSet resourceSet;
-	private hvl.projectparmorel.knowledge.Knowledge knowledge;
+public class EcoreModelProcessor implements ModelProcessor {
+	private Knowledge knowledge;
 	private List<Error> errors;
 	private RewardCalculator rewardCalculator;
+	private ErrorExtractor errorExtractor;
 
-	public ModelProcesser(ResourceSet resourceSet, hvl.projectparmorel.knowledge.Knowledge knowledge, RewardCalculator rewardCalculator) {
-		this.resourceSet = resourceSet;
+	public EcoreModelProcessor(Knowledge knowledge, RewardCalculator rewardCalculator,
+			Set<Integer> unsupportedErrorCodes) {
 		this.knowledge = knowledge;
 		this.rewardCalculator = rewardCalculator;
+		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
+	}
+
+	@Override
+	public void initializeQTableForErrorsInModel(Model model) {
+		if (model instanceof EcoreModel) {
+			initializeQTableForErrorsInModel((EcoreModel) model);
+		} else {
+			throw new IllegalArgumentException(
+					"The method must be called with a model of type hvl.projectparmorel.ecore.EcoreModel");
+		}
 	}
 
 	/**
@@ -56,13 +72,10 @@ public class ModelProcesser {
 	 * @param model
 	 * @param destinationURI
 	 */
-	public void initializeQTableForErrorsInModel(Resource model, URI destinationURI) {
-		Resource modelCopy = resourceSet.createResource(destinationURI);
-		modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
+	private void initializeQTableForErrorsInModel(EcoreModel model) {
+		errors = errorExtractor.extractErrorsFrom(model.getRepresentation());
 
-		errors = ErrorExtractor.extractErrorsFrom(model);
-
-		ActionExtractor actionExtractor = new ActionExtractor(knowledge);
+		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
 
 		for (Error error : errors) {
@@ -71,16 +84,14 @@ public class ModelProcesser {
 					if (error.getContexts().get(i) != null) {
 						for (Action action : possibleActions) {
 							if (isInvokable(error, error.getContexts().get(i).getClass(), action)) {
-								List<Error> newErrors = tryApplyAction(error, action,
-										modelCopy, i);
+								Resource modelCopy = (Resource) model.getRepresentationCopy();
+								List<Error> newErrors = tryApplyAction(error, action, modelCopy, i);
 								if (newErrors != null) {
-									if (!errorStillExists(newErrors, error, i )) {
-										Action newAction = new Action(action.getCode(), action.getMessage(), action.getMethod(),
-												i);
+									if (!errorStillExists(newErrors, error, i)) {
+										Action newAction = new Action(action.getCode(), action.getMessage(),
+												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
 									}
-									modelCopy.getContents().clear();
-									modelCopy.getContents().addAll(EcoreUtil.copyAll(model.getContents()));
 								}
 							}
 						}
@@ -116,6 +127,14 @@ public class ModelProcesser {
 		}
 		return false;
 	}
+	
+	@Override
+	public List<Error> tryApplyAction(Error error, Action action, Model model) {
+		if(model instanceof EcoreModel) {
+			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getHierarchy());
+		}
+		throw new IllegalArgumentException("The model needs to be of type org.eclipse.emf.ecore.resource.Resource");
+	}
 
 	/**
 	 * Extracts package content from the model, and matches the location where the
@@ -129,7 +148,7 @@ public class ModelProcesser {
 	 * @return a list of new errors if the action was successfully applied, null
 	 *         otherwise
 	 */
-	public List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
+	private List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
 		EPackage ePackage = (EPackage) model.getContents().get(0);
 		EObject object = (EObject) error.getContexts().get(hierarchy);
 
@@ -138,7 +157,7 @@ public class ModelProcesser {
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
 				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
 			}
-			List<Error> newErrors = ErrorExtractor.extractErrorsFrom(model);
+			List<Error> newErrors = errorExtractor.extractErrorsFrom(model);
 			return newErrors;
 		}
 		return null;
@@ -154,7 +173,8 @@ public class ModelProcesser {
 	 * @param eClassifier
 	 * @return true if an action was successfully applied, false otherwise
 	 */
-	private boolean identifyObjectTypeAndApplyAction(Error error, Action action, EObject object, EClassifier eClassifier) {
+	private boolean identifyObjectTypeAndApplyAction(Error error, Action action, EObject object,
+			EClassifier eClassifier) {
 		if (object.getClass() == EClassImpl.class && eClassifier.getClass() == EClassImpl.class) {
 			return applyAction((EClassImpl) eClassifier, error, action, object);
 		}
@@ -170,7 +190,7 @@ public class ModelProcesser {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Checks if the error still exists, meaning we did not accomplish anything.
 	 * 
@@ -215,19 +235,19 @@ public class ModelProcesser {
 			if (action.isDelete()) {
 				return deleteClass(eObject, error);
 			} else {
-				if (error.getCode() == 4 && eObject.getClass() == EGenericTypeImpl.class) { // if needs to add type arguments
+				if (error.getCode() == 4 && eObject.getClass() == EGenericTypeImpl.class) { // if needs to add type
+																							// arguments
 					addTypeArguments(error, action);
 					return true;
 				}
 				if (isInvokable(error, eObject.getClass(), action)) {
 					if (action.getMethod().getMethod().getParameterCount() > 0) {// if method has parameters
 						applyActionsThatRequireParameters(eObject, error, action);
-					} 
-					else {
+					} else {
 						invokeMethod(action.getMethod().getMethod(), eObject);
 						return true;
 					}
-					
+
 				}
 			}
 		}
@@ -420,8 +440,8 @@ public class ModelProcesser {
 		Object[] values = getDefaultValues(extractParameterTypes(action.getMethod().getMethod(), error));
 		// if input needs a date
 		if (values.length != 0 && eObject instanceof EAttributeImpl
-				&& action.getMethod().getMethod().getName().contains("DefaultValue")
-				&& error.getCode() != 40 && ((ETypedElement) eObject).getEType() != null
+				&& action.getMethod().getMethod().getName().contains("DefaultValue") && error.getCode() != 40
+				&& ((ETypedElement) eObject).getEType() != null
 				&& ((ETypedElement) eObject).getEType().toString().contains("Date")) {
 
 			invokeMethod(action.getMethod().getMethod(), eObject, new Date());
@@ -674,8 +694,8 @@ public class ModelProcesser {
 		Map<Integer, Error> duplicateErrors = new HashMap<>();
 		for (int i = 0; i < errors.size(); i++) {
 			for (int j = 0; j < errors.size(); j++) {
-				if (errors.get(i).getCode() == errors.get(j).getCode()
-						&& !errors.get(i).getContexts().toString().contentEquals(errors.get(j).getContexts().toString())) {
+				if (errors.get(i).getCode() == errors.get(j).getCode() && !errors.get(i).getContexts().toString()
+						.contentEquals(errors.get(j).getContexts().toString())) {
 					duplicateErrors.put(errors.get(i).getCode(), errors.get(i));
 				}
 			}

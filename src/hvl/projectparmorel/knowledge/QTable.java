@@ -5,7 +5,8 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.modelrepair.AppliedAction;
+import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.general.AppliedAction;
 
 public class QTable {
 	ErrorContextActionDirectory qTable;
@@ -95,7 +96,7 @@ public class QTable {
 	public PreferenceWeightMap getTagDictionaryForAction(Integer errorCode, Integer contextId,
 			Integer actionId) {
 		Action action = getAction(errorCode, contextId, actionId);
-		return action.getTagDictionary();
+		return action.getPreferenceMap();
 	}
 
 	/**
@@ -110,7 +111,7 @@ public class QTable {
 	 */
 	public void setTagValueInTagDictionary(Integer errorCode, Integer contextId, Integer actionId, int tag, int value) {
 		Action action = getAction(errorCode, contextId, actionId);
-		action.getTagDictionary().set(tag, value);
+		action.getPreferenceMap().set(tag, value);
 	}
 
 	/**

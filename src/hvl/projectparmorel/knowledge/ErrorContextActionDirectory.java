@@ -6,6 +6,8 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import hvl.projectparmorel.general.Action;
+
 public interface ErrorContextActionDirectory {
 	/**
 	 * Gets all the error codes

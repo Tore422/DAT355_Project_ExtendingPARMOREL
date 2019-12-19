@@ -6,19 +6,18 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
-import hvl.projectparmorel.knowledge.Action;
+import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.general.ActionExtractor;
+import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.ErrorExtractor;
+import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.ModelFixer;
+import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.RewardCalculator;
@@ -31,17 +30,19 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * @author Angela Barriga Rodriguez abar@hvl.no
  * @author Magnus Marthinsen
  */
-public class QModelFixer implements ModelFixer {
+public abstract class QModelFixer implements ModelFixer {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
 	private final double[] ALPHAS;
 
-	private Knowledge knowledge;
+	protected Knowledge knowledge;
 	private QTable qTable;
-	private ActionExtractor actionExtractor;
-	private ModelProcesser modelProcesser;
-
+	protected ActionExtractor actionExtractor;
+	protected ErrorExtractor errorExtractor;
+	protected ModelProcessor modelProcessor;
+	protected RewardCalculator rewardCalculator;
+	
 	private double randomFactor = 0.25;
 	private int numberOfEpisodes = 25;
 
@@ -52,27 +53,21 @@ public class QModelFixer implements ModelFixer {
 
 	private int reward = 0;
 	private File originalModel;
-	private URI uri;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
-	private ResourceSet resourceSet;
-	private RewardCalculator rewardCalculator;
+	
+	protected Set<Integer> unsupportedErrorCodes;
 
 	public QModelFixer() {
-		resourceSet = new ResourceSetImpl();
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
 		qTable = knowledge.getQTable();
-		actionExtractor = new ActionExtractor(knowledge);
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		loadKnowledge();
 	}
@@ -80,7 +75,6 @@ public class QModelFixer implements ModelFixer {
 	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -91,15 +85,16 @@ public class QModelFixer implements ModelFixer {
 		return d;
 	}
 
-	public ResourceSet getResourceSet() {
-		return resourceSet;
-	}
-
 	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator);
+		updateRewardCalculator();
 	}
+
+	/**
+	 * Updates the dependencies after reward calculator has changed.
+	 */
+	protected abstract void updateRewardCalculator();
 
 	/**
 	 * Saves the knowledge
@@ -111,7 +106,7 @@ public class QModelFixer implements ModelFixer {
 	/**
 	 * Loads knowledge from file and influences the weights in the q-table from this
 	 * based on preferences. Only 20 % of the value from before is loaded. This
-	 * allows for new learnings to be aqcuired.
+	 * allows for new learnings to be acquired.
 	 * 
 	 * This also reduces the number of episodes and the chance for taking random
 	 * actions. More previous knowledge reduces the need for many episodes and
@@ -146,58 +141,44 @@ public class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(File model) {
-		originalModel = model;
+	public Solution fixModel(File modelFile) {
+		originalModel = modelFile;
+		Model model = initializeModelCopyFromFile();
+		
 		File duplicateFile = createDuplicateFile();
-		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
-		Resource modelResource = getModel(uri);
 
 		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
-				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
 
-		Resource modelCopy = copy(modelResource, uri);
-		errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
-		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+		modelProcessor.initializeQTableForErrorsInModel(model);
 
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
-			File episodeModel = createDuplicateFile(duplicateFile, originalModel.getParent()
+			File episodeModelFile = createDuplicateFile(duplicateFile, originalModel.getParent()
 					+ "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 			
-			URI episodeModelUri = URI.createFileURI(episodeModel.getAbsolutePath());
-			Resource episodeModelResource = getModel(episodeModelUri);
-			
-			Solution sequence = handleEpisode(episodeModelResource, episode);
+			Model episodeModel = getModel(episodeModelFile);
+			Solution sequence = handleEpisode(episodeModel, episode);
 
 			if (sequence != null) {
-				episodeModel.deleteOnExit();
-				try {
-					episodeModelResource.save(null);
-					sequence.setModel(episodeModel);
-				} catch (NullPointerException exception) {
-					exception.printStackTrace();
-				} catch (IOException exception) {
-					exception.printStackTrace();
-				}
+				episodeModelFile.deleteOnExit();
+				episodeModel.save();
+				sequence.setModel(episodeModelFile);
 			} else {
-				episodeModel.delete();
+				episodeModelFile.delete();
 			}
 			
 
 			// RESET initial model and extract actions + errors
-			modelCopy.getContents().clear();
-			EObject content = modelResource.getContents().get(0);
-			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
 			episode++;
@@ -218,6 +199,21 @@ public class QModelFixer implements ModelFixer {
 		return bestSequence;
 	}
 
+	/**
+	 * Copies the file and get the model from the new file.
+	 * 
+	 * @return the model
+	 */
+	protected abstract Model initializeModelCopyFromFile();
+
+	/**
+	 * Gets the model from the file
+	 * 
+	 * @param model file
+	 * @return the model
+	 */
+	protected abstract Model getModel(File model);
+	
 	/**
 	 * Takes the original file as parameter and creates a duplicate of the file that
 	 * will represent the repaired model.
@@ -242,7 +238,7 @@ public class QModelFixer implements ModelFixer {
 	 * 
 	 * @return the created duplicate
 	 */
-	private File createDuplicateFile() {
+	protected File createDuplicateFile() {
 		return createDuplicateFile(originalModel, originalModel.getParent() + "_temp_" + originalModel.getName());
 	}
 
@@ -260,10 +256,10 @@ public class QModelFixer implements ModelFixer {
 	/**
 	 * Handles a single episode
 	 * 
-	 * @param modelCopy
+	 * @param episodeModel
 	 * @param episode
 	 */
-	private Solution handleEpisode(Resource modelCopy, int episode) {
+	private Solution handleEpisode(Model episodeModel, int episode) {
 		Solution sequence = new Solution();
 		boolean errorOcurred = false;
 		int totalReward = 0;
@@ -271,7 +267,7 @@ public class QModelFixer implements ModelFixer {
 
 		while (step < MAX_EPISODE_STEPS) {
 			while (!errorsToFix.isEmpty()
-					&& ErrorExtractor.unsuportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+					&& unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
 				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: "
 						+ errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
@@ -279,7 +275,7 @@ public class QModelFixer implements ModelFixer {
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				try {
-					totalReward += handleStep(modelCopy, sequence, episode, currentErrorToFix);
+					totalReward += handleStep(episodeModel, sequence, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. + \nCode:"
 							+ currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
@@ -316,7 +312,7 @@ public class QModelFixer implements ModelFixer {
 	/**
 	 * Handles a single step
 	 * 
-	 * @param modelCopy
+	 * @param episodeModel
 	 * @param sequence
 	 * @param episode
 	 * @param currentErrorToFix
@@ -324,15 +320,15 @@ public class QModelFixer implements ModelFixer {
 	 * @throws UnsupportedErrorException if the error code is not in the Q-table,
 	 *                                   and cannot be added
 	 */
-	private int handleStep(Resource modelCopy, Solution sequence, int episode, Error currentErrorToFix)
+	private int handleStep(Model episodeModel, Solution sequence, int episode, Error currentErrorToFix)
 			throws UnsupportedErrorException {
 		logger.info("Fixing error " + currentErrorToFix.getCode() + " int episode " + episode);
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info(
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
-			errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 			actionExtractor.extractActionsFor(errorsToFix);
-			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
 			} else {
@@ -345,7 +341,7 @@ public class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy());
+		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
@@ -365,9 +361,9 @@ public class QModelFixer implements ModelFixer {
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 				logger.info("Error code " + currentErrorToFix.getCode()
 						+ " does not exist in Q-table, attempting to solve...");
-				errorsToFix = ErrorExtractor.extractErrorsFrom(modelCopy);
+				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 				actionExtractor.extractActionsFor(errorsToFix);
-				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
 				} else {
@@ -402,22 +398,6 @@ public class QModelFixer implements ModelFixer {
 		}
 
 		return reward;
-	}
-
-	/**
-	 * Copies the model passed as a parameter
-	 * 
-	 * @param model
-	 * @param       uri, the Uniform Resource Identifier for the copy
-	 * @return a copy
-	 */
-	@Override
-	public Resource copy(Resource model, URI uri) {
-		Resource modelCopy = resourceSet.createResource(uri);
-//		modelCopy.getContents().add(EcoreUtil.copy(model.getContents().get(0)));
-		EList<EObject> contents = model.getContents();
-		modelCopy.getContents().addAll(EcoreUtil.copyAll(contents));
-		return modelCopy;
 	}
 
 	private boolean uniqueSequence(Solution sequence) {
@@ -501,17 +481,6 @@ public class QModelFixer implements ModelFixer {
 //		}
 //		
 //	}
-
-	@Override
-	public Resource getModel(URI uri) {
-		return resourceSet.getResource(uri, true);
-	}
-
-	@Override
-	public boolean modelIsBroken(Resource model) {
-		List<Error> errors = ErrorExtractor.extractErrorsFrom(model);
-		return !errors.isEmpty();
-	}
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
