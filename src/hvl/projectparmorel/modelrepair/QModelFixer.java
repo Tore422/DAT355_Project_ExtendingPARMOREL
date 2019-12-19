@@ -21,12 +21,15 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.ecore.EcoreActionExtractor;
 import hvl.projectparmorel.ecore.EcoreErrorExtractor;
+import hvl.projectparmorel.ecore.EcoreModel;
+import hvl.projectparmorel.ecore.EcoreModelProcessor;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
+import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
@@ -50,7 +53,7 @@ public class QModelFixer implements ModelFixer {
 	private QTable qTable;
 	private ActionExtractor actionExtractor;
 	private ErrorExtractor errorExtractor;
-	private ModelProcesser modelProcesser;
+	private EcoreModelProcessor modelProcesser;
 
 	private double randomFactor = 0.25;
 	private int numberOfEpisodes = 25;
@@ -86,7 +89,7 @@ public class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		
 		unsupportedErrorCodes.add(4);
@@ -97,7 +100,7 @@ public class QModelFixer implements ModelFixer {
 	public QModelFixer(List<Integer> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -115,7 +118,7 @@ public class QModelFixer implements ModelFixer {
 	@Override
 	public void setPreferences(List<Integer> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-		modelProcesser = new ModelProcesser(resourceSet, knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 
 	/**
@@ -128,7 +131,7 @@ public class QModelFixer implements ModelFixer {
 	/**
 	 * Loads knowledge from file and influences the weights in the q-table from this
 	 * based on preferences. Only 20 % of the value from before is loaded. This
-	 * allows for new learnings to be aqcuired.
+	 * allows for new learnings to be acquired.
 	 * 
 	 * This also reduces the number of episodes and the chance for taking random
 	 * actions. More previous knowledge reduces the need for many episodes and
@@ -163,8 +166,8 @@ public class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(File model) {
-		originalModel = model;
+	public Solution fixModel(File modelFile) {
+		originalModel = modelFile;
 		File duplicateFile = createDuplicateFile();
 		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
 		Resource modelResource = getModel(uri);
@@ -175,15 +178,18 @@ public class QModelFixer implements ModelFixer {
 				new EcoreResourceFactoryImpl());
 		discardedSequences = 0;
 		int episode = 0;
+		
+		Model model = new EcoreModel(resourceSet, modelResource, uri);
 
-		Resource modelCopy = copy(modelResource, uri);
-		errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
+//		Resource modelCopy = copy(modelResource, uri);
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
-		modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+//		Model modelCopy = new EcoreModel(resourceSet, modelCopy, uri);
+		modelProcesser.initializeQTableForErrorsInModel(model);
 
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
@@ -212,9 +218,9 @@ public class QModelFixer implements ModelFixer {
 			
 
 			// RESET initial model and extract actions + errors
-			modelCopy.getContents().clear();
-			EObject content = modelResource.getContents().get(0);
-			modelCopy.getContents().add(EcoreUtil.copy(content));
+//			modelCopy.getContents().clear();
+//			EObject content = modelResource.getContents().get(0);
+//			modelCopy.getContents().add(EcoreUtil.copy(content));
 			errorsToFix.clear();
 			errorsToFix.addAll(originalErrors);
 			episode++;
@@ -349,7 +355,8 @@ public class QModelFixer implements ModelFixer {
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 			errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
 			actionExtractor.extractActionsFor(errorsToFix);
-			modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+			Model model = new EcoreModel(resourceSet, modelCopy, uri);
+			modelProcesser.initializeQTableForErrorsInModel(model);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
 			} else {
@@ -384,7 +391,8 @@ public class QModelFixer implements ModelFixer {
 						+ " does not exist in Q-table, attempting to solve...");
 				errorsToFix = errorExtractor.extractErrorsFrom(modelCopy);
 				actionExtractor.extractActionsFor(errorsToFix);
-				modelProcesser.initializeQTableForErrorsInModel(modelCopy, uri);
+				Model model = new EcoreModel(resourceSet, modelCopy, uri);
+				modelProcesser.initializeQTableForErrorsInModel(model);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
 				} else {
