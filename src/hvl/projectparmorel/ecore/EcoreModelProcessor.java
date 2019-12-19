@@ -127,6 +127,14 @@ public class EcoreModelProcessor implements ModelProcessor {
 		}
 		return false;
 	}
+	
+	@Override
+	public List<Error> tryApplyAction(Error error, Action action, Model model) {
+		if(model instanceof EcoreModel) {
+			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getHierarchy());
+		}
+		throw new IllegalArgumentException("The model needs to be of type org.eclipse.emf.ecore.resource.Resource");
+	}
 
 	/**
 	 * Extracts package content from the model, and matches the location where the
@@ -140,7 +148,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * @return a list of new errors if the action was successfully applied, null
 	 *         otherwise
 	 */
-	public List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
+	private List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
 		EPackage ePackage = (EPackage) model.getContents().get(0);
 		EObject object = (EObject) error.getContexts().get(hierarchy);
 

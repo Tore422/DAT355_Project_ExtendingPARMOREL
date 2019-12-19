@@ -369,7 +369,8 @@ public class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy, action.getHierarchy());
+		Model modelCopy1 = new EcoreModel(resourceSet, modelCopy, uri);
+		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, modelCopy1);
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
