@@ -40,7 +40,7 @@ public abstract class QModelFixer implements ModelFixer {
 	private QTable qTable;
 	protected ActionExtractor actionExtractor;
 	protected ErrorExtractor errorExtractor;
-	protected ModelProcessor modelProcesser;
+	protected ModelProcessor modelProcessor;
 	protected RewardCalculator rewardCalculator;
 	
 	private double randomFactor = 0.25;
@@ -158,7 +158,7 @@ public abstract class QModelFixer implements ModelFixer {
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 
-		modelProcesser.initializeQTableForErrorsInModel(model);
+		modelProcessor.initializeQTableForErrorsInModel(model);
 
 		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
@@ -328,7 +328,7 @@ public abstract class QModelFixer implements ModelFixer {
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
 			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 			actionExtractor.extractActionsFor(errorsToFix);
-			modelProcesser.initializeQTableForErrorsInModel(episodeModel);
+			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
 			} else {
@@ -341,7 +341,7 @@ public abstract class QModelFixer implements ModelFixer {
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
-		errorsToFix = modelProcesser.tryApplyAction(currentErrorToFix, action, episodeModel);
+		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
 		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
@@ -363,7 +363,7 @@ public abstract class QModelFixer implements ModelFixer {
 						+ " does not exist in Q-table, attempting to solve...");
 				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
 				actionExtractor.extractActionsFor(errorsToFix);
-				modelProcesser.initializeQTableForErrorsInModel(episodeModel);
+				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
 				} else {

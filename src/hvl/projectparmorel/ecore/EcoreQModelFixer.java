@@ -25,7 +25,7 @@ public class EcoreQModelFixer extends QModelFixer {
 				new EcoreResourceFactoryImpl());
 		actionExtractor = new EcoreActionExtractor(knowledge);
 		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	
 		unsupportedErrorCodes.add(4);
 		unsupportedErrorCodes.add(6);
@@ -39,7 +39,7 @@ public class EcoreQModelFixer extends QModelFixer {
 				new EcoreResourceFactoryImpl());
 		actionExtractor = new EcoreActionExtractor(knowledge);
 		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 
 		unsupportedErrorCodes.add(4);
 		unsupportedErrorCodes.add(6);
@@ -68,6 +68,6 @@ public class EcoreQModelFixer extends QModelFixer {
 
 	@Override
 	protected void updateRewardCalculator() {
-		modelProcesser = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	}
 }
