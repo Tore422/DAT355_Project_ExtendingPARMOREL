@@ -37,9 +37,9 @@ import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.ModelProcessor;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 public class EcoreModelProcessor implements ModelProcessor {

@@ -1,10 +1,6 @@
-package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.general;
 
 import java.util.List;
-
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.Model;
 
 public interface ModelProcessor {
 	
