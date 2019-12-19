@@ -154,7 +154,7 @@ public abstract class QModelFixer implements ModelFixer {
 	@Override
 	public Solution fixModel(File modelFile) {
 		originalModel = modelFile;
-		Model model = initializeModel();
+		Model model = initializeModelCopyFromFile();
 		
 		File duplicateFile = createDuplicateFile();
 
@@ -210,8 +210,19 @@ public abstract class QModelFixer implements ModelFixer {
 		return bestSequence;
 	}
 
-	protected abstract Model initializeModel();
+	/**
+	 * Copies the file and get the model from the new file.
+	 * 
+	 * @return the model
+	 */
+	protected abstract Model initializeModelCopyFromFile();
 
+	/**
+	 * Gets the model from the file
+	 * 
+	 * @param model file
+	 * @return the model
+	 */
 	protected abstract Model getModel(File model);
 	
 	/**
