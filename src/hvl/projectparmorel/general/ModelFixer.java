@@ -14,7 +14,6 @@ public interface ModelFixer {
 	 * uri-location.
 	 * 
 	 * @param model
-	 * @param ur
 	 * @return the optimal sequence of actions
 	 */
 	public Solution fixModel(File model);

@@ -43,7 +43,7 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * @author Angela Barriga Rodriguez abar@hvl.no
  * @author Magnus Marthinsen
  */
-public class QModelFixer implements ModelFixer {
+public abstract class QModelFixer implements ModelFixer {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MAX_EPISODE_STEPS = 20;
