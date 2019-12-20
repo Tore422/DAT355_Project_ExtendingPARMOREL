@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -23,6 +24,7 @@ public class EcoreQModelFixer extends QModelFixer {
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
+		EcorePackage.eINSTANCE.eClass();
 		actionExtractor = new EcoreActionExtractor(knowledge);
 		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
