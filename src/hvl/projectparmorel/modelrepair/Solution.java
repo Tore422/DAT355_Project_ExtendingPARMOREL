@@ -105,5 +105,5 @@ public abstract class Solution implements Comparable<Solution> {
 	 * 
 	 * @return the calculated distance
 	 */
-	protected abstract double calculateDistanceFromOriginal();
+	public abstract double calculateDistanceFromOriginal();
 }

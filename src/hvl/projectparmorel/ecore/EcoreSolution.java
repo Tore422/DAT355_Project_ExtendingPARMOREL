@@ -19,7 +19,7 @@ public class EcoreSolution extends Solution {
 	}
 
 	@Override
-	protected double calculateDistanceFromOriginal() {
+	public double calculateDistanceFromOriginal() {
 		URI originalUri = URI.createFileURI(getOriginal().getAbsolutePath());
 		URI modelUri = URI.createFileURI(getModel().getAbsolutePath());
 		
