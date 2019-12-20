@@ -168,7 +168,7 @@ public abstract class QModelFixer implements ModelFixer {
 			
 			Model episodeModel = getModel(episodeModelFile);
 			Solution sequence = handleEpisode(episodeModel, episode);
-
+			
 			if (sequence != null) {
 				episodeModel.save();
 				episodeModelFile.deleteOnExit();

@@ -99,4 +99,11 @@ public abstract class Solution implements Comparable<Solution> {
 	public File getOriginal() {
 		return original;
 	}
+	
+	/**
+	 * Calculates the difference between the solution and the original model.
+	 * 
+	 * @return the calculated distance
+	 */
+	protected abstract double calculateDistanceFromOriginal();
 }
