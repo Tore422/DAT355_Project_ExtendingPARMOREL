@@ -260,7 +260,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @param episode
 	 */
 	private Solution handleEpisode(Model episodeModel, int episode) {
-		Solution sequence = new Solution();
+		Solution sequence = initializeSolution();
 		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
@@ -308,6 +308,13 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);
 		return sequence;
 	}
+	
+	/**
+	 * Initializes a new solution-object of the correct type.
+	 * 
+	 * @return a new initializes solution
+	 */
+	protected abstract Solution initializeSolution();
 
 	/**
 	 * Handles a single step
@@ -453,7 +460,7 @@ public abstract class QModelFixer implements ModelFixer {
 	private Solution bestSequence(List<Solution> sm) {
 		double max = -1;
 		rewardCalculator.rewardBasedOnSequenceLength(sm);
-		Solution maxS = new Solution();
+		Solution maxS = initializeSolution();
 		for (Solution s : sm) {
 			// normalize weights so that longer rewards dont get priority
 			if (s.getWeight() > max) {

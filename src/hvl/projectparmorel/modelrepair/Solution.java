@@ -12,7 +12,7 @@ import hvl.projectparmorel.general.AppliedAction;
  * 2019 
  * Western Norway University of Applied Sciences Bergen - Norway
  */
-public class Solution implements Comparable<Solution> {
+public abstract class Solution implements Comparable<Solution> {
 	private int id;
 	private List<AppliedAction> sequence;
 	private double weight;
