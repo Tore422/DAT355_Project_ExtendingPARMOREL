@@ -52,7 +52,7 @@ public abstract class QModelFixer implements ModelFixer {
 	private Logger logger = Logger.getGlobal();
 
 	private int reward = 0;
-	private File originalModel;
+	protected File originalModel;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
@@ -143,7 +143,7 @@ public abstract class QModelFixer implements ModelFixer {
 	@Override
 	public Solution fixModel(File modelFile) {
 		originalModel = modelFile;
-		Model model = initializeModelCopyFromFile();
+		Model model = initializeModelFromFile();
 		
 		File duplicateFile = createDuplicateFile();
 
@@ -204,7 +204,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * 
 	 * @return the model
 	 */
-	protected abstract Model initializeModelCopyFromFile();
+	protected abstract Model initializeModelFromFile();
 
 	/**
 	 * Gets the model from the file
@@ -361,7 +361,7 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 				logger.info("Error code " + currentErrorToFix.getCode()
 						+ " does not exist in Q-table, attempting to solve...");
-				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
+				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation());
 				actionExtractor.extractActionsFor(errorsToFix);
 				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {

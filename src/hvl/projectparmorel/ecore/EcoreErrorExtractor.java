@@ -27,6 +27,7 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 		this.unsuportedErrorCodes = unsuportedErrorCodes;
 	}
 
+	@Override
 	public List<Error> extractErrorsFrom(Object model) {
 		if (model instanceof Resource) {
 			Resource modelAsResource = (Resource) model;

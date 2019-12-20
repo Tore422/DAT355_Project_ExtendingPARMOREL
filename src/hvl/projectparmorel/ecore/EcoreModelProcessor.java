@@ -176,7 +176,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private boolean identifyObjectTypeAndApplyAction(Error error, Action action, EObject object,
 			EClassifier eClassifier) {
 		if (object.getClass() == EClassImpl.class && eClassifier.getClass() == EClassImpl.class) {
-			return applyAction((EClassImpl) eClassifier, error, action, object);
+			return applyAction(eClassifier, error, action, object);
 		}
 		boolean success;
 		if (eClassifier.getClass() == EClassImpl.class) {

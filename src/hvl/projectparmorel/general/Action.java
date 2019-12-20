@@ -64,7 +64,7 @@ public class Action implements Comparable<Action> {
 
 	public Action(Element action) throws IOException {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
-			Element actionElement = (Element) action;
+			Element actionElement = action;
 			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
 			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
 			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();

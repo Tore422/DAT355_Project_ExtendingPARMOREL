@@ -46,9 +46,9 @@ public class EcoreQModelFixer extends QModelFixer {
 	}
 
 	@Override
-	protected Model initializeModelCopyFromFile() {
-		File duplicateFile = createDuplicateFile();
-		this.uri = URI.createFileURI(duplicateFile.getAbsolutePath());
+	protected Model initializeModelFromFile() {
+//		File duplicateFile = createDuplicateFile();
+		this.uri = URI.createFileURI(originalModel.getAbsolutePath());
 		Resource modelResource = getModel(uri);
 		
 		return new EcoreModel(resourceSet, modelResource, uri);

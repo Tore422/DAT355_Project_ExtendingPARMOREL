@@ -21,12 +21,13 @@ public class EcoreActionExtractor implements ActionExtractor {
 		this.knowledge = knowledge;
 	}
 	
+	@Override
 	public List<Action> extractActionsFor(List<Error> errors) {
 		Map<Integer, Action> actionsFound = new HashMap<Integer, Action>();
 
 		for (Error error : errors) {
 			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
-				List<?> contexts = (List<?>) error.getContexts();
+				List<?> contexts = error.getContexts();
 				actionsFound = addMethodsFromContextList(actionsFound, contexts);
 			}
 		}
