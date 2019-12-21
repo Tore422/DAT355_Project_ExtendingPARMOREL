@@ -88,6 +88,8 @@ public class Solution implements Comparable<Solution> {
 	
 	/**
 	 * Awards the solution by boosting all the actions taken
+	 * 
+	 * @param shouldSave indicates that the knowledge should be saved to file immediately
 	 */
 	public void reward(boolean shouldSave) {
 		rewardCalculator.rewardSolution(this, -1, shouldSave);
