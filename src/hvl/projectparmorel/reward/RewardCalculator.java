@@ -180,17 +180,17 @@ public class RewardCalculator {
 	}
 
 	/**
-	 * Rewards the specified sequence
+	 * Rewards the specified sequence.
 	 * 
-	 * @param sequence
+	 * @param solution
 	 * @param preferenceId
 	 */
-	public void rewardSequence(Solution sequence, int preferenceId) {
+	public void rewardSolution(Solution solution, int preferenceId) {
 		QTable qTable = knowledge.getQTable();
-		for (int i = 0; i < sequence.getSequence().size(); i++) {
-			int contextId = sequence.getSequence().get(i).getAction().getHierarchy();
-			int errorCode = sequence.getSequence().get(i).getError().getCode();
-			int actionId = sequence.getSequence().get(i).getAction().getCode();
+		for (int i = 0; i < solution.getSequence().size(); i++) {
+			int contextId = solution.getSequence().get(i).getAction().getHierarchy();
+			int errorCode = solution.getSequence().get(i).getError().getCode();
+			int actionId = solution.getSequence().get(i).getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
@@ -203,7 +203,22 @@ public class RewardCalculator {
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
 				}
 			}
-			qTable.updateReward(sequence.getSequence().get(i), contextId);
+			qTable.updateReward(solution.getSequence().get(i), contextId);
+		}
+	}
+
+	/**
+	 * Rewards the specified sequence. Saves the knowledge afterwards if the
+	 * shouldSave-variable is set to true.
+	 * 
+	 * @param solution
+	 * @param preferenceId
+	 * @param shouldSave
+	 */
+	public void rewardSolution(Solution solution, int preferenceId, boolean shouldSave) {
+		rewardSolution(solution, preferenceId);
+		if (shouldSave) {
+			knowledge.save();
 		}
 	}
 
@@ -242,10 +257,10 @@ public class RewardCalculator {
 		}
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardShorterSequencesOfActions);
-			rewardSequence(optimalSequence, 0);
+			rewardSolution(optimalSequence, 0);
 		}
 	}
-	
+
 	/**
 	 * Rewards the best longest sequence in the specified list of sequences
 	 * 
@@ -254,7 +269,7 @@ public class RewardCalculator {
 	private void handlePreferLongSequences(List<Solution> sequences) {
 		Solution optimalSequence = null;
 		int largestSequenceSize = 0;
-		
+
 		for (Solution sequence : sequences) {
 			if (sequence.getSequence().size() > largestSequenceSize && sequence.getWeight() > 0) {
 				largestSequenceSize = sequence.getSequence().size();
@@ -267,10 +282,9 @@ public class RewardCalculator {
 		}
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardLongerSequencesOfActions);
-			rewardSequence(optimalSequence, 1);
+			rewardSolution(optimalSequence, 1);
 		}
 	}
-	
 
 	public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error nextErrorToFix) {
 		// if new error introduced

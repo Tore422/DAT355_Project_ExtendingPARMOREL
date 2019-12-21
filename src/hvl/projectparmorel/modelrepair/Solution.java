@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
  * @author Magnus Marthinsen
@@ -18,6 +19,7 @@ public class Solution implements Comparable<Solution> {
 	private double weight;
 	private File model;
 	private File original;
+	private RewardCalculator rewardCalculator;
 
 	public Solution() {
 		super();
@@ -83,6 +85,16 @@ public class Solution implements Comparable<Solution> {
 		return Double.compare(weight, solution.getWeight());
 	}
 
+	
+	/**
+	 * Awards the solution by boosting all the actions taken
+	 * 
+	 * @param shouldSave indicates that the knowledge should be saved to file immediately
+	 */
+	public void reward(boolean shouldSave) {
+		rewardCalculator.rewardSolution(this, -1, shouldSave);
+	}
+
 	/**
 	 * Set the original model
 	 * 
@@ -98,5 +110,14 @@ public class Solution implements Comparable<Solution> {
 	 */
 	public File getOriginal() {
 		return original;
+	}
+
+	/**
+	 * Set the reward calculator used to generate the solution
+	 * 
+	 * @param rewardCalculator
+	 */
+	public void setRewardCalculator(RewardCalculator rewardCalculator) {
+		this.rewardCalculator = rewardCalculator;
 	}
 }
