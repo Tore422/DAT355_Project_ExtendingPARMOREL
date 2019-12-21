@@ -193,7 +193,7 @@ public abstract class QModelFixer implements ModelFixer {
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
-			bestSequence.award();
+			bestSequence.reward();
 		}
 		saveKnowledge();
 		return bestSequence;

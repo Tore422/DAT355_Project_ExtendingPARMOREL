@@ -89,7 +89,7 @@ public class Solution implements Comparable<Solution> {
 	/**
 	 * Awards the solution by boosting all the actions taken
 	 */
-	public void award() {
+	public void reward() {
 		rewardCalculator.rewardSolution(this, -1, true);
 	}
 
