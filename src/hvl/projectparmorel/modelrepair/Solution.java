@@ -90,21 +90,7 @@ public class Solution implements Comparable<Solution> {
 	 * Awards the solution by boosting all the actions taken
 	 */
 	public void award() {
-		System.out.println("Awarding solution. The following actions are affected:");
-		for(AppliedAction appliedAction : sequence) {
-			System.out.println("Error: " + appliedAction.getError().getCode());
-			System.out.println("\t Context: " + appliedAction.getAction().getContextId());
-			System.out.println("\t Action: " + appliedAction.getAction().getCode());
-			System.out.println("\t \t Old weight: " + appliedAction.getAction().getWeight());
-		}
 		rewardCalculator.rewardSolution(this, -1, true);
-		System.out.println("After award this is the result:");
-		for(AppliedAction appliedAction : sequence) {
-			System.out.println("Error: " + appliedAction.getError().getCode());
-			System.out.println("\t Context: " + appliedAction.getAction().getContextId());
-			System.out.println("\t Action: " + appliedAction.getAction().getCode());
-			System.out.println("\t \t New weight: " + appliedAction.getAction().getWeight());
-		}
 	}
 
 	/**
