@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
  * @author Magnus Marthinsen
@@ -18,6 +19,7 @@ public abstract class Solution implements Comparable<Solution> {
 	private double weight;
 	private File model;
 	private File original;
+	private RewardCalculator rewardCalculator;
 
 	public Solution() {
 		super();
@@ -32,6 +34,13 @@ public abstract class Solution implements Comparable<Solution> {
 		this.weight = weight;
 		this.model = model;
 	}
+	
+	/**
+	 * Calculates the difference between the solution and the original model.
+	 * 
+	 * @return the calculated distance
+	 */
+	public abstract double calculateDistanceFromOriginal();
 	
 	/**
 	 * Deletes the associated file;
@@ -83,6 +92,16 @@ public abstract class Solution implements Comparable<Solution> {
 		return Double.compare(weight, solution.getWeight());
 	}
 
+	
+	/**
+	 * Awards the solution by boosting all the actions taken
+	 * 
+	 * @param shouldSave indicates that the knowledge should be saved to file immediately
+	 */
+	public void reward(boolean shouldSave) {
+		rewardCalculator.rewardSolution(this, -1, shouldSave);
+	}
+
 	/**
 	 * Set the original model
 	 * 
@@ -99,11 +118,13 @@ public abstract class Solution implements Comparable<Solution> {
 	public File getOriginal() {
 		return original;
 	}
-	
+
 	/**
-	 * Calculates the difference between the solution and the original model.
+	 * Set the reward calculator used to generate the solution
 	 * 
-	 * @return the calculated distance
+	 * @param rewardCalculator
 	 */
-	public abstract double calculateDistanceFromOriginal();
+	public void setRewardCalculator(RewardCalculator rewardCalculator) {
+		this.rewardCalculator = rewardCalculator;
+	}
 }

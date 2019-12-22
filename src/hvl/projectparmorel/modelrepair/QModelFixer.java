@@ -193,7 +193,7 @@ public abstract class QModelFixer implements ModelFixer {
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
-			rewardCalculator.rewardSequence(bestSequence, -1);
+			bestSequence.reward(false);
 		}
 		saveKnowledge();
 		return bestSequence;
@@ -260,7 +260,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @param episode
 	 */
 	private Solution handleEpisode(Model episodeModel, int episode) {
-		Solution sequence = initializeSolution();
+		Solution solution = initializeSolution();
 		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
@@ -275,7 +275,7 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				try {
-					totalReward += handleStep(episodeModel, sequence, episode, currentErrorToFix);
+					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. + \nCode:"
 							+ currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
@@ -288,25 +288,26 @@ public abstract class QModelFixer implements ModelFixer {
 		}
 
 		int val;
-		if (sequence.getSequence().size() > 7) {
-			val = checkForLoopsIn(sequence.getSequence());
+		if (solution.getSequence().size() > 7) {
+			val = checkForLoopsIn(solution.getSequence());
 			if (val > 1) {
 				totalReward -= val * 1000;
 			}
 		}
 
-		sequence.setWeight(totalReward);
-		sequence.setOriginal(originalModel);
+		solution.setWeight(totalReward);
+		solution.setOriginal(originalModel);
+		solution.setRewardCalculator(rewardCalculator);
 
-		if (!errorOcurred && uniqueSequence(sequence)) {
-			possibleSolutions.add(sequence);
+		if (!errorOcurred && uniqueSequence(solution)) {
+			possibleSolutions.add(solution);
 		} else {
 			discardedSequences++;
-			sequence = null;
+			solution = null;
 		}
 
 		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward);
-		return sequence;
+		return solution;
 	}
 	
 	/**
