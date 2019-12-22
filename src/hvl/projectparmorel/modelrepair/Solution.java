@@ -1,7 +1,6 @@
 package hvl.projectparmorel.modelrepair;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import hvl.projectparmorel.general.AppliedAction;
@@ -23,7 +22,6 @@ public class Solution implements Comparable<Solution> {
 
 	public Solution() {
 		super();
-		sequence = new ArrayList<AppliedAction>();
 		weight = 0.0;
 	}
 
