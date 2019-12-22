@@ -9,5 +9,3 @@ Be aware of the random nature of Reinforcement Learning algorithm, this can lead
 If you want to reset the algorithm's knowledge, just delete all content inside knowledge.xml.
 
 Contact: abar@hvl.no
-
-test
