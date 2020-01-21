@@ -7,7 +7,9 @@ import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Diff;
 import org.eclipse.emf.compare.EMFCompare;
 import org.eclipse.emf.compare.match.eobject.CachingDistance;
+import org.eclipse.emf.compare.match.eobject.EcoreWeightProvider;
 import org.eclipse.emf.compare.match.eobject.EditionDistance;
+import org.eclipse.emf.compare.match.eobject.WeightProvider;
 import org.eclipse.emf.compare.scope.DefaultComparisonScope;
 import org.eclipse.emf.compare.scope.IComparisonScope;
 import org.eclipse.emf.ecore.EObject;
@@ -40,7 +42,8 @@ public class EcoreSolution extends Solution {
 		Resource orignalResource = originalResourceSet.getResource(originalUri, false);
 		Resource modelResource = modelResourceSet.getResource(modelUri, false);
 		
-		EditionDistance distanceCalculator = new EditionDistance(); //EditionDistance.builder().build();
+		WeightProvider weightProvider = new EcoreWeightProvider();
+		EditionDistance distanceCalculator = EditionDistance.builder().weightProvider(weightProvider).build();
 //		CachingDistance cachingDistanceCalculator = new CachingDistance();
 		
 		double totalDistance = 0;
