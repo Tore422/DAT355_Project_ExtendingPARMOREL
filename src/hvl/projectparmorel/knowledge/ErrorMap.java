@@ -85,7 +85,7 @@ class ErrorMap {
 	}
 
 	/**
-	 * Gets a random context.
+	 * Gets a random action in a random context for the specified error code.
 	 * 
 	 * @param errorCode 
 	 * @return a random context

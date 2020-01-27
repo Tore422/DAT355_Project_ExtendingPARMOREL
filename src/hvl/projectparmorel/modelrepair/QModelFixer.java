@@ -334,17 +334,19 @@ public abstract class QModelFixer implements ModelFixer {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info(
 					"Error code " + currentErrorToFix.getCode() + " does not exist in Q-table, attempting to solve...");
-			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel);
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy());
 			actionExtractor.extractActionsFor(errorsToFix);
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
+				throw new UnsupportedErrorException("No action found for error code " + currentErrorToFix.getCode());
 			} else {
 				logger.info("Action for error code found and added to Q-table.");
 			}
 		}
 
 		Action action = chooseAction(currentErrorToFix);
+		logger.info("Chose action " + action.getMessage() + " with weight " + action.getWeight());
 		int sizeBefore = errorsToFix.size();
 		double alpha = ALPHAS[episode];
 
