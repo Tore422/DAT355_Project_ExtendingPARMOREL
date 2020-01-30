@@ -2,6 +2,7 @@ package hvl.projectparmorel.reward;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import hvl.projectparmorel.modelrepair.Preferences;
 import hvl.projectparmorel.modelrepair.Solution;
@@ -21,6 +22,8 @@ public class RewardCalculator {
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardShorterSequencesOfActions;
 	private int weightRewardLongerSequencesOfActions;
+	
+	private Logger logger;
 
 	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
@@ -36,6 +39,8 @@ public class RewardCalculator {
 		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
 		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
+		
+		logger = Logger.getLogger("MyLog");
 	}
 
 	/**
@@ -258,6 +263,7 @@ public class RewardCalculator {
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardShorterSequencesOfActions);
 			rewardSolution(optimalSequence, 0);
+			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of " + weightRewardShorterSequencesOfActions + " because of preferences to reward shorter sequences.");
 		}
 	}
 
@@ -283,6 +289,7 @@ public class RewardCalculator {
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardLongerSequencesOfActions);
 			rewardSolution(optimalSequence, 1);
+			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of " + weightRewardLongerSequencesOfActions + " because of preferences to reward longer sequences.");
 		}
 	}
 

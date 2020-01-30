@@ -31,7 +31,7 @@ public class EcoreQModelFixer extends QModelFixer {
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	
 		unsupportedErrorCodes.add(4);
-		unsupportedErrorCodes.add(6);
+//		unsupportedErrorCodes.add(6);
 	}
 	
 	public EcoreQModelFixer(List<Integer> preferences) {

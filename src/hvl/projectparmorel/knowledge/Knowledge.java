@@ -29,7 +29,7 @@ import hvl.projectparmorel.general.Action;
  * @author Magnus Marthinsen
  */
 public class Knowledge {
-	private Logger logger = Logger.getGlobal();
+	private Logger logger = Logger.getLogger("MyLog");
 	private final String knowledgeFileName = "knowledge.xml";
 	private QTable qTable;
 
