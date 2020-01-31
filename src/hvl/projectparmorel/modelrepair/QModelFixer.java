@@ -404,11 +404,11 @@ public abstract class QModelFixer implements ModelFixer {
 				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
 				int code2 = a.getHierarchy();
 				double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-						+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()))
-						- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+						+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode())
+						- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
 				
-				logger.info("Calculating new Q-value:\nOld Q-value: " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: "+ alpha + "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\nNext optimal action Q-value: " + qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + "\n" + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * (" + reward + " + " + GAMMA + " * "+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + ") - "
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " = " + value);
+				logger.info("Calculating new Q-value:\nOld Q-value: " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: "+ alpha + "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\nNext optimal action Q-value: " + qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + "\n" + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * (" + reward + " + " + GAMMA + " * "+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + " - "
+						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = " + value);
 				qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 				logger.info("Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action " + action.getCode() + " " + action.getMessage() + " to new weight " + value + "\n\n");
 			} catch (UnsupportedErrorException e) {
