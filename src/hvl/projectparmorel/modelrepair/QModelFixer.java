@@ -290,7 +290,7 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				try {
-					logger.info("EPISODE " + episode + ", STEP " + step + ", Fixing error " + currentErrorToFix.getCode());
+					logger.info("EPISODE " + episode + ", STEP " + step + ", Fixing error " + currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. + \nCode:"
@@ -420,10 +420,10 @@ public abstract class QModelFixer implements ModelFixer {
 
 		else {
 			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward + GAMMA) - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode());
+					+ alpha * (reward - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
 
-			logger.info("Calculating new Q-value:\nOld Q-value: " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: "+ alpha + "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\n" + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * (" + reward + " + " + GAMMA + ") - "
-					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " = " + value);
+			logger.info("Calculating new Q-value:\nOld Q-value: " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: "+ alpha + "\n" + "\nReward: " + reward + "\n" + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * (" + reward + " - "
+					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = " + value);
 			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
 			logger.info("Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action " +  + action.getCode() + " " + action.getMessage()+ " to new weight " + value);
 		}
