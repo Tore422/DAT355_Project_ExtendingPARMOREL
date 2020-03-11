@@ -1,24 +1,7 @@
 package hvl.projectparmorel.ecore;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.compare.CompareFactory;
-import org.eclipse.emf.compare.Comparison;
-import org.eclipse.emf.compare.Diff;
-import org.eclipse.emf.compare.EMFCompare;
-import org.eclipse.emf.compare.match.DefaultMatchEngine;
-import org.eclipse.emf.compare.match.eobject.CachingDistance;
-import org.eclipse.emf.compare.match.eobject.EcoreWeightProvider;
-import org.eclipse.emf.compare.match.eobject.EditionDistance;
-import org.eclipse.emf.compare.match.eobject.EqualityHelperExtensionProviderDescriptorRegistryImpl;
-import org.eclipse.emf.compare.match.eobject.IEObjectMatcher;
-import org.eclipse.emf.compare.match.eobject.ProximityEObjectMatcher.DistanceFunction;
-import org.eclipse.emf.compare.match.eobject.WeightProvider;
-import org.eclipse.emf.compare.match.eobject.WeightProviderDescriptorRegistryImpl;
-import org.eclipse.emf.compare.scope.DefaultComparisonScope;
-import org.eclipse.emf.compare.scope.IComparisonScope;
-import org.eclipse.emf.compare.utils.UseIdentifiers;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
