@@ -38,7 +38,7 @@ public abstract class Solution implements Comparable<Solution> {
 	/**
 	 * Calculates the difference between the solution and the original model.
 	 * 
-	 * @return the calculated distance
+	 * @return the calculated distance. Returns -1 if the distance could not be calculated.
 	 */
 	public abstract double calculateDistanceFromOriginal();
 	
