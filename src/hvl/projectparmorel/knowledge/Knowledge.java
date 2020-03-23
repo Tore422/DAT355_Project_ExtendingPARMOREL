@@ -29,11 +29,12 @@ import hvl.projectparmorel.general.Action;
  * @author Magnus Marthinsen
  */
 public class Knowledge {
-	private Logger logger = Logger.getLogger("MyLog");
-	private final String knowledgeFileName = "knowledge.xml";
+	private Logger logger;
+	public static final String KNOWLEDGE_FILE_NAME = "knowledge.xml";
 	private QTable qTable;
 
 	public Knowledge() {
+		logger = Logger.getLogger("MyLog");
 		qTable = new QTable();
 	}
 
@@ -81,7 +82,7 @@ public class Knowledge {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource domSource = new DOMSource(document);
-			File file = new File(knowledgeFileName);
+			File file = new File(KNOWLEDGE_FILE_NAME);
 			StreamResult streamResult = new StreamResult(file);
 			transformer.transform(domSource, streamResult);
 			logger.info("Saving completed to " + file.getAbsolutePath());
@@ -99,7 +100,7 @@ public class Knowledge {
 	public boolean load() {
 		try {
 			logger.info("Loading initialized");
-			File fXmlFile = new File(knowledgeFileName);
+			File fXmlFile = new File(KNOWLEDGE_FILE_NAME);
 			logger.info("File created: " + fXmlFile.getAbsolutePath());
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
