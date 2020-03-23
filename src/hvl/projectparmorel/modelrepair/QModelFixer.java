@@ -293,8 +293,8 @@ public abstract class QModelFixer implements ModelFixer {
 					logger.info("EPISODE " + episode + ", STEP " + step + ", Fixing error " + currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
-					logger.warning("Encountered error that could not be resolved. + \nCode:"
-							+ currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
+					logger.warning("Encountered error that could not be resolved.\nCode: "
+							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
 					errorsToFix.remove(0);
 				}
 				step++;
