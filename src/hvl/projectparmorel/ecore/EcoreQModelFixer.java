@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.modelrepair.QModelFixer;
+import hvl.projectparmorel.modelrepair.Solution;
 
 public class EcoreQModelFixer extends QModelFixer {
 	private URI uri;
@@ -30,7 +31,7 @@ public class EcoreQModelFixer extends QModelFixer {
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	
 		unsupportedErrorCodes.add(4);
-		unsupportedErrorCodes.add(6);
+//		unsupportedErrorCodes.add(6);
 	}
 	
 	public EcoreQModelFixer(List<Integer> preferences) {
@@ -71,5 +72,10 @@ public class EcoreQModelFixer extends QModelFixer {
 	@Override
 	protected void updateRewardCalculator() {
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
+	}
+
+	@Override
+	protected Solution initializeSolution() {
+		return new EcoreSolution();
 	}
 }

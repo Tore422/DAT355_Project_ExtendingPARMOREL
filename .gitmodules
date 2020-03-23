@@ -1,0 +1,3 @@
+[submodule "SimilarityMetamodelsChecker"]
+	path = SimilarityMetamodelsChecker
+	url = https://github.com/MagMar94/SimilarityMetamodelsChecker.git

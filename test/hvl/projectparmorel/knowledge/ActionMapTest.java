@@ -44,6 +44,6 @@ class ActionMapTest {
 		action3.setWeight(901);
 		action4.setWeight(0);
 		action5.setWeight(-1000);
-		assertEquals(new Integer(3), actionMap.getBestActionKey());
+		assertEquals(3, actionMap.getBestActionKey());
 	}
 }

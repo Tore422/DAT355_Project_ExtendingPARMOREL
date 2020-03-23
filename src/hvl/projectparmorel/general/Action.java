@@ -97,8 +97,8 @@ public class Action implements Comparable<Action> {
 	 */
 	@Override
 	public int compareTo(Action otherAction) {
-		Double thisWeight = new Double(weight);
-		Double otherWeight = new Double(otherAction.getWeight());
+		Double thisWeight = weight;
+		Double otherWeight = otherAction.getWeight();
 		return thisWeight.compareTo(otherWeight);
 	}
 

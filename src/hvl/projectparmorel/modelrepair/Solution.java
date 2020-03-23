@@ -12,7 +12,7 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * 2019 
  * Western Norway University of Applied Sciences Bergen - Norway
  */
-public class Solution implements Comparable<Solution> {
+public abstract class Solution implements Comparable<Solution> {
 	private int id;
 	private List<AppliedAction> sequence;
 	private double weight;
@@ -32,6 +32,13 @@ public class Solution implements Comparable<Solution> {
 		this.weight = weight;
 		this.model = model;
 	}
+	
+	/**
+	 * Calculates the difference between the solution and the original model.
+	 * 
+	 * @return the calculated distance. Returns -1 if the distance could not be calculated.
+	 */
+	public abstract double calculateDistanceFromOriginal();
 	
 	/**
 	 * Deletes the associated file;
