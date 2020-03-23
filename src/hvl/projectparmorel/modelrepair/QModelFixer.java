@@ -2,6 +2,7 @@ package hvl.projectparmorel.modelrepair;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -242,6 +243,15 @@ public abstract class QModelFixer implements ModelFixer {
 		File destinationFile = new File(path);
 		try {
 			Files.copy(fileToCopy.toPath(), destinationFile.toPath());
+		} catch (FileAlreadyExistsException e) {
+			if(destinationFile.toPath().toString().contains("temp")){
+				destinationFile.delete();
+				try {
+					Files.copy(fileToCopy.toPath(), destinationFile.toPath());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
