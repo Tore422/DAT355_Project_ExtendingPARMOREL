@@ -11,7 +11,7 @@ public class EcoreSolution extends Solution {
 
 	@Override
 	public double calculateDistanceFromOriginal() {
-		double distance = 0;
+		double distance = -1;
 		EComparator comparator = new EComparator(getOriginal().getAbsolutePath(), getModel().getAbsolutePath()); 
 		try {
 			distance = comparator.execute(getOriginal().getAbsolutePath(), getModel().getAbsolutePath());
