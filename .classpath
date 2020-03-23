@@ -2,10 +2,68 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.common_2.13.0.v20170609-0707.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore_2.13.0.v20170609-0707.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore.xmi_2.13.0.v20170609-0707.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="src" path="SimilarityMetamodelsChecker/src"/>
+	<classpathentry kind="src" path="SimilarityMetamodelsChecker/epsilon"/>
+	<classpathentry kind="src" path="SimilarityMetamodelsChecker/support"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-13">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.emf.common_2.13.0.v20170609-0707.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore_2.13.0.v20170609-0707.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore.xmi_2.13.0.v20170609-0707.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.ecl.engine_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.eol.engine_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.emc.emf_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.erl.engine_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.common_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/org.eclipse.epsilon.eol.dt_1.5.1.201809302027.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
