@@ -2,6 +2,7 @@ package hvl.projectparmorel.modelrepair;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -242,6 +243,15 @@ public abstract class QModelFixer implements ModelFixer {
 		File destinationFile = new File(path);
 		try {
 			Files.copy(fileToCopy.toPath(), destinationFile.toPath());
+		} catch (FileAlreadyExistsException e) {
+			if(destinationFile.toPath().toString().contains("temp")){
+				destinationFile.delete();
+				try {
+					Files.copy(fileToCopy.toPath(), destinationFile.toPath());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -293,8 +303,8 @@ public abstract class QModelFixer implements ModelFixer {
 					logger.info("EPISODE " + episode + ", STEP " + step + ", Fixing error " + currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
-					logger.warning("Encountered error that could not be resolved. + \nCode:"
-							+ currentErrorToFix.getCode() + "\nMessage:" + currentErrorToFix.getMessage());
+					logger.warning("Encountered error that could not be resolved.\nCode: "
+							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
 					errorsToFix.remove(0);
 				}
 				step++;
