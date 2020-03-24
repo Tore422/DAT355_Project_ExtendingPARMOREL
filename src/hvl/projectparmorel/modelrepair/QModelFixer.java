@@ -305,6 +305,7 @@ public abstract class QModelFixer implements ModelFixer {
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved.\nCode: "
 							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
+					unsupportedErrorCodes.add(e.getErrorCode());
 					errorsToFix.remove(0);
 				}
 				step++;
@@ -364,7 +365,7 @@ public abstract class QModelFixer implements ModelFixer {
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
-				throw new UnsupportedErrorException("No action found for error code " + currentErrorToFix.getCode());
+				throw new UnsupportedErrorException("No action found for error code " + currentErrorToFix.getCode(), currentErrorToFix.getCode());
 			} else {
 				logger.info("Action for error code found and added to Q-table.");
 			}
