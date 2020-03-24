@@ -59,7 +59,7 @@ public class Knowledge {
 			return qTable.getOptimalActionForErrorCode(errorCode);
 		} else {
 			logger.warning("Error code " + errorCode + " is not in the Q-table.");
-			throw new UnsupportedErrorException("The error code " + errorCode + " was not in the QTable.");
+			throw new UnsupportedErrorException("The error code " + errorCode + " was not in the QTable.", errorCode);
 		}
 	}
 
