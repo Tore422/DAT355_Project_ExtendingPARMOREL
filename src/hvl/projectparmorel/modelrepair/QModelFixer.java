@@ -205,13 +205,12 @@ public abstract class QModelFixer implements ModelFixer {
 		Solution bestSequence = bestSequence(possibleSolutions);
 		duplicateFile.delete();
 
-		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
-				+ "\nDISCARDED SEQUENCES: " + discardedSequences
-				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
-
 		long endTime = System.currentTimeMillis();
 		long executionTime = (endTime - startTime);
 		logger.info("Time repairing model: " + executionTime + " ms");
+		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
+				+ "\nDISCARDED SEQUENCES: " + discardedSequences
+				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
