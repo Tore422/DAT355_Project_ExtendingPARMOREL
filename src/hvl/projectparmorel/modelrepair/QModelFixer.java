@@ -12,6 +12,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
@@ -159,7 +160,7 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(File modelFile) {
+	public Solution fixModel(File modelFile) throws NoErrorsInModelException {
 		long startTime = System.currentTimeMillis();
 		logger.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
@@ -173,6 +174,10 @@ public abstract class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
+		if(errorsToFix.isEmpty()) {
+			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
+		}
+		
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
