@@ -160,6 +160,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 	@Override
 	public Solution fixModel(File modelFile) {
+		long startTime = System.currentTimeMillis();
 		originalModel = modelFile;
 		Model model = initializeModelFromFile();
 
@@ -213,6 +214,9 @@ public abstract class QModelFixer implements ModelFixer {
 			bestSequence.reward(false);
 		}
 		saveKnowledge();
+		long endTime = System.currentTimeMillis();
+		long executionTime = (endTime - startTime);
+		logger.info("Time repairing model: " + executionTime + " ms");
 		return bestSequence;
 	}
 
@@ -505,24 +509,6 @@ public abstract class QModelFixer implements ModelFixer {
 		}
 		return maxS;
 	}
-
-//	private void removeSolutionsWithSameResult(List<Solution> possibleSolutions) {
-//		for(int i = 0; i < possibleSolutions.size(); i++) {
-//			for(int j = 1; j < possibleSolutions.size(); j++) {
-//				if(i != j) {
-//					Solution solution1 = possibleSolutions.get(i);
-//					Solution solution2 = possibleSolutions.get(i);
-//					URI uri1 = URI.createFileURI(solution1.getModel().getAbsolutePath());
-//					URI uri2 = URI.createFileURI(solution2.getModel().getAbsolutePath());
-//					Resource model1 = getModel(uri1);
-//					Resource model2 = getModel(uri2);
-////					org.eclipse.emf.ecore.util.EcoreUtil.equals(model1, model2);
-//					
-//				}
-//			}
-//		}
-//		
-//	}
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
