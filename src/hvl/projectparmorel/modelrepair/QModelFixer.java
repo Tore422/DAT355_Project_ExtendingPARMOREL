@@ -161,6 +161,7 @@ public abstract class QModelFixer implements ModelFixer {
 	@Override
 	public Solution fixModel(File modelFile) {
 		long startTime = System.currentTimeMillis();
+		logger.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
 		Model model = initializeModelFromFile();
 
@@ -208,15 +209,15 @@ public abstract class QModelFixer implements ModelFixer {
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
 
+		long endTime = System.currentTimeMillis();
+		long executionTime = (endTime - startTime);
+		logger.info("Time repairing model: " + executionTime + " ms");
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
 			bestSequence.reward(false);
 		}
 		saveKnowledge();
-		long endTime = System.currentTimeMillis();
-		long executionTime = (endTime - startTime);
-		logger.info("Time repairing model: " + executionTime + " ms");
 		return bestSequence;
 	}
 
