@@ -160,6 +160,8 @@ public abstract class QModelFixer implements ModelFixer {
 
 	@Override
 	public Solution fixModel(File modelFile) {
+		long startTime = System.currentTimeMillis();
+		logger.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
 		Model model = initializeModelFromFile();
 
@@ -203,10 +205,12 @@ public abstract class QModelFixer implements ModelFixer {
 		Solution bestSequence = bestSequence(possibleSolutions);
 		duplicateFile.delete();
 
+		long endTime = System.currentTimeMillis();
+		long executionTime = (endTime - startTime);
+		logger.info("Time repairing model: " + executionTime + " ms");
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
-
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
@@ -505,24 +509,6 @@ public abstract class QModelFixer implements ModelFixer {
 		}
 		return maxS;
 	}
-
-//	private void removeSolutionsWithSameResult(List<Solution> possibleSolutions) {
-//		for(int i = 0; i < possibleSolutions.size(); i++) {
-//			for(int j = 1; j < possibleSolutions.size(); j++) {
-//				if(i != j) {
-//					Solution solution1 = possibleSolutions.get(i);
-//					Solution solution2 = possibleSolutions.get(i);
-//					URI uri1 = URI.createFileURI(solution1.getModel().getAbsolutePath());
-//					URI uri2 = URI.createFileURI(solution2.getModel().getAbsolutePath());
-//					Resource model1 = getModel(uri1);
-//					Resource model2 = getModel(uri2);
-////					org.eclipse.emf.ecore.util.EcoreUtil.equals(model1, model2);
-//					
-//				}
-//			}
-//		}
-//		
-//	}
 
 	@Override
 	public List<Solution> getPossibleSolutions() {
