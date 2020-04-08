@@ -2,6 +2,8 @@ package hvl.projectparmorel.general;
 
 import java.io.File;
 import java.util.List;
+
+import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.modelrepair.Solution;
 
 public interface ModelFixer {
@@ -11,9 +13,10 @@ public interface ModelFixer {
 	 * uri-location.
 	 * 
 	 * @param model
+	 * @throws NoErrorsInModelException if there are no errors in the model.
 	 * @return the optimal sequence of actions
 	 */
-	public Solution fixModel(File model);
+	public Solution fixModel(File model) throws NoErrorsInModelException ;
 
 	/**
 	 * Sets the user preferences used in the algorithm.
