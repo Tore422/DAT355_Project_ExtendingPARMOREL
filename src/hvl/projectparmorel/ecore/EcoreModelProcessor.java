@@ -185,7 +185,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 			if (success)
 				return true;
 			return handleOperations(error, action, object, eClass);
-		} else if (isEnum(object)) {
+		} else if (isEnum(object) && eClassifier instanceof EEnumImpl) {
 			return handleEnum(error, action, object, eClassifier);
 		}
 		return false;
@@ -384,7 +384,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * @param error
 	 * @param action
 	 * @param object
-	 * @param eClassifier
+	 * @param eClassifier of type org.eclipse.emf.ecore.impl.EEnumImpl
 	 * @return true if an action is successfully applied, false otherwise
 	 */
 	private boolean handleEnum(Error error, Action action, EObject object, EClassifier eClassifier) {

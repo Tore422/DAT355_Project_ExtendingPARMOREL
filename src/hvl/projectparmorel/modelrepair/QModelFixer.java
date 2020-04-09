@@ -182,10 +182,11 @@ public abstract class QModelFixer implements ModelFixer {
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
-
+		logger.info("Errors to fix: " + errorsToFix.toString());
+		
+		logger.info("Initializing Q-table for the errors.");
 		modelProcessor.initializeQTableForErrorsInModel(model);
 
-		logger.info("Errors to fix: " + errorsToFix.toString());
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
 			File episodeModelFile = createDuplicateFile(duplicateFile,
