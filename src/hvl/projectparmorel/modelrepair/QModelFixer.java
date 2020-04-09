@@ -179,6 +179,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
 		if (errorsToFix.isEmpty()) {
+			duplicateFile.delete();
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
 		for (Error e : errorsToFix) {
