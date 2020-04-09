@@ -314,8 +314,6 @@ public abstract class QModelFixer implements ModelFixer {
 
 		while (step < MAX_EPISODE_STEPS) {
 			while (!errorsToFix.isEmpty() && unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
-				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: "
-						+ errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
