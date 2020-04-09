@@ -10,9 +10,9 @@ public interface ModelProcessor {
 	 * q-table is is added along with a matching action.
 	 * 
 	 * @param model
-	 * @return a set of unsupported errors that was not added to the Q-table
+	 * @return a set of unsupported error codes that was not added to the Q-table
 	 */
-	public Set<Error> initializeQTableForErrorsInModel(Model model);
+	public Set<Integer> initializeQTableForErrorsInModel(Model model);
 
 	/**
 	 * Extracts package content from the model, and matches the location where the

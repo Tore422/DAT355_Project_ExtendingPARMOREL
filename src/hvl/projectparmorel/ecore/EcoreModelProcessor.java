@@ -57,7 +57,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	}
 
 	@Override
-	public Set<Error> initializeQTableForErrorsInModel(Model model) {
+	public Set<Integer> initializeQTableForErrorsInModel(Model model) {
 		if (model instanceof EcoreModel) {
 			return initializeQTableForErrorsInModel((EcoreModel) model);
 		} else {
@@ -72,18 +72,18 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * 
 	 * @param model
 	 * @param destinationURI
-	 * @return a set of unsupported errors that was to the Q-table
+	 * @return a set of unsupported error codes that was to the Q-table
 	 */
-	private Set<Error> initializeQTableForErrorsInModel(EcoreModel model) {
+	private Set<Integer> initializeQTableForErrorsInModel(EcoreModel model) {
 		errors = errorExtractor.extractErrorsFrom(model.getRepresentation());
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
 		
-		Set<Error> unsupportedErrors = new HashSet<>();
+		Set<Integer> unsupportedErrors = new HashSet<>();
 
 		for (Error error : errors) {
-			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
+			if (!knowledge.getQTable().containsErrorCode(error.getCode()) && !unsupportedErrors.contains(error.getCode())) {
 				for (int i = 0; i < error.getContexts().size(); i++) {
 					if (error.getContexts().get(i) != null) {
 						for (Action action : possibleActions) {
@@ -92,7 +92,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								List<Error> newErrors = tryApplyAction(error, action, modelCopy, i);
 								if (newErrors != null) {
 									if (errorStillExists(newErrors, error, i)) {
-										unsupportedErrors.add(error);
+										unsupportedErrors.add(error.getCode());
 									} else {
 										Action newAction = new Action(action.getCode(), action.getMessage(),
 												action.getMethod(), i);

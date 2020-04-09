@@ -192,11 +192,10 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("Errors to fix: " + errorsToFix.toString());
 
 		logger.info("Initializing Q-table for the errors.");
-		Set<Error> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
-		for (Error e : unsupportedErrors) {
-			logger.warning("Encountered error that could not be resolved.Adding to unsupported errors.\nCode: " + e.getCode()
-			+ "\nMessage: " + e.getMessage());
-			unsupportedErrorCodes.add(e.getCode());
+		Set<Integer> unsupportedErrorCodes = modelProcessor.initializeQTableForErrorsInModel(model);
+		for (Integer errorCode : unsupportedErrorCodes) {
+			logger.warning("Encountered error that could not be resolved.Adding to unsupported errors.\nCode: " + errorCode);
+			unsupportedErrorCodes.add(errorCode);
 		}
 
 		logger.info("Number of episodes: " + numberOfEpisodes);
