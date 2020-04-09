@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
@@ -20,10 +19,8 @@ import hvl.projectparmorel.general.ErrorExtractor;
 public class EcoreErrorExtractor implements ErrorExtractor {
 
 	private Set<Integer> unsuportedErrorCodes;
-	private Logger logger;
 
 	public EcoreErrorExtractor(Set<Integer> unsuportedErrorCodes) {
-		logger = Logger.getGlobal();
 		this.unsuportedErrorCodes = unsuportedErrorCodes;
 	}
 
@@ -50,10 +47,7 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 			for (Diagnostic child : diagnostic.getChildren()) {
 				Error error = getErrorFor(child);
 				if (error != null) {
-					if (unsuportedErrorCodes.contains(error.getCode())) {
-						logger.warning("Encounteded unsupported error " + error.getCode() + ". Message: "
-								+ error.getMessage() + ". Skipping error.");
-					} else {
+					if (!unsuportedErrorCodes.contains(error.getCode())) {
 						errors.add(error);
 					}
 				}
