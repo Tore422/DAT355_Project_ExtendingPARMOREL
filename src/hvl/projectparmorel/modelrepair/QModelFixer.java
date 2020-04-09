@@ -174,18 +174,21 @@ public abstract class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
-		if(errorsToFix.isEmpty()) {
+		if (errorsToFix.isEmpty()) {
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
-		
+
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 		logger.info("Errors to fix: " + errorsToFix.toString());
-		
+
 		logger.info("Initializing Q-table for the errors.");
-		modelProcessor.initializeQTableForErrorsInModel(model);
+		List<Error> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
+		for (Error e : unsupportedErrors) {
+			unsupportedErrorCodes.add(e.getCode());
+		}
 
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
@@ -337,7 +340,7 @@ public abstract class QModelFixer implements ModelFixer {
 		solution.setOriginal(originalModel);
 		solution.setRewardCalculator(rewardCalculator);
 
-		if (!errorOcurred && uniqueSequence(solution)  && !solution.getSequence().isEmpty()) {
+		if (!errorOcurred && uniqueSequence(solution) && !solution.getSequence().isEmpty()) {
 			possibleSolutions.add(solution);
 		} else {
 			discardedSequences++;

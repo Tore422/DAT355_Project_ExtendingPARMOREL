@@ -56,9 +56,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 	}
 
 	@Override
-	public void initializeQTableForErrorsInModel(Model model) {
+	public List<Error> initializeQTableForErrorsInModel(Model model) {
 		if (model instanceof EcoreModel) {
-			initializeQTableForErrorsInModel((EcoreModel) model);
+			return initializeQTableForErrorsInModel((EcoreModel) model);
 		} else {
 			throw new IllegalArgumentException(
 					"The method must be called with a model of type hvl.projectparmorel.ecore.EcoreModel");
@@ -71,12 +71,15 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * 
 	 * @param model
 	 * @param destinationURI
+	 * @return a list of unsupported errors that was to the Q-table
 	 */
-	private void initializeQTableForErrorsInModel(EcoreModel model) {
+	private List<Error> initializeQTableForErrorsInModel(EcoreModel model) {
 		errors = errorExtractor.extractErrorsFrom(model.getRepresentation());
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
+		
+		List<Error> unsupportedErrors = new ArrayList<>();
 
 		for (Error error : errors) {
 			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
@@ -87,7 +90,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 								Resource modelCopy = (Resource) model.getRepresentationCopy();
 								List<Error> newErrors = tryApplyAction(error, action, modelCopy, i);
 								if (newErrors != null) {
-									if (!errorStillExists(newErrors, error, i)) {
+									if (errorStillExists(newErrors, error, i)) {
+										unsupportedErrors.add(error);
+									} else {
 										Action newAction = new Action(action.getCode(), action.getMessage(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
@@ -99,6 +104,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 				}
 			}
 		}
+		return unsupportedErrors;
 	}
 
 	/**
