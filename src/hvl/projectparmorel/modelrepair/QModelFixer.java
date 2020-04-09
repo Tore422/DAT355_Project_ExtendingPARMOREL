@@ -6,6 +6,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.FileHandler;
@@ -72,6 +73,7 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
+		unsupportedErrorCodes = new HashSet<>();
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		loadKnowledge();
 
@@ -174,18 +176,27 @@ public abstract class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
-		if(errorsToFix.isEmpty()) {
+		if (errorsToFix.isEmpty()) {
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
-		
+		for(Error e : errorsToFix){
+			if(unsupportedErrorCodes.contains(e.getCode())) {
+				logger.warning("The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+			}
+		}
+
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
 		logger.info("Errors to fix: " + errorsToFix.toString());
-		
+
 		logger.info("Initializing Q-table for the errors.");
-		modelProcessor.initializeQTableForErrorsInModel(model);
+		Set<Integer> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
+		for (Integer errorCode : unsupportedErrors) {
+			logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
+			this.unsupportedErrorCodes.add(errorCode);
+		}
 
 		logger.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
@@ -303,8 +314,6 @@ public abstract class QModelFixer implements ModelFixer {
 
 		while (step < MAX_EPISODE_STEPS) {
 			while (!errorsToFix.isEmpty() && unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
-				logger.warning("UNSUPORTED ERROR CODE: " + errorsToFix.get(0).getCode() + "\nMessage: "
-						+ errorsToFix.get(0).getMessage());
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
@@ -314,7 +323,7 @@ public abstract class QModelFixer implements ModelFixer {
 							+ currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
-					logger.warning("Encountered error that could not be resolved.\nCode: " + currentErrorToFix.getCode()
+					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + currentErrorToFix.getCode()
 							+ "\nMessage: " + currentErrorToFix.getMessage());
 					unsupportedErrorCodes.add(e.getErrorCode());
 					errorsToFix.remove(0);
@@ -337,7 +346,7 @@ public abstract class QModelFixer implements ModelFixer {
 		solution.setOriginal(originalModel);
 		solution.setRewardCalculator(rewardCalculator);
 
-		if (!errorOcurred && uniqueSequence(solution)  && !solution.getSequence().isEmpty()) {
+		if (!errorOcurred && uniqueSequence(solution) && !solution.getSequence().isEmpty()) {
 			possibleSolutions.add(solution);
 		} else {
 			discardedSequences++;
