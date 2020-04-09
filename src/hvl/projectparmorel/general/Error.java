@@ -5,10 +5,8 @@ import java.util.List;
 /**
  * 
  * @author Magnus Marthinsen
- * @author Angela Barriga Rodriguez - 2019
- * abar@hvl.no
- * Western Norway University of Applied Sciences
- * Bergen - Norway
+ * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University
+ *         of Applied Sciences Bergen - Norway
  */
 public class Error {
 
@@ -23,6 +21,16 @@ public class Error {
 		this.code = code;
 		this.message = message;
 		this.contexts = contexts;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Error) {
+			Error otherError = (Error) other;
+			return code == otherError.getCode() && message.equals(otherError.getMessage())
+					&& contexts.equals(otherError.getContexts());
+		}
+		return false;
 	}
 
 	@Override

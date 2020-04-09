@@ -4,10 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -91,7 +89,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								Resource modelCopy = (Resource) model.getRepresentationCopy();
 								List<Error> newErrors = tryApplyAction(error, action, modelCopy, i);
 								if (newErrors != null) {
-									if (errorStillExists(newErrors, error, i)) {
+									if (errorStillExists(newErrors, error)) {
 										unsupportedErrors.add(error.getCode());
 									} else {
 										Action newAction = new Action(action.getCode(), action.getMessage(),
@@ -203,26 +201,12 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * 
 	 * @param newErrors
 	 * @param error
-	 * @param index
 	 * @return true if the error still exists
 	 */
-	private boolean errorStillExists(List<Error> newErrors, Error error, int index) {
-		Map<Integer, Error> duplicateErrors = findDuplicates(errors);
-		Map<Integer, Error> newErrorDuplicates = findDuplicates(newErrors);
-		if (duplicateErrors.containsKey(error.getCode()) && newErrorDuplicates.containsKey(error.getCode())) {
-			return true;
-		} else {
-			if (error.getContexts().get(index).getClass() == EGenericTypeImpl.class) {
-				EGenericTypeImpl eg = (EGenericTypeImpl) error.getContexts().get(index);
-				if (eg.getETypeArguments().size() > 0) {
-					return false;
-				}
-			}
-			for (int i = 0; i < newErrors.size(); i++) {
-				if (newErrors.get(i).getCode() == error.getCode()
-						&& newErrors.get(i).getContexts().size() == error.getContexts().size()) {
-					return true;
-				}
+	private boolean errorStillExists(List<Error> newErrors, Error error) {
+		for(Error e : newErrors) {
+			if (e.equals(error)) {
+				return true;
 			}
 		}
 		return false;
@@ -689,24 +673,5 @@ public class EcoreModelProcessor implements ModelProcessor {
 		val = values.toArray(val);
 
 		return val;
-	}
-
-	/**
-	 * Finds duplicate errors from list
-	 * 
-	 * @param errors
-	 * @return a map containing all the duplicates
-	 */
-	private Map<Integer, Error> findDuplicates(List<Error> errors) {
-		Map<Integer, Error> duplicateErrors = new HashMap<>();
-		for (int i = 0; i < errors.size(); i++) {
-			for (int j = 0; j < errors.size(); j++) {
-				if (errors.get(i).getCode() == errors.get(j).getCode() && !errors.get(i).getContexts().toString()
-						.contentEquals(errors.get(j).getContexts().toString())) {
-					duplicateErrors.put(errors.get(i).getCode(), errors.get(i));
-				}
-			}
-		}
-		return duplicateErrors;
 	}
 }
