@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -56,7 +57,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	}
 
 	@Override
-	public List<Error> initializeQTableForErrorsInModel(Model model) {
+	public Set<Error> initializeQTableForErrorsInModel(Model model) {
 		if (model instanceof EcoreModel) {
 			return initializeQTableForErrorsInModel((EcoreModel) model);
 		} else {
@@ -71,15 +72,15 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * 
 	 * @param model
 	 * @param destinationURI
-	 * @return a list of unsupported errors that was to the Q-table
+	 * @return a set of unsupported errors that was to the Q-table
 	 */
-	private List<Error> initializeQTableForErrorsInModel(EcoreModel model) {
+	private Set<Error> initializeQTableForErrorsInModel(EcoreModel model) {
 		errors = errorExtractor.extractErrorsFrom(model.getRepresentation());
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
 		
-		List<Error> unsupportedErrors = new ArrayList<>();
+		Set<Error> unsupportedErrors = new HashSet<>();
 
 		for (Error error : errors) {
 			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {

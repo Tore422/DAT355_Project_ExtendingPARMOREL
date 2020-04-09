@@ -21,7 +21,6 @@ public class EcoreQModelFixer extends QModelFixer {
 	
 	public EcoreQModelFixer() {
 		super();
-		unsupportedErrorCodes = new HashSet<>();
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());

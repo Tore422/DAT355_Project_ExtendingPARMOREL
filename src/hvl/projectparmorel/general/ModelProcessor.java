@@ -1,6 +1,7 @@
 package hvl.projectparmorel.general;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ModelProcessor {
 	
@@ -9,9 +10,9 @@ public interface ModelProcessor {
 	 * q-table is is added along with a matching action.
 	 * 
 	 * @param model
-	 * @return a list of unsupported errors that was not added to the Q-table
+	 * @return a set of unsupported errors that was not added to the Q-table
 	 */
-	public List<Error> initializeQTableForErrorsInModel(Model model);
+	public Set<Error> initializeQTableForErrorsInModel(Model model);
 
 	/**
 	 * Extracts package content from the model, and matches the location where the

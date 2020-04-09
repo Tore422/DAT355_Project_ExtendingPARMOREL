@@ -6,6 +6,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.FileHandler;
@@ -72,6 +73,7 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
+		unsupportedErrorCodes = new HashSet<>();
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		loadKnowledge();
 
@@ -190,7 +192,7 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("Errors to fix: " + errorsToFix.toString());
 
 		logger.info("Initializing Q-table for the errors.");
-		List<Error> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
+		Set<Error> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
 		for (Error e : unsupportedErrors) {
 			logger.warning("Encountered error that could not be resolved.Adding to unsupported errors.\nCode: " + e.getCode()
 			+ "\nMessage: " + e.getMessage());
