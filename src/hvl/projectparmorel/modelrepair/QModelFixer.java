@@ -177,6 +177,11 @@ public abstract class QModelFixer implements ModelFixer {
 		if (errorsToFix.isEmpty()) {
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
+		for(Error e : errorsToFix){
+			if(unsupportedErrorCodes.contains(e.getCode())) {
+				logger.warning("The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+			}
+		}
 
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
