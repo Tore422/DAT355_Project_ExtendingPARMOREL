@@ -38,7 +38,7 @@ import hvl.projectparmorel.reward.RewardCalculator;
 public abstract class QModelFixer implements ModelFixer {
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
-	private final int MAX_EPISODE_STEPS = 20;
+	private final int MIN_EPISODE_STEPS = 20;
 	private final double[] ALPHAS;
 
 	protected Knowledge knowledge;
@@ -57,6 +57,7 @@ public abstract class QModelFixer implements ModelFixer {
 	private Logger logger;
 
 	private int reward = 0;
+	private int numberOfSteps;
 	protected File originalModel;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
@@ -75,6 +76,7 @@ public abstract class QModelFixer implements ModelFixer {
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		unsupportedErrorCodes = new HashSet<>();
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 
 		logger = Logger.getLogger("MyLog");
@@ -179,9 +181,10 @@ public abstract class QModelFixer implements ModelFixer {
 		if (errorsToFix.isEmpty()) {
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
-		for(Error e : errorsToFix){
-			if(unsupportedErrorCodes.contains(e.getCode())) {
-				logger.warning("The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+		for (Error e : errorsToFix) {
+			if (unsupportedErrorCodes.contains(e.getCode())) {
+				logger.warning(
+						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
 			}
 		}
 
@@ -189,12 +192,18 @@ public abstract class QModelFixer implements ModelFixer {
 		possibleSolutions.clear();
 		originalErrors.clear();
 		originalErrors.addAll(errorsToFix);
-		logger.info("Errors to fix: " + errorsToFix.toString());
-
+		if (errorsToFix.size() * 1.4 > MIN_EPISODE_STEPS) {
+			numberOfSteps = (int) (errorsToFix.size() * 1.4);
+		} else {
+			numberOfSteps = MIN_EPISODE_STEPS;
+		}
+		logger.info("Initial number of errors in model: " + errorsToFix.size() + "\nMaximum number of steps per episode: "
+				+ numberOfSteps + "\nErrors to fix: " + errorsToFix.toString());
 		logger.info("Initializing Q-table for the errors.");
 		Set<Integer> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
 		for (Integer errorCode : unsupportedErrors) {
-			logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
+			logger.warning(
+					"Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
 			this.unsupportedErrorCodes.add(errorCode);
 		}
 
@@ -227,7 +236,8 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("Time repairing model: " + executionTime + " ms");
 		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
-				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence);
+				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence + " with "
+				+ bestSequence.getSequence().size() + " actions.");
 //		removeSolutionsWithSameResult(solvingMap);
 
 		if (bestSequence.getSequence().size() != 0) {
@@ -312,7 +322,7 @@ public abstract class QModelFixer implements ModelFixer {
 		int totalReward = 0;
 		int step = 0;
 
-		while (step < MAX_EPISODE_STEPS) {
+		while (step < numberOfSteps) {
 			while (!errorsToFix.isEmpty() && unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
 				errorsToFix.remove(0);
 			}
@@ -323,8 +333,8 @@ public abstract class QModelFixer implements ModelFixer {
 							+ currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
-					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + currentErrorToFix.getCode()
-							+ "\nMessage: " + currentErrorToFix.getMessage());
+					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: "
+							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
 					unsupportedErrorCodes.add(e.getErrorCode());
 					errorsToFix.remove(0);
 				}
