@@ -66,22 +66,28 @@ public class EcoreModelProcessor implements ModelProcessor {
 
 	/**
 	 * Goes through all the errors in the model, and if the error is not in the
-	 * q-table is is added along with a matching action.
+	 * q-table is is added along with matching actions. Alternatively the error code
+	 * is added to a set of unsupported errors.
 	 * 
 	 * @param model
 	 * @param destinationURI
-	 * @return a set of unsupported error codes that was to the Q-table
+	 * @return a set of unsupported error codes that was not added to the Q-table
 	 */
 	private Set<Integer> initializeQTableForErrorsInModel(EcoreModel model) {
-		errors = errorExtractor.extractErrorsFrom(model.getRepresentation());
+		errors = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
-		
+
 		Set<Integer> unsupportedErrors = new HashSet<>();
 
 		for (Error error : errors) {
-			if (!knowledge.getQTable().containsErrorCode(error.getCode()) && !unsupportedErrors.contains(error.getCode())) {
+			if (error.getCode() == 1) {
+				System.out.println("brek");
+			}
+			if (!knowledge.getQTable().containsErrorCode(error.getCode())
+					&& !unsupportedErrors.contains(error.getCode())) {
+				boolean actionForErrorFound = false;
 				for (int i = 0; i < error.getContexts().size(); i++) {
 					if (error.getContexts().get(i) != null) {
 						for (Action action : possibleActions) {
@@ -89,9 +95,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 								Resource modelCopy = (Resource) model.getRepresentationCopy();
 								List<Error> newErrors = tryApplyAction(error, action, modelCopy, i);
 								if (newErrors != null) {
-									if (errorStillExists(newErrors, error)) {
-										unsupportedErrors.add(error.getCode());
-									} else {
+									if (!errorStillExists(newErrors, error)) {
+										actionForErrorFound = true;
 										Action newAction = new Action(action.getCode(), action.getMessage(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
@@ -100,6 +105,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 							}
 						}
 					}
+				}
+				if (!actionForErrorFound) {
+					unsupportedErrors.add(error.getCode());
 				}
 			}
 		}
@@ -132,10 +140,10 @@ public class EcoreModelProcessor implements ModelProcessor {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public List<Error> tryApplyAction(Error error, Action action, Model model) {
-		if(model instanceof EcoreModel) {
+		if (model instanceof EcoreModel) {
 			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getHierarchy());
 		}
 		throw new IllegalArgumentException("The model needs to be of type org.eclipse.emf.ecore.resource.Resource");
@@ -204,8 +212,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * @return true if the error still exists
 	 */
 	private boolean errorStillExists(List<Error> newErrors, Error error) {
-		for(Error e : newErrors) {
-			if (e.equals(error)) {
+		for (Error e : newErrors) {
+			if (e.getCode() == error.getCode()) {
 				return true;
 			}
 		}
