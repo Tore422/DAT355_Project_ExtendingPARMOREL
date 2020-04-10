@@ -228,7 +228,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 			}
 		}
 		
-		return numberOfErrorCodeNow < numberOfErrorCodeOriginally;
+		return numberOfErrorCodeNow >= numberOfErrorCodeOriginally;
 	}
 
 	/**
