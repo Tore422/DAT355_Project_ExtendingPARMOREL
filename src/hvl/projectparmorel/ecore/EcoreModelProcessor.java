@@ -213,7 +213,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 */
 	private boolean errorStillExists(List<Error> newErrors, Error error) {
 		for (Error e : newErrors) {
-			if (e.getCode() == error.getCode()) {
+			if (e.equals(error)) {
 				return true;
 			}
 		}
