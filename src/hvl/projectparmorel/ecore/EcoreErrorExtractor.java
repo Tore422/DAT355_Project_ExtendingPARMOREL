@@ -75,15 +75,15 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * @return the error for the specified diagnostic
 	 */
 	private Error getErrorFor(Diagnostic diagnostic) {
-		if (diagnostic.getCode() != 1) { // we don't remember what error code 1 is. Could it be an error at package
+//		if (diagnostic.getCode() != 1) { // we don't remember what error code 1 is. Could it be an error at package
 											// level?
 			if (isPackageOrTwoFeatures(diagnostic)) {
 				return new Error(diagnostic.getCode(), diagnostic.getMessage(), diagnostic.getData());
 			} else {
 				return getErrorFromErrorCode(diagnostic);
 			}
-		}
-		return null;
+//		}
+//		return null;
 	}
 
 	/**
