@@ -82,9 +82,6 @@ public class EcoreModelProcessor implements ModelProcessor {
 		Set<Integer> unsupportedErrors = new HashSet<>();
 
 		for (Error error : errors) {
-			if (error.getCode() == 1) {
-				System.out.println("brek");
-			}
 			if (!knowledge.getQTable().containsErrorCode(error.getCode())
 					&& !unsupportedErrors.contains(error.getCode())) {
 				boolean actionForErrorFound = false;
