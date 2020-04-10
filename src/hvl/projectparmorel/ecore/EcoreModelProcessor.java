@@ -212,12 +212,23 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * @return true if the error still exists
 	 */
 	private boolean errorStillExists(List<Error> newErrors, Error error) {
-		for (Error e : newErrors) {
-			if (e.equals(error)) {
-				return true;
+		int errorCode = error.getCode();
+		int numberOfErrorCodeOriginally = 0;
+		
+		for(Error e : errors) {
+			if(e.getCode() == errorCode) {
+				numberOfErrorCodeOriginally++;
 			}
 		}
-		return false;
+		
+		int numberOfErrorCodeNow = 0;
+		for (Error e : newErrors) {
+			if (e.getCode() == errorCode) {
+				numberOfErrorCodeNow++;
+			}
+		}
+		
+		return numberOfErrorCodeNow < numberOfErrorCodeOriginally;
 	}
 
 	/**
