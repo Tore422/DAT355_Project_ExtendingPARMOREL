@@ -9,10 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-
 import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
@@ -80,19 +77,6 @@ public abstract class QModelFixer implements ModelFixer {
 		loadKnowledge();
 
 		logger = Logger.getLogger("MyLog");
-		FileHandler fh;
-
-		try {
-			fh = new FileHandler("parmorel.log");
-			logger.addHandler(fh);
-			SimpleFormatter formatter = new SimpleFormatter();
-			fh.setFormatter(formatter);
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	public QModelFixer(List<Integer> preferences) {
@@ -164,7 +148,7 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(File modelFile) throws NoErrorsInModelException {
+	public Solution fixModel(File modelFile) throws NoErrorsInModelException {		
 		long startTime = System.currentTimeMillis();
 		logger.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
