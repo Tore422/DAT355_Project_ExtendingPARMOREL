@@ -146,12 +146,12 @@ public class RewardCalculator {
 			
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
 			if (preferenceId > -1) {
-				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
-					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
-				} else {
+				if (qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
 					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
 							.getWeightFor(preferenceId);
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
+				} else {	
+					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
 				}
 			}
 			qTable.updateReward(appliedAction, contextId);
