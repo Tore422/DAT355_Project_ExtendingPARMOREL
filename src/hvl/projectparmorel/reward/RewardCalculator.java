@@ -13,11 +13,9 @@ import hvl.projectparmorel.knowledge.QTable;
 
 public class RewardCalculator {
 	private Knowledge knowledge;
-	private List<Integer> preferences;
+	private List<Integer> preferenceNumbers;
+	private List<Preference> preferences;
 
-	private int weightPunishDeletion;
-	private int weightRewardRepairingHighInErrorHierarchies;
-	private int weightRewardRepairingLowInErrorHierarchies;
 	private int weightRewardModificationOfTheOriginalModel;
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardShorterSequencesOfActions;
@@ -27,46 +25,29 @@ public class RewardCalculator {
 
 	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
-		this.preferences = preferences;
-
+		this.preferenceNumbers = preferences;
+		this.preferences = new ArrayList<>();
+		
 		Preferences prefs = new Preferences();
+		Preference repairHighInHierarchy = new PreferRepairingHighInContextHierarchyPreference(prefs.getWeightRewardRepairingHighInErrorHierarchies());
+		Preference repairLowInHierarchy = new PreferRepairingHighInContextHierarchyPreference(prefs.getWeightRewardRepairingLowInErrorHierarchies());
+		Preference punishDeletion = new PunishDeletionPreference(prefs.getWeightPunishDeletion());
+		
+		if(preferences.contains(2))
+			this.preferences.add(repairHighInHierarchy);
+		if(preferences.contains(3))
+			this.preferences.add(repairLowInHierarchy);
+		if(preferences.contains(4))
+			this.preferences.add(punishDeletion);
+		
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
 		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
 		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
-		weightRewardRepairingHighInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
-		weightRewardRepairingLowInErrorHierarchies = prefs.getWeightRewardRepairingHighInErrorHierarchies();
-		weightPunishDeletion = prefs.getWeightPunishDeletion();
 		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
 		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
 		
 		logger = Logger.getLogger("MyLog");
-	}
-
-	/**
-	 * Initializes the weight for the given action
-	 * 
-	 * @param action
-	 * @return initial weight
-	 */
-	public double initializeWeightFor(Action action) {
-		double weight = 0.0;
-
-		if (preferences.contains(4)) {
-			if (action.getMessage().contains("delete")) {
-				weight = -(double) weightPunishDeletion / 100;
-			} else {
-				weight = 0.0;
-			}
-		}
-
-		if (action.getMessage().contains("get")) {
-			weight = -10.0;
-		} else {
-			weight = 0.0;
-		}
-
-		return weight;
 	}
 
 	/**
@@ -79,48 +60,12 @@ public class RewardCalculator {
 	 */
 	public int calculateRewardFor(Error currentErrorToFix, Action action) {
 		int reward = 0;
-		int contextId = action.getHierarchy();
-
-		if (preferences.contains(2)) {
-			if (action.getHierarchy() == 1) {
-				reward += weightRewardRepairingHighInErrorHierarchies;
-				addTagMap(currentErrorToFix, contextId, action, 2, weightRewardRepairingHighInErrorHierarchies);
-			} else if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingHighInErrorHierarchies * 2 / 3;
-				addTagMap(currentErrorToFix, contextId, action, 2, weightRewardRepairingHighInErrorHierarchies * 2 / 3);
-			} else if (action.getHierarchy() > 2) {
-				reward -= -74 / 100 * weightRewardRepairingHighInErrorHierarchies;
-				addTagMap(currentErrorToFix, contextId, action, 2,
-						-74 / 100 * weightRewardRepairingHighInErrorHierarchies);
-			}
-		}
-		if (preferences.contains(3)) {
-			if (action.getHierarchy() == 1) {
-				reward -= 74 / 100 * weightRewardRepairingLowInErrorHierarchies;
-				addTagMap(currentErrorToFix, contextId, action, 3,
-						-74 / 100 * weightRewardRepairingLowInErrorHierarchies);
-			}
-			if (action.getHierarchy() == 2) {
-				reward += weightRewardRepairingLowInErrorHierarchies * 2 / 3;
-				addTagMap(currentErrorToFix, contextId, action, 3, weightRewardRepairingLowInErrorHierarchies * 2 / 3);
-			}
-			if (action.getHierarchy() > 2) {
-				reward += weightRewardRepairingLowInErrorHierarchies;
-				addTagMap(currentErrorToFix, contextId, action, 3, weightRewardRepairingLowInErrorHierarchies);
-			}
+		
+		for(Preference preference : preferences) {
+			reward += preference.rewardActionForError(currentErrorToFix, action);
 		}
 
-		if (preferences.contains(4)) {
-			if (action.getMessage().contains("delete")) {
-				reward -= weightPunishDeletion;
-				addTagMap(currentErrorToFix, contextId, action, 4, -weightPunishDeletion);
-			} else {
-				reward += weightPunishDeletion / 10;
-				addTagMap(currentErrorToFix, contextId, action, 4, weightPunishDeletion / 10);
-			}
-		}
-
-		if (!preferences.contains(2) && !preferences.contains(3) && !preferences.contains(4)) {
+		if (!preferenceNumbers.contains(2) && !preferenceNumbers.contains(3) && !preferenceNumbers.contains(4)) {
 			reward += 30;
 		}
 
@@ -157,7 +102,7 @@ public class RewardCalculator {
 			Action action) {
 		// check how the action has modified number of errors
 		// high modification
-		if (preferences.contains(6)) {
+		if (preferenceNumbers.contains(6)) {
 			if ((sizeBefore - sizeAfter) > 1) {
 				reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - sizeAfter));
 				addTagMap(currentErrorToFix, code, action, 6,
@@ -169,7 +114,7 @@ public class RewardCalculator {
 			}
 		}
 		// low modification
-		if (preferences.contains(5)) {
+		if (preferenceNumbers.contains(5)) {
 			if ((sizeBefore - sizeAfter) > 1) {
 				reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - sizeAfter));
 				addTagMap(currentErrorToFix, code, action, 5,
@@ -233,10 +178,10 @@ public class RewardCalculator {
 	 * @param sequences
 	 */
 	public void rewardBasedOnSequenceLength(List<Solution> sequences) {
-		if (preferences.contains(0)) {
+		if (preferenceNumbers.contains(0)) {
 			handlePreferShortSequences(sequences);
 		}
-		if (preferences.contains(1)) {
+		if (preferenceNumbers.contains(1)) {
 			handlePreferLongSequences(sequences);
 		}
 	}
@@ -297,11 +242,11 @@ public class RewardCalculator {
 		// if new error introduced
 		if (!originalCodes.contains(nextErrorToFix.getCode())) {
 			// high modification
-			if (preferences.contains(6)) {
+			if (preferenceNumbers.contains(6)) {
 				reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;
 			}
 			// low modification
-			if (preferences.contains(5)) {
+			if (preferenceNumbers.contains(5)) {
 				reward = reward - 2 / 3 * weightPunishModificationOfTheOriginalModel;
 			}
 		}
@@ -309,10 +254,10 @@ public class RewardCalculator {
 	}
 
 	public List<Integer> getPreferences() {
-		return new ArrayList<Integer>(preferences);
+		return new ArrayList<Integer>(preferenceNumbers);
 	}
 
 	public void influenceWeightsFromPreferencesBy(double factor) {
-		knowledge.influenceWeightsFromPreferencesBy(factor, preferences);
+		knowledge.influenceWeightsFromPreferencesBy(factor, preferenceNumbers);
 	}
 }
