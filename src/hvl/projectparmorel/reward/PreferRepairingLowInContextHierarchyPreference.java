@@ -5,13 +5,13 @@ import hvl.projectparmorel.general.Error;
 
 public class PreferRepairingLowInContextHierarchyPreference extends Preference {
 
-	public PreferRepairingLowInContextHierarchyPreference(double weight) {
+	public PreferRepairingLowInContextHierarchyPreference(int weight) {
 		super(weight);
 	}
 
 	@Override
-	public double rewardActionForError(Error currentErrorToFix, Action action) {
-		double reward = 0;
+	public int rewardActionForError(Error currentErrorToFix, Action action) {
+		int reward = 0;
 //		int contextId = action.getHierarchy();
 		if (action.getHierarchy() == 1) {
 			reward -= 74 / 100 * weight;

@@ -4,9 +4,9 @@ import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.Error;
 
 public abstract class Preference {
-	protected double weight;
+	protected int weight;
 	
-	public Preference(double weight) {
+	public Preference(int weight) {
 		this.weight = weight;
 	}
 	
@@ -17,14 +17,14 @@ public abstract class Preference {
 	 * @param appliedAction
 	 * @return the calculated reward
 	 */
-	public abstract double rewardActionForError(Error currentErrorToFix, Action appliedAction);
+	public abstract int rewardActionForError(Error currentErrorToFix, Action appliedAction);
 	
 	/**
 	 * Gets the weight specifying how much the preference is affecting the algorithm.
 	 * 
 	 * @return
 	 */
-	public double getWeight() {
+	public int getWeight() {
 		return weight;
 	}
 	
@@ -33,7 +33,7 @@ public abstract class Preference {
 	 * 
 	 * @param weight
 	 */
-	public void setWeight(double weight) {
+	public void setWeight(int weight) {
 		this.weight = weight;
 	}
 }

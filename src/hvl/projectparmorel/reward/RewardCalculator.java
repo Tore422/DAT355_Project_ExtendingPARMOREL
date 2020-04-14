@@ -62,8 +62,14 @@ public class RewardCalculator {
 	public int calculateRewardFor(Error currentErrorToFix, Action action) {
 		int reward = 0;
 		
+		int contextId = action.getHierarchy();
 		for(Preference preference : preferences) {
-			reward += preference.rewardActionForError(currentErrorToFix, action);
+			int rewardFromPreference = preference.rewardActionForError(currentErrorToFix, action);
+			if(rewardFromPreference != 0) {
+				int prefNumber = 2; //TODO : find a way for this to be unique to every preference
+				addTagMap(currentErrorToFix, contextId, action, prefNumber, rewardFromPreference);
+			}
+			reward += rewardFromPreference;
 		}
 
 		if (!preferenceNumbers.contains(2) && !preferenceNumbers.contains(3) && !preferenceNumbers.contains(4)) {

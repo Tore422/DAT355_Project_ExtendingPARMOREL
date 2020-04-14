@@ -5,13 +5,13 @@ import hvl.projectparmorel.general.Error;
 
 public class PunishDeletionPreference extends Preference {
 
-	public PunishDeletionPreference(double weight) {
+	public PunishDeletionPreference(int weight) {
 		super(weight);
 	}
 	
 	@Override
-	public double rewardActionForError(Error currentErrorToFix, Action action) {
-		double reward = 0;
+	public int rewardActionForError(Error currentErrorToFix, Action action) {
+		int reward = 0;
 //		int contextId = action.getHierarchy();
 		if (action.isDelete()) {
 			reward -= weight;
