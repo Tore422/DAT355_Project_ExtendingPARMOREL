@@ -7,8 +7,9 @@ public interface ErrorExtractor {
 	 * Extracts the errors from the provided model.
 	 * 
 	 * @param model
-	 * @return a list of errors found in the model. The list should not include errors that are not supported by the {ModelFixer}.
+	 * @param includeUnsupported is a boolean that specifies whether or not to include the errors supported by the {ModelFixer}.
+	 * @return a list of errors found in the model. 
 	 * @throws IllegalArgumentException if the model is not of a supported type
 	 */
-	public List<Error> extractErrorsFrom(Object model);
+	public List<Error> extractErrorsFrom(Object model, boolean includeUnsupported);
 }

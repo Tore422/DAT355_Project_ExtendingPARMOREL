@@ -74,7 +74,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 * @return a set of unsupported error codes that was not added to the Q-table
 	 */
 	private Set<Integer> initializeQTableForErrorsInModel(EcoreModel model) {
-		errors = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
+		errors = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false);
 
 		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
 		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
@@ -167,7 +167,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
 				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
 			}
-			List<Error> newErrors = errorExtractor.extractErrorsFrom(model);
+			List<Error> newErrors = errorExtractor.extractErrorsFrom(model, false);
 			return newErrors;
 		}
 		return null;

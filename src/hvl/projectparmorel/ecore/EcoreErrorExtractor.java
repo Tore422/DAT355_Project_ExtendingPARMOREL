@@ -25,10 +25,10 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	}
 
 	@Override
-	public List<Error> extractErrorsFrom(Object model) {
+	public List<Error> extractErrorsFrom(Object model, boolean includeUnsupported) {
 		if (model instanceof Resource) {
 			Resource modelAsResource = (Resource) model;
-			return extractErrorsFrom(modelAsResource);
+			return extractErrorsFrom(modelAsResource, includeUnsupported);
 		}
 		throw new IllegalArgumentException("The model has to be of type org.eclipse.emf.ecore.resource.Resource");
 	}
@@ -37,17 +37,22 @@ public class EcoreErrorExtractor implements ErrorExtractor {
 	 * Extracts the errors from the provided model.
 	 * 
 	 * @param model
+	 * @param includeUnsupported is a boolean that specifies wheter or not to include the unsupported errors.
 	 * @return a list of errors found in the model
 	 */
-	private List<Error> extractErrorsFrom(Resource model) {
+	private List<Error> extractErrorsFrom(Resource model, boolean includeUnsupported) {
 		List<Error> errors = new ArrayList<Error>();
 
 		Diagnostic diagnostic = validateMode(model);
 		if (diagnostic.getSeverity() != Diagnostic.OK) {
 			for (Diagnostic child : diagnostic.getChildren()) {
 				Error error = getErrorFor(child);
-				if (error != null && !unsuportedErrorCodes.contains(error.getCode())) {
-					errors.add(error);
+				if (error != null) {
+					if(includeUnsupported) {
+						errors.add(error);
+					} else if (!unsuportedErrorCodes.contains(error.getCode())) {
+						errors.add(error);
+					}
 				}
 			}
 		}
