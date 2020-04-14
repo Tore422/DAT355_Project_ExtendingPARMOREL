@@ -6,7 +6,7 @@ import hvl.projectparmorel.general.Error;
 public class PreferRepairingLowInContextHierarchyPreference extends Preference {
 
 	public PreferRepairingLowInContextHierarchyPreference(int weight) {
-		super(weight);
+		super(weight, PreferenceValue.REPAIR_LOW_IN_CONTEXT_HIERARCHY);
 	}
 
 	@Override

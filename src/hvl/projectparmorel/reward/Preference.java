@@ -5,11 +5,13 @@ import hvl.projectparmorel.general.Error;
 
 public abstract class Preference {
 	protected int weight;
+	protected PreferenceValue value;
 	
-	public Preference(int weight) {
+	public Preference(int weight, PreferenceValue value) {
 		this.weight = weight;
+		this.value = value;
 	}
-	
+
 	/**
 	 * Calculates a reward for applying the specified action to the current error.
 	 * 
@@ -35,5 +37,19 @@ public abstract class Preference {
 	 */
 	public void setWeight(int weight) {
 		this.weight = weight;
+	}
+	
+	/**
+	 * @return the value corresponding to the preference
+	 */
+	public PreferenceValue getPreferenceValue() {
+		return value;
+	}
+
+	/**
+	 * @param value the corresponding PreferenceValue for the preference to set
+	 */
+	public void setPreferenceValue(PreferenceValue value) {
+		this.value = value;
 	}
 }

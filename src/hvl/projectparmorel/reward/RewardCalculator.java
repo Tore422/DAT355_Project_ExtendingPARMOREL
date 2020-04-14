@@ -66,8 +66,7 @@ public class RewardCalculator {
 		for(Preference preference : preferences) {
 			int rewardFromPreference = preference.rewardActionForError(currentErrorToFix, action);
 			if(rewardFromPreference != 0) {
-				int prefNumber = 2; //TODO : find a way for this to be unique to every preference
-				addTagMap(currentErrorToFix, contextId, action, prefNumber, rewardFromPreference);
+				addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id, rewardFromPreference);
 			}
 			reward += rewardFromPreference;
 		}

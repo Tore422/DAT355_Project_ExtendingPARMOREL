@@ -6,7 +6,7 @@ import hvl.projectparmorel.general.Error;
 public class PunishDeletionPreference extends Preference {
 
 	public PunishDeletionPreference(int weight) {
-		super(weight);
+		super(weight, PreferenceValue.PUNISH_DELETION);
 	}
 	
 	@Override
