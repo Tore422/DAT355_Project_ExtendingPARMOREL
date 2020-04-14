@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import hvl.projectparmorel.modelrepair.Preferences;
 import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
@@ -137,12 +138,12 @@ public class RewardCalculator {
 	 */
 	public void rewardSolution(Solution solution, int preferenceId) {
 		QTable qTable = knowledge.getQTable();
-		for (int i = 0; i < solution.getSequence().size(); i++) {
-			int contextId = solution.getSequence().get(i).getAction().getHierarchy();
-			int errorCode = solution.getSequence().get(i).getError().getCode();
-			int actionId = solution.getSequence().get(i).getAction().getCode();
+		for(AppliedAction appliedAction : solution.getSequence()) {
+			int contextId = appliedAction.getAction().getHierarchy();
+			int errorCode = appliedAction.getError().getCode();
+			int actionId = appliedAction.getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
-
+			
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
 			if (preferenceId > -1) {
 				if (!qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
@@ -153,7 +154,7 @@ public class RewardCalculator {
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
 				}
 			}
-			qTable.updateReward(solution.getSequence().get(i), contextId);
+			qTable.updateReward(appliedAction, contextId);
 		}
 	}
 
