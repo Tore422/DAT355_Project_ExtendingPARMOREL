@@ -29,6 +29,7 @@ public class EcoreQModelFixer extends QModelFixer {
 		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 	
+		unsupportedErrorCodes.add(1);
 		unsupportedErrorCodes.add(4);
 //		unsupportedErrorCodes.add(6);
 	}
@@ -43,8 +44,9 @@ public class EcoreQModelFixer extends QModelFixer {
 		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
 		modelProcessor = new EcoreModelProcessor(knowledge, rewardCalculator, unsupportedErrorCodes);
 
+		unsupportedErrorCodes.add(1);
 		unsupportedErrorCodes.add(4);
-		unsupportedErrorCodes.add(6);
+//		unsupportedErrorCodes.add(6);
 	}
 
 	@Override

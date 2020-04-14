@@ -161,18 +161,13 @@ public abstract class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		int episode = 0;
 
-		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy());
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
+		handleUnsupportedErrors();
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
 		}
-		for (Error e : errorsToFix) {
-			if (unsupportedErrorCodes.contains(e.getCode())) {
-				logger.warning(
-						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
-			}
-		}
-
+		
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
@@ -230,6 +225,21 @@ public abstract class QModelFixer implements ModelFixer {
 		}
 		saveKnowledge();
 		return bestSequence;
+	}
+
+	/**
+	 * Logs all encountered unsupported errors with a warning and removes them from the errorsToFix.
+	 */
+	private void handleUnsupportedErrors() {
+		List<Error> unsupported = new ArrayList<>();
+		for (Error e : errorsToFix) {
+			if (unsupportedErrorCodes.contains(e.getCode())) {
+				logger.warning(
+						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+				unsupported.add(e);
+			}
+		}
+		errorsToFix.removeAll(unsupported);
 	}
 
 	/**
@@ -375,7 +385,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
 					+ ", does not exist in Q-table. Attempting to solve...");
-			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy());
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy(), false);
 			actionExtractor.extractActionsFor(errorsToFix);
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
@@ -414,7 +424,7 @@ public abstract class QModelFixer implements ModelFixer {
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 				logger.info("Error " + nextErrorToFix.getCode() + ", " + nextErrorToFix.getMessage()
 						+ ", does not exist in Q-table. Attempting to solve...");
-				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation());
+				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation(), false);
 				actionExtractor.extractActionsFor(errorsToFix);
 				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
