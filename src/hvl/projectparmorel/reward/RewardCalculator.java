@@ -149,21 +149,6 @@ public class RewardCalculator {
 		}
 	}
 
-//	public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error nextErrorToFix) {
-//		// if new error introduced
-//		if (!originalCodes.contains(nextErrorToFix.getCode())) {
-//			// high modification
-//			if (preferenceNumbers.contains(6)) {
-//				reward = reward + 2 / 3 * weightRewardModificationOfTheOriginalModel;
-//			}
-//			// low modification
-//			if (preferenceNumbers.contains(5)) {
-//				reward = reward - 2 / 3 * weightPunishModificationOfTheOriginalModel;
-//			}
-//		}
-//		return reward;
-//	}
-
 	public List<Integer> getPreferences() {
 		return new ArrayList<Integer>(preferenceNumbers);
 	}
