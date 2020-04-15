@@ -2,7 +2,6 @@ package hvl.projectparmorel.reward;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import hvl.projectparmorel.modelrepair.Preferences;
@@ -18,7 +17,6 @@ public class RewardCalculator {
 	private Knowledge knowledge;
 	private List<Integer> preferenceNumbers;
 	private List<Preference> preferences;
-	private Set<Integer> unsupportedErrorCodes;
 
 	private int weightRewardModificationOfTheOriginalModel;
 	private int weightPunishModificationOfTheOriginalModel;
@@ -27,11 +25,10 @@ public class RewardCalculator {
 
 	private Logger logger;
 
-	public RewardCalculator(Knowledge knowledge, List<Integer> preferences, Set<Integer> unsupportedErrorCodes) {
+	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
 		this.preferenceNumbers = preferences;
 		this.preferences = new ArrayList<>();
-		this.unsupportedErrorCodes = unsupportedErrorCodes;
 
 		Preferences prefs = new Preferences();
 		Preference repairHighInHierarchy = new PreferRepairingHighInContextHierarchyPreference(

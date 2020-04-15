@@ -45,9 +45,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private List<Error> errors;
 	private ErrorExtractor errorExtractor;
 
-	public EcoreModelProcessor(Knowledge knowledge, Set<Integer> unsupportedErrorCodes) {
+	public EcoreModelProcessor(Knowledge knowledge) {
 		this.knowledge = knowledge;
-		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
+		errorExtractor = new EcoreErrorExtractor();
 	}
 
 	@Override

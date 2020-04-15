@@ -8,19 +8,15 @@ class PunishModificationOfModelPreference extends Preference implements ResultBa
 
 	private int numbersOfErrorsBeforeApplyingAction;
 	private ErrorExtractor errorExtractor;
-	
+
 	public PunishModificationOfModelPreference(int weight) {
 		super(weight, PreferenceValue.PUNISH_MODIFICATION_OF_MODEL);
+		errorExtractor = new EcoreErrorExtractor();
 	}
 
 	@Override
 	public void initializeBeforeApplyingAction(Model model) {
-		switch(model.getModelType()) {
-		case ECORE:
-			errorExtractor = new EcoreErrorExtractor(model.getModelType().getUnsupportedErrorCodes());
-			numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model, false).size();
-		}
-
+		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model, false).size();
 	}
 
 }

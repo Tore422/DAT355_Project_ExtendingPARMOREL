@@ -1,7 +1,6 @@
 package hvl.projectparmorel.ecore;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -26,32 +25,22 @@ public class EcoreQModelFixer extends QModelFixer {
 				new EcoreResourceFactoryImpl());
 		EcorePackage.eINSTANCE.eClass();
 		actionExtractor = new EcoreActionExtractor(knowledge);
-		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
-		modelProcessor = new EcoreModelProcessor(knowledge, unsupportedErrorCodes);
-	
-		unsupportedErrorCodes.add(1);
-		unsupportedErrorCodes.add(4);
-//		unsupportedErrorCodes.add(6);
+		errorExtractor = new EcoreErrorExtractor();
+		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
 	
 	public EcoreQModelFixer(List<Integer> preferences) {
 		super(preferences);
-		unsupportedErrorCodes = new HashSet<>();
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
 		actionExtractor = new EcoreActionExtractor(knowledge);
-		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
-		modelProcessor = new EcoreModelProcessor(knowledge, unsupportedErrorCodes);
-
-		unsupportedErrorCodes.add(1);
-		unsupportedErrorCodes.add(4);
-//		unsupportedErrorCodes.add(6);
+		errorExtractor = new EcoreErrorExtractor();
+		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
 
 	@Override
 	protected Model initializeModelFromFile() {
-//		File duplicateFile = createDuplicateFile();
 		this.uri = URI.createFileURI(originalModel.getAbsolutePath());
 		Resource modelResource = getModel(uri);
 		
@@ -72,7 +61,7 @@ public class EcoreQModelFixer extends QModelFixer {
 
 	@Override
 	protected void updateRewardCalculator() {
-		modelProcessor = new EcoreModelProcessor(knowledge, unsupportedErrorCodes);
+		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
 
 	@Override

@@ -6,7 +6,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -60,8 +59,6 @@ public abstract class QModelFixer implements ModelFixer {
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
 
-	protected Set<Integer> unsupportedErrorCodes;
-
 	public QModelFixer() {
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
@@ -70,8 +67,7 @@ public abstract class QModelFixer implements ModelFixer {
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
-		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>(), unsupportedErrorCodes);
-		unsupportedErrorCodes = new HashSet<>();
+		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
@@ -81,7 +77,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 	public QModelFixer(List<Integer> preferences) {
 		this();
-		rewardCalculator = new RewardCalculator(knowledge, preferences, unsupportedErrorCodes);
+		rewardCalculator = new RewardCalculator(knowledge, preferences);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -94,7 +90,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 	@Override
 	public void setPreferences(List<Integer> preferences) {
-		rewardCalculator = new RewardCalculator(knowledge, preferences, unsupportedErrorCodes);
+		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		updateRewardCalculator();
 	}
 
@@ -162,7 +158,7 @@ public abstract class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
-		handleUnsupportedErrors();
+		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
 			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
@@ -184,7 +180,7 @@ public abstract class QModelFixer implements ModelFixer {
 		for (Integer errorCode : unsupportedErrors) {
 			logger.warning(
 					"Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
-			this.unsupportedErrorCodes.add(errorCode);
+			model.getModelType().addUnsupportedErrorCode(errorCode);
 		}
 
 		logger.info("Number of episodes: " + numberOfEpisodes);
@@ -229,11 +225,12 @@ public abstract class QModelFixer implements ModelFixer {
 
 	/**
 	 * Logs all encountered unsupported errors with a warning and removes them from the errorsToFix.
+	 * @param model 
 	 */
-	private void handleUnsupportedErrors() {
+	private void handleUnsupportedErrors(Model model) {
 		List<Error> unsupported = new ArrayList<>();
 		for (Error e : errorsToFix) {
-			if (unsupportedErrorCodes.contains(e.getCode())) {
+			if (model.getModelType().doesNotSupportError(e.getCode())) {
 				logger.warning(
 						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
 				unsupported.add(e);
@@ -318,7 +315,7 @@ public abstract class QModelFixer implements ModelFixer {
 		int step = 0;
 
 		while (step < numberOfSteps) {
-			while (!errorsToFix.isEmpty() && unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+			while (!errorsToFix.isEmpty() && episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
@@ -330,7 +327,7 @@ public abstract class QModelFixer implements ModelFixer {
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: "
 							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
-					unsupportedErrorCodes.add(e.getErrorCode());
+					episodeModel.getModelType().addUnsupportedErrorCode(e.getErrorCode());
 					errorsToFix.remove(0);
 				}
 				step++;
