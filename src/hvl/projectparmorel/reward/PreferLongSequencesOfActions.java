@@ -17,7 +17,7 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 	private Logger logger;
 	
 	public PreferLongSequencesOfActions(int weight) {
-		super(weight, Prefere.LONG_SEQUENCES_OF_ACTIONS);
+		super(weight, PreferenceOption.LONG_SEQUENCES_OF_ACTIONS);
 		logger = Logger.getLogger(QModelFixer.LOGGER_NAME);
 	}
 	
@@ -63,12 +63,12 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
-			if (qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(value.id)) {
+			if (qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceOption)) {
 				int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
-						.getWeightFor(value.id);
-				qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, value.id, oldTagValue + 500);
+						.getWeightFor(preferenceOption);
+				qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceOption.id, oldTagValue + 500);
 			} else {
-				qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, value.id, 500);
+				qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceOption.id, 500);
 			}
 			qTable.updateReward(appliedAction, contextId);
 		}

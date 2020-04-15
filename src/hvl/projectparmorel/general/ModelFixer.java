@@ -5,6 +5,7 @@ import java.util.List;
 
 import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 public interface ModelFixer {
 
@@ -23,7 +24,7 @@ public interface ModelFixer {
 	 * 
 	 * @param preferences
 	 */
-	public void setPreferences(List<Integer> preferences);
+	public void setPreferences(List<PreferenceOption> preferences);
 
 	/**
 	 * Gets the list of possible solutions. Requires that

@@ -7,7 +7,7 @@ import hvl.projectparmorel.general.Model;
 public class PreferRepairingLowInContextHierarchyPreference extends Preference {
 
 	public PreferRepairingLowInContextHierarchyPreference(int weight) {
-		super(weight, Prefere.REPAIR_LOW_IN_CONTEXT_HIERARCHY);
+		super(weight, PreferenceOption.REPAIR_LOW_IN_CONTEXT_HIERARCHY);
 	}
 
 	@Override

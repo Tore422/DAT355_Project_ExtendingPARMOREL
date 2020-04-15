@@ -11,6 +11,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import hvl.projectparmorel.reward.PreferenceOption;
+
 public class PreferenceWeightMap {
 	private final String XML_ID_NAME = "id";
 	private final String XML_VALUE_NAME = "value";
@@ -18,18 +20,18 @@ public class PreferenceWeightMap {
 	/**
 	 * This is the map updated through the execution.
 	 */
-	private Map<Integer, Integer> executionPreferenceMap;
+	private Map<PreferenceOption, Integer> executionPreferenceMap;
 	/**
 	 * This is the map updated at the end of each execution and stored.
 	 */
 	private Map<Integer, Integer> storedPreferenceMap;
 	
 	public PreferenceWeightMap() {
-		 executionPreferenceMap = new HashMap<Integer, Integer>();
+		 executionPreferenceMap = new HashMap<PreferenceOption, Integer>();
 		 storedPreferenceMap = new HashMap<Integer, Integer>();
 	}
 	
-	public PreferenceWeightMap(Map<Integer, Integer> preferenceMap) {
+	public PreferenceWeightMap(Map<PreferenceOption, Integer> preferenceMap) {
 		this.executionPreferenceMap = preferenceMap;
 		storedPreferenceMap = new HashMap<Integer, Integer>();
 	}
@@ -52,7 +54,7 @@ public class PreferenceWeightMap {
 		}
 	}
 
-	public Map<Integer, Integer> getPreferenceMap() {
+	public Map<PreferenceOption, Integer> getPreferenceMap() {
 		return executionPreferenceMap;
 	}	
 	
@@ -61,7 +63,7 @@ public class PreferenceWeightMap {
 	 * 
 	 * @return all the preferences.
 	 */
-	public Set<Integer> getAllPreferenceIds(){
+	public Set<PreferenceOption> getAllPreferenceIds(){
 		return executionPreferenceMap.keySet();
 	}
 	
@@ -71,8 +73,8 @@ public class PreferenceWeightMap {
 	 * @param preferenceId to get weight for
 	 * @return the corresponding weight
 	 */
-	public int getWeightFor(Integer preferenceId) {
-		return executionPreferenceMap.get(preferenceId);
+	public int getWeightFor(PreferenceOption preference) {
+		return executionPreferenceMap.get(preference);
 	}
 
 	/**
@@ -82,7 +84,7 @@ public class PreferenceWeightMap {
 	 * @param value
 	 */
 	protected void set(int preferenceId, int value) {
-		executionPreferenceMap.put(preferenceId, value);
+		executionPreferenceMap.put(PreferenceOption.valueOfID(preferenceId), value);
 	}
 
 	/**
@@ -91,8 +93,8 @@ public class PreferenceWeightMap {
 	 * @param preferenceId
 	 * @return true if the dictionary contains the preference id
 	 */
-	public boolean contains(Integer preferenceId) {
-		return executionPreferenceMap.containsKey(preferenceId);
+	public boolean contains(PreferenceOption preference) {
+		return executionPreferenceMap.containsKey(preference);
 	}
 
 	/**
@@ -100,11 +102,11 @@ public class PreferenceWeightMap {
 	 * 
 	 * @param preferenceId
 	 */
-	public void combineAndSavePreference(Integer preferenceId) {
-		if(storedPreferenceMap.containsKey(preferenceId)) {
-			storedPreferenceMap.put(preferenceId, storedPreferenceMap.get(preferenceId) + executionPreferenceMap.get(preferenceId));
+	public void combineAndSavePreference(PreferenceOption preference) {
+		if(storedPreferenceMap.containsKey(preference.id)) {
+			storedPreferenceMap.put(preference.id, storedPreferenceMap.get(preference.id) + executionPreferenceMap.get(preference));
 		} else {
-			storedPreferenceMap.put(preferenceId, executionPreferenceMap.get(preferenceId));
+			storedPreferenceMap.put(preference.id, executionPreferenceMap.get(preference));
 		}
 	}
 

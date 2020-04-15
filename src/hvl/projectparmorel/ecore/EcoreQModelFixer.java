@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.modelrepair.QModelFixer;
 import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 public class EcoreQModelFixer extends QModelFixer {
 	private URI uri;
@@ -29,7 +30,7 @@ public class EcoreQModelFixer extends QModelFixer {
 		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
 	
-	public EcoreQModelFixer(List<Integer> preferences) {
+	public EcoreQModelFixer(List<PreferenceOption> preferences) {
 		super(preferences);
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",

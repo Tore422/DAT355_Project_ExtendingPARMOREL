@@ -1,6 +1,6 @@
 package hvl.projectparmorel.reward;
 
-public enum Prefere {
+public enum PreferenceOption {
 	SHORT_SEQUENCES_OF_ACTIONS(0),
 	LONG_SEQUENCES_OF_ACTIONS(1),
 	REPAIR_HIGH_IN_CONTEXT_HIERARCHY(2),
@@ -11,17 +11,17 @@ public enum Prefere {
 	
 	public final int id;
 	
-	private Prefere(int id) {
+	private PreferenceOption(int id) {
 		this.id = id;
 	}
 
 	/**
 	 * Get the preference value from the ID
 	 */
-	public static Prefere valueOfID(int preferenceID) {
-		for(Prefere value : values()) {
-			if(value.id == preferenceID) {
-				return value;
+	public static PreferenceOption valueOfID(int preferenceID) {
+		for(PreferenceOption option : values()) {
+			if(option.id == preferenceID) {
+				return option;
 			}
 		}
 		return null;

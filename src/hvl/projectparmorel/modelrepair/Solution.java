@@ -99,7 +99,7 @@ public abstract class Solution implements Comparable<Solution> {
 	 * @param shouldSave indicates that the knowledge should be saved to file immediately
 	 */
 	public void reward(boolean shouldSave) {
-		rewardCalculator.rewardSolution(this, -1, shouldSave);
+		rewardCalculator.rewardSolution(this, shouldSave);
 	}
 
 	/**

@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 /**
  * Represents the algorithms knowledge.
@@ -135,7 +136,7 @@ public class Knowledge {
 	 * @param factor
 	 * @param preferences 
 	 */
-	public void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	public void influenceWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
 		qTable.influenceWeightsFromPreferencesBy(factor, preferences);		
 	}
 }

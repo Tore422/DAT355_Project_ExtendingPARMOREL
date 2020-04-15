@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 import org.w3c.dom.Node;
 
@@ -179,7 +180,7 @@ class ErrorMap {
 	 * @param factor
 	 * @param preferences 
 	 */
-	protected void influenceActionWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	protected void influenceActionWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
 		for(ContextMap context : contexts.values()) {
 			context.influenceActionWeightsFromPreferencesBy(factor, preferences);
 		}

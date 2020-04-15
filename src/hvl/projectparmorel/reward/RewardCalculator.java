@@ -14,49 +14,50 @@ import hvl.projectparmorel.knowledge.QTable;
 
 public class RewardCalculator {
 	private Knowledge knowledge;
-	private List<Integer> preferenceNumbers;
 	private List<Preference> preferences;
+	private List<PreferenceOption> preferenceOptions;
 
-	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
+	public RewardCalculator(Knowledge knowledge, List<PreferenceOption> preferences) {
 		this.knowledge = knowledge;
-		this.preferenceNumbers = preferences;
-		this.preferences = new ArrayList<>();
-
-		Preferences prefs = new Preferences();
-
-		Preference rewardShortActionSequences = new PreferShortSequencesOfActions(
-				prefs.getWeightRewardShorterSequencesOfActions());
-		Preference rewardLongActionSequences = new PreferLongSequencesOfActions(
-				prefs.getWeightRewardLongerSequencesOfActions());
-		Preference repairHighInHierarchy = new PreferRepairingHighInContextHierarchyPreference(
-				prefs.getWeightRewardRepairingHighInErrorHierarchies());
-		Preference repairLowInHierarchy = new PreferRepairingHighInContextHierarchyPreference(
-				prefs.getWeightRewardRepairingLowInErrorHierarchies());
-		Preference punishDeletion = new PunishDeletionPreference(prefs.getWeightPunishDeletion());
-		Preference punishModification = new PunishModificationOfModelPreference(
-				prefs.getWeightPunishModificationOfTheOriginalModel());
-		Preference rewardModification = new RewardModificationOfModelPreference(
-				prefs.getWeightRewardModificationOfTheOriginalModel());
-
-		if (preferences.contains(0))
-			this.preferences.add(rewardShortActionSequences);
-		if (preferences.contains(1))
-			this.preferences.add(rewardLongActionSequences);
-		if (preferences.contains(2))
-			this.preferences.add(repairHighInHierarchy);
-		if (preferences.contains(3))
-			this.preferences.add(repairLowInHierarchy);
-		if (preferences.contains(4))
-			this.preferences.add(punishDeletion);
-		if (preferences.contains(5))
-			this.preferences.add(punishModification);
-		if (preferences.contains(6))
-			this.preferences.add(rewardModification);
-
-		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
-		prefs.saveToFile();
+		this.preferenceOptions = preferences;
+		this.preferences = initializeFrom(preferences);
 	}
-	
+
+	private List<Preference> initializeFrom(List<PreferenceOption> preferences) {
+		Preferences filePreferences = new Preferences();
+		
+		List<Preference> prefs = new ArrayList<>();
+		for (PreferenceOption preference : preferences) {
+			switch (preference) {
+			case SHORT_SEQUENCES_OF_ACTIONS:
+				prefs.add(new PreferShortSequencesOfActions(filePreferences.getWeightRewardShorterSequencesOfActions()));
+				break;
+			case LONG_SEQUENCES_OF_ACTIONS:
+				prefs.add(new PreferLongSequencesOfActions(filePreferences.getWeightRewardLongerSequencesOfActions()));
+				break;
+			case PUNISH_DELETION:
+				prefs.add(new PunishDeletionPreference(filePreferences.getWeightPunishDeletion()));
+				break;
+			case REPAIR_HIGH_IN_CONTEXT_HIERARCHY:
+				prefs.add(new PreferRepairingHighInContextHierarchyPreference(filePreferences.getWeightRewardRepairingHighInErrorHierarchies()));
+				break;
+			case REPAIR_LOW_IN_CONTEXT_HIERARCHY:
+				prefs.add(new PreferRepairingLowInContextHierarchyPreference(filePreferences.getWeightRewardRepairingLowInErrorHierarchies()));
+				break;
+			case PUNISH_MODIFICATION_OF_MODEL:
+				prefs.add(new PunishModificationOfModelPreference(filePreferences.getWeightPunishModificationOfTheOriginalModel()));
+				break;
+			case REWARD_MODIFICATION_OF_MODEL:
+				prefs.add(new RewardModificationOfModelPreference(filePreferences.getWeightRewardModificationOfTheOriginalModel()));
+				break;
+			default:
+				throw new UnsupportedOperationException("This operation is not yet implemented.");
+			}
+		}
+		filePreferences.saveToFile();
+		return prefs;
+	}
+
 	/**
 	 * Some preferences compare aspects of the model pre and post applying an
 	 * action. This call allows the preferences to store the required information
@@ -88,19 +89,21 @@ public class RewardCalculator {
 		for (Preference preference : preferences) {
 			int rewardFromPreference = preference.rewardActionForError(model, currentErrorToFix, action);
 			if (rewardFromPreference != 0) {
-				addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id,
+				addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceOption().id,
 						rewardFromPreference);
 			}
 			reward += rewardFromPreference;
 		}
+		
+		
 
-		if (!preferenceNumbers.contains(2) && !preferenceNumbers.contains(3) && !preferenceNumbers.contains(4)) {
+		if (!preferenceOptions.contains(PreferenceOption.REPAIR_HIGH_IN_CONTEXT_HIERARCHY) && !preferenceOptions.contains(PreferenceOption.REPAIR_LOW_IN_CONTEXT_HIERARCHY) && !preferenceOptions.contains(PreferenceOption.PUNISH_DELETION)) {
 			reward += 30;
 		}
 
 		return reward;
 	}
-	
+
 	/**
 	 * Sets the tag map for the error, context and action to the specified tagId and
 	 * value
@@ -115,7 +118,7 @@ public class RewardCalculator {
 		QTable qTable = knowledge.getQTable();
 		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
 	}
-	
+
 	/**
 	 * Calculates rewards that compare the different solutions to each other.
 	 * 
@@ -136,7 +139,7 @@ public class RewardCalculator {
 	 * @param solution
 	 * @param preferenceId
 	 */
-	public void rewardSolution(Solution solution, int preferenceId) {
+	public void rewardSolution(Solution solution) {
 		QTable qTable = knowledge.getQTable();
 		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getHierarchy();
@@ -145,15 +148,6 @@ public class RewardCalculator {
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
-			if (preferenceId > -1) {
-				if (qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
-					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
-							.getWeightFor(preferenceId);
-					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
-				} else {
-					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
-				}
-			}
 			qTable.updateReward(appliedAction, contextId);
 		}
 	}
@@ -166,18 +160,18 @@ public class RewardCalculator {
 	 * @param preferenceId
 	 * @param shouldSave
 	 */
-	public void rewardSolution(Solution solution, int preferenceId, boolean shouldSave) {
-		rewardSolution(solution, preferenceId);
+	public void rewardSolution(Solution solution, boolean shouldSave) {
+		rewardSolution(solution);
 		if (shouldSave) {
 			knowledge.save();
 		}
 	}
 
-	public List<Integer> getPreferences() {
-		return new ArrayList<Integer>(preferenceNumbers);
+	public List<PreferenceOption> getPreferences() {
+		return preferenceOptions;
 	}
 
 	public void influenceWeightsFromPreferencesBy(double factor) {
-		knowledge.influenceWeightsFromPreferencesBy(factor, preferenceNumbers);
+		knowledge.influenceWeightsFromPreferencesBy(factor, preferenceOptions);
 	}
 }

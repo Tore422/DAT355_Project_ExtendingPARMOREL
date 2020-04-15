@@ -12,7 +12,7 @@ public class RewardModificationOfModelPreference extends Preference implements R
 	private ErrorExtractor errorExtractor;
 
 	public RewardModificationOfModelPreference(int weight) {
-		super(weight, Prefere.REWARD_MODIFICATION_OF_MODEL);
+		super(weight, PreferenceOption.REWARD_MODIFICATION_OF_MODEL);
 		errorExtractor = new EcoreErrorExtractor();
 	}
 

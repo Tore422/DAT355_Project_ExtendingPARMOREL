@@ -21,6 +21,7 @@ import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.reward.PreferenceOption;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
@@ -79,7 +80,7 @@ public abstract class QModelFixer implements ModelFixer {
 		logger = Logger.getLogger(LOGGER_NAME);
 	}
 
-	public QModelFixer(List<Integer> preferences) {
+	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 	}
@@ -93,7 +94,7 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public void setPreferences(List<Integer> preferences) {
+	public void setPreferences(List<PreferenceOption> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		updateRewardCalculator();
 	}
