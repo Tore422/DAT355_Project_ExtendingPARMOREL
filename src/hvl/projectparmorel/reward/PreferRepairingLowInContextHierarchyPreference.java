@@ -3,7 +3,7 @@ package hvl.projectparmorel.reward;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.Error;
 
-public class PreferRepairingLowInContextHierarchyPreference extends Preference {
+public class PreferRepairingLowInContextHierarchyPreference extends Preference implements ActionBasedPreference {
 
 	public PreferRepairingLowInContextHierarchyPreference(int weight) {
 		super(weight, PreferenceValue.REPAIR_LOW_IN_CONTEXT_HIERARCHY);

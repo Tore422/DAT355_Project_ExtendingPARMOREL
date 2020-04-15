@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 
 import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.ModelType;
 
 public class EcoreModel implements Model {
 	private Resource model;
@@ -45,5 +46,10 @@ public class EcoreModel implements Model {
 		} catch (IOException exception) {
 			exception.printStackTrace();
 		}
+	}
+
+	@Override
+	public ModelType getModelType() {
+		return ModelType.ECORE;
 	}
 }

@@ -3,7 +3,7 @@ package hvl.projectparmorel.reward;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.Error;
 
-public class PunishDeletionPreference extends Preference {
+public class PunishDeletionPreference extends Preference implements ActionBasedPreference {
 
 	public PunishDeletionPreference(int weight) {
 		super(weight, PreferenceValue.PUNISH_DELETION);

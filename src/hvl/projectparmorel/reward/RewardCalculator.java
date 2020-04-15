@@ -2,6 +2,7 @@ package hvl.projectparmorel.reward;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import hvl.projectparmorel.modelrepair.Preferences;
@@ -9,6 +10,7 @@ import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
+import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 
@@ -16,38 +18,42 @@ public class RewardCalculator {
 	private Knowledge knowledge;
 	private List<Integer> preferenceNumbers;
 	private List<Preference> preferences;
+	private Set<Integer> unsupportedErrorCodes;
 
 	private int weightRewardModificationOfTheOriginalModel;
 	private int weightPunishModificationOfTheOriginalModel;
 	private int weightRewardShorterSequencesOfActions;
 	private int weightRewardLongerSequencesOfActions;
-	
+
 	private Logger logger;
 
-	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
+	public RewardCalculator(Knowledge knowledge, List<Integer> preferences, Set<Integer> unsupportedErrorCodes) {
 		this.knowledge = knowledge;
 		this.preferenceNumbers = preferences;
 		this.preferences = new ArrayList<>();
-		
+		this.unsupportedErrorCodes = unsupportedErrorCodes;
+
 		Preferences prefs = new Preferences();
-		Preference repairHighInHierarchy = new PreferRepairingHighInContextHierarchyPreference(prefs.getWeightRewardRepairingHighInErrorHierarchies());
-		Preference repairLowInHierarchy = new PreferRepairingHighInContextHierarchyPreference(prefs.getWeightRewardRepairingLowInErrorHierarchies());
+		Preference repairHighInHierarchy = new PreferRepairingHighInContextHierarchyPreference(
+				prefs.getWeightRewardRepairingHighInErrorHierarchies());
+		Preference repairLowInHierarchy = new PreferRepairingHighInContextHierarchyPreference(
+				prefs.getWeightRewardRepairingLowInErrorHierarchies());
 		Preference punishDeletion = new PunishDeletionPreference(prefs.getWeightPunishDeletion());
-		
-		if(preferences.contains(2))
+
+		if (preferences.contains(2))
 			this.preferences.add(repairHighInHierarchy);
-		if(preferences.contains(3))
+		if (preferences.contains(3))
 			this.preferences.add(repairLowInHierarchy);
-		if(preferences.contains(4))
+		if (preferences.contains(4))
 			this.preferences.add(punishDeletion);
-		
+
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
 		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
 		weightRewardLongerSequencesOfActions = prefs.getWeightRewardLongerSequencesOfActions();
 		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
 		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
-		
+
 		logger = Logger.getLogger("MyLog");
 	}
 
@@ -61,14 +67,19 @@ public class RewardCalculator {
 	 */
 	public int calculateRewardFor(Error currentErrorToFix, Action action) {
 		int reward = 0;
-		
+
 		int contextId = action.getHierarchy();
-		for(Preference preference : preferences) {
-			int rewardFromPreference = preference.rewardActionForError(currentErrorToFix, action);
-			if(rewardFromPreference != 0) {
-				addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id, rewardFromPreference);
+		for (Preference preference : preferences) {
+			if(preference instanceof ActionBasedPreference) {
+				ActionBasedPreference pref = (ActionBasedPreference) preference;
+				int rewardFromPreference = pref.rewardActionForError(currentErrorToFix, action);
+				if (rewardFromPreference != 0) {
+					addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id,
+							rewardFromPreference);
+				}
+				reward += rewardFromPreference;
 			}
-			reward += rewardFromPreference;
+			
 		}
 
 		if (!preferenceNumbers.contains(2) && !preferenceNumbers.contains(3) && !preferenceNumbers.contains(4)) {
@@ -104,7 +115,7 @@ public class RewardCalculator {
 	 * @param action
 	 * @return the updated weight
 	 */
-	public int updateBasedOnNumberOfErrors(int reward, int sizeBefore, int sizeAfter, Error currentErrorToFix, int code,
+	public int rewardPostApplyingAction(int reward, int sizeBefore, int sizeAfter, Error currentErrorToFix, int code,
 			Action action) {
 		// check how the action has modified number of errors
 		// high modification
@@ -143,19 +154,19 @@ public class RewardCalculator {
 	 */
 	public void rewardSolution(Solution solution, int preferenceId) {
 		QTable qTable = knowledge.getQTable();
-		for(AppliedAction appliedAction : solution.getSequence()) {
+		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getHierarchy();
 			int errorCode = appliedAction.getError().getCode();
 			int actionId = appliedAction.getAction().getCode();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
-			
+
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
 			if (preferenceId > -1) {
 				if (qTable.getTagDictionaryForAction(errorCode, contextId, actionId).contains(preferenceId)) {
 					int oldTagValue = qTable.getTagDictionaryForAction(errorCode, contextId, actionId)
 							.getWeightFor(preferenceId);
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, oldTagValue + 500);
-				} else {	
+				} else {
 					qTable.setTagValueInTagDictionary(errorCode, contextId, actionId, preferenceId, 500);
 				}
 			}
@@ -214,7 +225,8 @@ public class RewardCalculator {
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardShorterSequencesOfActions);
 			rewardSolution(optimalSequence, 0);
-			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of " + weightRewardShorterSequencesOfActions + " because of preferences to reward shorter sequences.");
+			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of "
+					+ weightRewardShorterSequencesOfActions + " because of preferences to reward shorter sequences.");
 		}
 	}
 
@@ -240,7 +252,8 @@ public class RewardCalculator {
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardLongerSequencesOfActions);
 			rewardSolution(optimalSequence, 1);
-			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of " + weightRewardLongerSequencesOfActions + " because of preferences to reward longer sequences.");
+			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of "
+					+ weightRewardLongerSequencesOfActions + " because of preferences to reward longer sequences.");
 		}
 	}
 
@@ -265,5 +278,23 @@ public class RewardCalculator {
 
 	public void influenceWeightsFromPreferencesBy(double factor) {
 		knowledge.influenceWeightsFromPreferencesBy(factor, preferenceNumbers);
+	}
+
+	/**
+	 * Some preferences compare aspects of the model pre and post applying an
+	 * action. This call allows the preferences to store the required information
+	 * before choosing action.
+	 * 
+	 * @param model
+	 */
+	public void initializePreferencesBeforeChoosingAction(Model model) {
+		for (Preference preference : preferences) {
+			if(preference instanceof ResultBasedPreference) {
+				ResultBasedPreference pref = (ResultBasedPreference) preference;
+				pref.initializeBeforeApplyingAction(model);
+			}
+			
+		}
+
 	}
 }

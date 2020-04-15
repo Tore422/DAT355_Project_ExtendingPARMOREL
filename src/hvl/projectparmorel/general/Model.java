@@ -23,4 +23,11 @@ public interface Model {
 	 * Saves what is stored in the representation.
 	 */
 	public void save();
+	
+	/**
+	 * Gets the type of the model.
+	 * 
+	 * @return the corresponding ModelType
+	 */
+	public ModelType getModelType();
 }

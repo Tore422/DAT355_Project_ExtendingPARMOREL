@@ -70,7 +70,7 @@ public abstract class QModelFixer implements ModelFixer {
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
-		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
+		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>(), unsupportedErrorCodes);
 		unsupportedErrorCodes = new HashSet<>();
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
@@ -81,7 +81,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 	public QModelFixer(List<Integer> preferences) {
 		this();
-		rewardCalculator = new RewardCalculator(knowledge, preferences);
+		rewardCalculator = new RewardCalculator(knowledge, preferences, unsupportedErrorCodes);
 	}
 
 	private double[] linspace(double min, double max, int points) {
@@ -94,7 +94,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 	@Override
 	public void setPreferences(List<Integer> preferences) {
-		rewardCalculator = new RewardCalculator(knowledge, preferences);
+		rewardCalculator = new RewardCalculator(knowledge, preferences, unsupportedErrorCodes);
 		updateRewardCalculator();
 	}
 
@@ -397,6 +397,7 @@ public abstract class QModelFixer implements ModelFixer {
 			}
 		}
 
+		rewardCalculator.initializePreferencesBeforeChoosingAction(episodeModel);
 		Action action = chooseAction(currentErrorToFix);
 		logger.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
 				+ action.getWeight());
@@ -415,7 +416,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 		int code = action.getHierarchy();
 
-		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
+		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
 				code, action);
 
 		if (!errorsToFix.isEmpty()) {
