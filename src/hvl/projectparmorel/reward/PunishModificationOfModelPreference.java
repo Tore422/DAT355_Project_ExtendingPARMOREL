@@ -18,22 +18,18 @@ class PunishModificationOfModelPreference extends Preference implements ResultBa
 
 	@Override
 	public void initializeBeforeApplyingAction(Model model) {
-		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model, false).size();
+		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false).size();
 	}
 
 	@Override
 	int rewardActionForError(Model model, Error error, Action action) {
 		int reward = 0;
-		int numberOfErrorsAfter = errorExtractor.extractErrorsFrom(model, false).size();
+		int numberOfErrorsAfter = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false).size();
 		
 		if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) > 1) {
 			reward = reward - (2 / 3 * weight * (numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter));
-//			addTagMap(currentErrorToFix, code, action, 5,
-//					-(2 / 3 * weight * (numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter)));
-
 		} else if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) != 0) {
 				reward = reward + weight;
-//			addTagMap(currentErrorToFix, code, action, 5, weight);
 		}
 		return reward;
 	}

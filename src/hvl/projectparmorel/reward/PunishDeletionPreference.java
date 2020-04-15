@@ -13,13 +13,10 @@ public class PunishDeletionPreference extends Preference {
 	@Override
 	public int rewardActionForError(Model model, Error error, Action action) {
 		int reward = 0;
-//		int contextId = action.getHierarchy();
 		if (action.isDelete()) {
 			reward -= weight;
-//			addTagMap(currentErrorToFix, contextId, action, 4, -weight);
 		} else {
 			reward += weight / 10;
-//			addTagMap(currentErrorToFix, contextId, action, 4, weight / 10);
 		}
 		return reward;
 	}

@@ -437,7 +437,7 @@ public abstract class QModelFixer implements ModelFixer {
 				}
 			}
 
-			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
+//			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
 
 			nextErrorToFix = errorsToFix.get(0);
 			Action a;
