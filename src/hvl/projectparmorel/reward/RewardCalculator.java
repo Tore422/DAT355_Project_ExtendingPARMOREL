@@ -36,6 +36,10 @@ public class RewardCalculator {
 		Preference repairLowInHierarchy = new PreferRepairingHighInContextHierarchyPreference(
 				prefs.getWeightRewardRepairingLowInErrorHierarchies());
 		Preference punishDeletion = new PunishDeletionPreference(prefs.getWeightPunishDeletion());
+		Preference punishModification = new PunishModificationOfModelPreference(
+				prefs.getWeightPunishModificationOfTheOriginalModel());
+		Preference rewardModification = new RewardModificationOfModelPreference(
+				prefs.getWeightRewardModificationOfTheOriginalModel());
 
 		if (preferences.contains(2))
 			this.preferences.add(repairHighInHierarchy);
@@ -43,6 +47,10 @@ public class RewardCalculator {
 			this.preferences.add(repairLowInHierarchy);
 		if (preferences.contains(4))
 			this.preferences.add(punishDeletion);
+		if (preferences.contains(5))
+			this.preferences.add(punishModification);
+		if (preferences.contains(6))
+			this.preferences.add(rewardModification);
 
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
 		weightRewardShorterSequencesOfActions = prefs.getWeightRewardShorterSequencesOfActions();
@@ -62,21 +70,17 @@ public class RewardCalculator {
 	 * @param action
 	 * @return the reward
 	 */
-	public int calculateRewardFor(Error currentErrorToFix, Action action) {
+	public int calculateRewardFor(Model model, Error currentErrorToFix, Action action) {
 		int reward = 0;
 
 		int contextId = action.getHierarchy();
 		for (Preference preference : preferences) {
-			if(preference instanceof ActionBasedPreference) {
-				ActionBasedPreference pref = (ActionBasedPreference) preference;
-				int rewardFromPreference = pref.rewardActionForError(currentErrorToFix, action);
-				if (rewardFromPreference != 0) {
-					addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id,
-							rewardFromPreference);
-				}
-				reward += rewardFromPreference;
+			int rewardFromPreference = preference.rewardActionForError(model, currentErrorToFix, action);
+			if (rewardFromPreference != 0) {
+				addTagMap(currentErrorToFix, contextId, action, preference.getPreferenceValue().id,
+						rewardFromPreference);
 			}
-			
+			reward += rewardFromPreference;
 		}
 
 		if (!preferenceNumbers.contains(2) && !preferenceNumbers.contains(3) && !preferenceNumbers.contains(4)) {
@@ -99,48 +103,6 @@ public class RewardCalculator {
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
 		QTable qTable = knowledge.getQTable();
 		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
-	}
-
-	/**
-	 * Updates the reward given as input based on the change in numbers of errors
-	 * 
-	 * @param reward
-	 * @param sizeBefore
-	 * @param sizeAfter
-	 * @param currentErrorToFix
-	 * @param code
-	 * @param action
-	 * @return the updated weight
-	 */
-	public int rewardPostApplyingAction(int reward, int sizeBefore, int sizeAfter, Error currentErrorToFix, int code,
-			Action action) {
-		// check how the action has modified number of errors
-		// high modification
-		if (preferenceNumbers.contains(6)) {
-			if ((sizeBefore - sizeAfter) > 1) {
-				reward = reward + (2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - sizeAfter));
-				addTagMap(currentErrorToFix, code, action, 6,
-						(2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - sizeAfter)));
-			} else {
-				if ((sizeBefore - sizeAfter) != 0)
-					reward = reward - weightRewardModificationOfTheOriginalModel;
-				addTagMap(currentErrorToFix, code, action, 6, -weightRewardModificationOfTheOriginalModel);
-			}
-		}
-		// low modification
-		if (preferenceNumbers.contains(5)) {
-			if ((sizeBefore - sizeAfter) > 1) {
-				reward = reward - (2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - sizeAfter));
-				addTagMap(currentErrorToFix, code, action, 5,
-						-(2 / 3 * weightPunishModificationOfTheOriginalModel * (sizeBefore - sizeAfter)));
-
-			} else {
-				if ((sizeBefore - sizeAfter) != 0)
-					reward = reward + weightPunishModificationOfTheOriginalModel;
-				addTagMap(currentErrorToFix, code, action, 5, weightPunishModificationOfTheOriginalModel);
-			}
-		}
-		return reward;
 	}
 
 	/**
@@ -286,11 +248,11 @@ public class RewardCalculator {
 	 */
 	public void initializePreferencesBeforeChoosingAction(Model model) {
 		for (Preference preference : preferences) {
-			if(preference instanceof ResultBasedPreference) {
+			if (preference instanceof ResultBasedPreference) {
 				ResultBasedPreference pref = (ResultBasedPreference) preference;
 				pref.initializeBeforeApplyingAction(model);
 			}
-			
+
 		}
 
 	}

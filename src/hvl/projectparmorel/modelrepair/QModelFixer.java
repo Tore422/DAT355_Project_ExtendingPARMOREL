@@ -398,12 +398,12 @@ public abstract class QModelFixer implements ModelFixer {
 		Action action = chooseAction(currentErrorToFix);
 		logger.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
 				+ action.getWeight());
-		int sizeBefore = errorsToFix.size();
+//		int sizeBefore = errorsToFix.size();
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
-		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
+		reward = rewardCalculator.calculateRewardFor(episodeModel, currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
 		List<AppliedAction> appliedActions = sequence.getSequence();
@@ -413,8 +413,8 @@ public abstract class QModelFixer implements ModelFixer {
 
 		int code = action.getHierarchy();
 
-		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
-				code, action);
+//		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
+//				code, action);
 
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);

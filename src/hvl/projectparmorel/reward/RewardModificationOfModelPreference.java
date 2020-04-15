@@ -6,13 +6,13 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 
-class PunishModificationOfModelPreference extends Preference implements ResultBasedPreference {
+public class RewardModificationOfModelPreference extends Preference implements ResultBasedPreference {
 
 	private int numbersOfErrorsBeforeApplyingAction;
 	private ErrorExtractor errorExtractor;
 
-	public PunishModificationOfModelPreference(int weight) {
-		super(weight, PreferenceValue.PUNISH_MODIFICATION_OF_MODEL);
+	public RewardModificationOfModelPreference(int weight) {
+		super(weight, PreferenceValue.REWARD_MODIFICATION_OF_MODEL);
 		errorExtractor = new EcoreErrorExtractor();
 	}
 
@@ -25,15 +25,15 @@ class PunishModificationOfModelPreference extends Preference implements ResultBa
 	int rewardActionForError(Model model, Error error, Action action) {
 		int reward = 0;
 		int numberOfErrorsAfter = errorExtractor.extractErrorsFrom(model, false).size();
-		
-		if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) > 1) {
-			reward = reward - (2 / 3 * weight * (numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter));
-//			addTagMap(currentErrorToFix, code, action, 5,
-//					-(2 / 3 * weight * (numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter)));
 
-		} else if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) != 0) {
-				reward = reward + weight;
-//			addTagMap(currentErrorToFix, code, action, 5, weight);
+		if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) > 1) {
+			reward = reward + (2 / 3 * weight * (numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter));
+//				addTagMap(currentErrorToFix, code, action, 6,
+//						(2 / 3 * weightRewardModificationOfTheOriginalModel * (sizeBefore - sizeAfter)));
+		} else {
+			if ((numbersOfErrorsBeforeApplyingAction - numberOfErrorsAfter) != 0)
+				reward = reward - weight;
+//				addTagMap(currentErrorToFix, code, action, 6, -weightRewardModificationOfTheOriginalModel);
 		}
 		return reward;
 	}
