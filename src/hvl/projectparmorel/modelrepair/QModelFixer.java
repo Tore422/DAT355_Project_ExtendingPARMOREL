@@ -32,6 +32,10 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * @author Magnus Marthinsen
  */
 public abstract class QModelFixer implements ModelFixer {
+	/**
+	 * The name of the {@link java.util.logging.Logger} used.
+	 */
+	public static final String LOGGER_NAME = "MyLog";
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MIN_EPISODE_STEPS = 20;
@@ -72,7 +76,7 @@ public abstract class QModelFixer implements ModelFixer {
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 
-		logger = Logger.getLogger("MyLog");
+		logger = Logger.getLogger(LOGGER_NAME);
 	}
 
 	public QModelFixer(List<Integer> preferences) {
@@ -204,6 +208,7 @@ public abstract class QModelFixer implements ModelFixer {
 			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
+		rewardCalculator.rewardPostRepair(possibleSolutions);
 		Solution bestSequence = findSolutionWithHighestWeight(possibleSolutions);
 		duplicateFile.delete();
 
@@ -539,8 +544,6 @@ public abstract class QModelFixer implements ModelFixer {
 	 *         list is empty.
 	 */
 	private Solution findSolutionWithHighestWeight(List<Solution> solutions) {
-		rewardCalculator.rewardBasedOnSequenceLength(solutions);
-
 		Solution highWeightSolution = initializeSolution();
 		if (!solutions.isEmpty()) {
 			highWeightSolution = solutions.get(0);

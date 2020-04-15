@@ -10,5 +10,5 @@ public interface ResultBasedPreference {
 	 * 
 	 * @param model to extract information from.
 	 */
-	void initializeBeforeApplyingAction(Model model);
+	public void initializeBeforeApplyingAction(Model model);
 }

@@ -8,7 +8,7 @@ abstract class Preference {
 	protected int weight;
 	protected PreferenceValue value;
 	
-	public Preference(int weight, PreferenceValue value) {
+	protected Preference(int weight, PreferenceValue value) {
 		this.weight = weight;
 		this.value = value;
 	}
