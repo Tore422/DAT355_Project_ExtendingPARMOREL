@@ -149,74 +149,6 @@ public class RewardCalculator {
 		}
 	}
 
-//	/**
-//	 * Rewards the sequences based on their length
-//	 * 
-//	 * @param sequences
-//	 */
-//	public void rewardBasedOnSequenceLength(List<Solution> sequences) {
-//		if (preferenceNumbers.contains(0)) {
-//			handlePreferShortSequences(sequences);
-//		}
-//		if (preferenceNumbers.contains(1)) {
-//			handlePreferLongSequences(sequences);
-//		}
-//	}
-
-//	/**
-//	 * Rewards the best shortest sequence in the specified list of sequences
-//	 * 
-//	 * @param sequences
-//	 */
-//	private void handlePreferShortSequences(List<Solution> sequences) {
-//		Solution optimalSequence = null;
-//		int smallestSequenceSize = 9999;
-//
-//		for (Solution sequence : sequences) {
-//			if (sequence.getSequence().size() < smallestSequenceSize && sequence.getWeight() > 0) {
-//				smallestSequenceSize = sequence.getSequence().size();
-//				optimalSequence = sequence;
-//			} else if (sequence.getSequence().size() == smallestSequenceSize) {
-//				if (sequence.getWeight() > optimalSequence.getWeight()) {
-//					optimalSequence = sequence;
-//				}
-//			}
-//		}
-//		if (optimalSequence != null) {
-//			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardShorterSequencesOfActions);
-//			rewardSolution(optimalSequence, 0);
-//			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of "
-//					+ weightRewardShorterSequencesOfActions + " because of preferences to reward shorter sequences.");
-//		}
-//	}
-
-//	/**
-//	 * Rewards the best longest sequence in the specified list of sequences
-//	 * 
-//	 * @param sequences
-//	 */
-//	private void handlePreferLongSequences(List<Solution> sequences) {
-//		Solution optimalSequence = null;
-//		int largestSequenceSize = 0;
-//
-//		for (Solution sequence : sequences) {
-//			if (sequence.getSequence().size() > largestSequenceSize && sequence.getWeight() > 0) {
-//				largestSequenceSize = sequence.getSequence().size();
-//				optimalSequence = sequence;
-//			} else if (sequence.getSequence().size() == largestSequenceSize) {
-//				if (sequence.getWeight() > optimalSequence.getWeight()) {
-//					optimalSequence = sequence;
-//				}
-//			}
-//		}
-//		if (optimalSequence != null) {
-//			optimalSequence.setWeight(optimalSequence.getWeight() + weightRewardLongerSequencesOfActions);
-//			rewardSolution(optimalSequence, 1);
-//			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of "
-//					+ weightRewardLongerSequencesOfActions + " because of preferences to reward longer sequences.");
-//		}
-//	}
-
 	public int updateIfNewErrorIsIntroduced(int reward, List<Integer> originalCodes, Error nextErrorToFix) {
 		// if new error introduced
 		if (!originalCodes.contains(nextErrorToFix.getCode())) {
@@ -265,8 +197,8 @@ public class RewardCalculator {
 	 */
 	public void rewardPostRepair(List<Solution> possibleSolutions) {
 		for (Preference preference : preferences) {
-			if (preference instanceof SolutionComparingPreference) {
-				SolutionComparingPreference comparingPreference = (SolutionComparingPreference) preference;
+			if (preference instanceof PostRepairPreference) {
+				PostRepairPreference comparingPreference = (PostRepairPreference) preference;
 				comparingPreference.rewardPostRepair(possibleSolutions, knowledge);
 			}
 		}

@@ -12,7 +12,7 @@ import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.QModelFixer;
 import hvl.projectparmorel.modelrepair.Solution;
 
-class PreferShortSequencesOfActions extends Preference implements SolutionComparingPreference {
+class PreferShortSequencesOfActions extends Preference implements PostRepairPreference {
 
 	private Logger logger;
 
@@ -21,6 +21,9 @@ class PreferShortSequencesOfActions extends Preference implements SolutionCompar
 		logger = Logger.getLogger(QModelFixer.LOGGER_NAME);
 	}
 
+	/**
+	 * Rewards the best shortest sequence in the specified list of sequences
+	 */
 	@Override
 	public void rewardPostRepair(List<Solution> possibleSolutions, Knowledge knowledge) {
 		Solution optimalSequence = null;
