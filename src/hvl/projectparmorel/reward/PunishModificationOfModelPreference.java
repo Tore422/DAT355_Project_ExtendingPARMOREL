@@ -12,7 +12,7 @@ class PunishModificationOfModelPreference extends Preference implements ResultBa
 	private ErrorExtractor errorExtractor;
 
 	public PunishModificationOfModelPreference(int weight) {
-		super(weight, PreferenceValue.PUNISH_MODIFICATION_OF_MODEL);
+		super(weight, Prefere.PUNISH_MODIFICATION_OF_MODEL);
 		errorExtractor = new EcoreErrorExtractor();
 	}
 

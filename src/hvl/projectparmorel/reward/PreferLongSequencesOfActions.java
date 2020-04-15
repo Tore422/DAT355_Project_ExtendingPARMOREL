@@ -17,7 +17,7 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 	private Logger logger;
 	
 	public PreferLongSequencesOfActions(int weight) {
-		super(weight, PreferenceValue.LONG_SEQUENCES_OF_ACTIONS);
+		super(weight, Prefere.LONG_SEQUENCES_OF_ACTIONS);
 		logger = Logger.getLogger(QModelFixer.LOGGER_NAME);
 	}
 	

@@ -17,7 +17,7 @@ class PreferShortSequencesOfActions extends Preference implements PostRepairPref
 	private Logger logger;
 
 	PreferShortSequencesOfActions(int weight) {
-		super(weight, PreferenceValue.SHORT_SEQUENCES_OF_ACTIONS);
+		super(weight, Prefere.SHORT_SEQUENCES_OF_ACTIONS);
 		logger = Logger.getLogger(QModelFixer.LOGGER_NAME);
 	}
 

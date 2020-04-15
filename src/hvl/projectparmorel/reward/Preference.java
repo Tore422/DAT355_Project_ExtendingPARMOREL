@@ -6,9 +6,9 @@ import hvl.projectparmorel.general.Model;
 
 abstract class Preference {
 	protected int weight;
-	protected PreferenceValue value;
+	protected Prefere value;
 	
-	protected Preference(int weight, PreferenceValue value) {
+	protected Preference(int weight, Prefere value) {
 		this.weight = weight;
 		this.value = value;
 	}
@@ -44,14 +44,14 @@ abstract class Preference {
 	/**
 	 * @return the value corresponding to the preference
 	 */
-	PreferenceValue getPreferenceValue() {
+	Prefere getPreferenceValue() {
 		return value;
 	}
 
 	/**
 	 * @param value the corresponding PreferenceValue for the preference to set
 	 */
-	void setPreferenceValue(PreferenceValue value) {
+	void setPreferenceValue(Prefere value) {
 		this.value = value;
 	}
 }
