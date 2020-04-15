@@ -56,6 +56,22 @@ public class RewardCalculator {
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
 		prefs.saveToFile();
 	}
+	
+	/**
+	 * Some preferences compare aspects of the model pre and post applying an
+	 * action. This call allows the preferences to store the required information
+	 * before choosing action.
+	 * 
+	 * @param model
+	 */
+	public void initializePreferencesBeforeChoosingAction(Model model) {
+		for (Preference preference : preferences) {
+			if (preference instanceof ResultBasedPreference) {
+				ResultBasedPreference pref = (ResultBasedPreference) preference;
+				pref.initializeBeforeApplyingAction(model);
+			}
+		}
+	}
 
 	/**
 	 * Calculates the reward based on the result from applying the specified action
@@ -84,7 +100,7 @@ public class RewardCalculator {
 
 		return reward;
 	}
-
+	
 	/**
 	 * Sets the tag map for the error, context and action to the specified tagId and
 	 * value
@@ -98,6 +114,20 @@ public class RewardCalculator {
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
 		QTable qTable = knowledge.getQTable();
 		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
+	}
+	
+	/**
+	 * Calculates rewards that compare the different solutions to each other.
+	 * 
+	 * @param possibleSolutions
+	 */
+	public void rewardPostRepair(List<Solution> possibleSolutions) {
+		for (Preference preference : preferences) {
+			if (preference instanceof PostRepairPreference) {
+				PostRepairPreference comparingPreference = (PostRepairPreference) preference;
+				comparingPreference.rewardPostRepair(possibleSolutions, knowledge);
+			}
+		}
 	}
 
 	/**
@@ -149,37 +179,5 @@ public class RewardCalculator {
 
 	public void influenceWeightsFromPreferencesBy(double factor) {
 		knowledge.influenceWeightsFromPreferencesBy(factor, preferenceNumbers);
-	}
-
-	/**
-	 * Some preferences compare aspects of the model pre and post applying an
-	 * action. This call allows the preferences to store the required information
-	 * before choosing action.
-	 * 
-	 * @param model
-	 */
-	public void initializePreferencesBeforeChoosingAction(Model model) {
-		for (Preference preference : preferences) {
-			if (preference instanceof ResultBasedPreference) {
-				ResultBasedPreference pref = (ResultBasedPreference) preference;
-				pref.initializeBeforeApplyingAction(model);
-			}
-
-		}
-
-	}
-
-	/**
-	 * Calculates rewards that compare the different solutions to each other.
-	 * 
-	 * @param possibleSolutions
-	 */
-	public void rewardPostRepair(List<Solution> possibleSolutions) {
-		for (Preference preference : preferences) {
-			if (preference instanceof PostRepairPreference) {
-				PostRepairPreference comparingPreference = (PostRepairPreference) preference;
-				comparingPreference.rewardPostRepair(possibleSolutions, knowledge);
-			}
-		}
 	}
 }
