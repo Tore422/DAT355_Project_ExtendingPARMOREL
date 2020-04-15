@@ -17,9 +17,6 @@ public class RewardCalculator {
 	private List<Integer> preferenceNumbers;
 	private List<Preference> preferences;
 
-	private int weightRewardModificationOfTheOriginalModel;
-	private int weightPunishModificationOfTheOriginalModel;
-
 	public RewardCalculator(Knowledge knowledge, List<Integer> preferences) {
 		this.knowledge = knowledge;
 		this.preferenceNumbers = preferences;
@@ -57,9 +54,6 @@ public class RewardCalculator {
 			this.preferences.add(rewardModification);
 
 		knowledge = new hvl.projectparmorel.knowledge.Knowledge(); // preferences);
-	
-		weightPunishModificationOfTheOriginalModel = prefs.getWeightPunishModificationOfTheOriginalModel();
-		weightRewardModificationOfTheOriginalModel = prefs.getWeightRewardModificationOfTheOriginalModel();
 		prefs.saveToFile();
 	}
 
