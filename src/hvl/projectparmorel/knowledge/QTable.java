@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 public class QTable {
 	ErrorContextActionDirectory qTable;
@@ -190,7 +191,7 @@ public class QTable {
 	 * @param factor
 	 * @param preferences 
 	 */
-	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	protected void influenceWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
 		qTable.influenceWeightsFromPreferencesBy(factor, preferences);
 	}
 }

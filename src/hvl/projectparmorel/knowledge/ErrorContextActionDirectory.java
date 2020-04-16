@@ -7,6 +7,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 public interface ErrorContextActionDirectory {
 	/**
@@ -101,5 +102,5 @@ public interface ErrorContextActionDirectory {
 	 * @param factor
 	 * @param preferences 
 	 */
-	abstract void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences);
+	abstract void influenceWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences);
 }

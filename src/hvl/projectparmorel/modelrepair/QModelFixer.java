@@ -6,7 +6,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -22,6 +21,7 @@ import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.reward.PreferenceOption;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**
@@ -33,6 +33,10 @@ import hvl.projectparmorel.reward.RewardCalculator;
  * @author Magnus Marthinsen
  */
 public abstract class QModelFixer implements ModelFixer {
+	/**
+	 * The name of the {@link java.util.logging.Logger} used.
+	 */
+	public static final String LOGGER_NAME = "MyLog";
 	private final double MIN_ALPHA = 0.06; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
 	private final int MIN_EPISODE_STEPS = 20;
@@ -60,8 +64,6 @@ public abstract class QModelFixer implements ModelFixer {
 	private List<Integer> initialErrorCodes;
 	private List<Solution> possibleSolutions;
 
-	protected Set<Integer> unsupportedErrorCodes;
-
 	public QModelFixer() {
 		errorsToFix = new ArrayList<Error>();
 		knowledge = new Knowledge();
@@ -71,15 +73,14 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		unsupportedErrorCodes = new HashSet<>();
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 
-		logger = Logger.getLogger("MyLog");
+		logger = Logger.getLogger(LOGGER_NAME);
 	}
 
-	public QModelFixer(List<Integer> preferences) {
+	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 	}
@@ -93,7 +94,7 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public void setPreferences(List<Integer> preferences) {
+	public void setPreferences(List<PreferenceOption> preferences) {
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 		updateRewardCalculator();
 	}
@@ -162,10 +163,10 @@ public abstract class QModelFixer implements ModelFixer {
 		int episode = 0;
 
 		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
-		handleUnsupportedErrors();
+		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
-			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
+			throw new NoErrorsInModelException("No supported errors where found in " + modelFile.getAbsolutePath());
 		}
 		
 		setInitialErrors(errorsToFix);
@@ -184,7 +185,7 @@ public abstract class QModelFixer implements ModelFixer {
 		for (Integer errorCode : unsupportedErrors) {
 			logger.warning(
 					"Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
-			this.unsupportedErrorCodes.add(errorCode);
+			model.getModelType().addUnsupportedErrorCode(errorCode);
 		}
 
 		logger.info("Number of episodes: " + numberOfEpisodes);
@@ -208,6 +209,7 @@ public abstract class QModelFixer implements ModelFixer {
 			errorsToFix.addAll(originalErrors);
 			episode++;
 		}
+		rewardCalculator.rewardPostRepair(possibleSolutions);
 		Solution bestSequence = findSolutionWithHighestWeight(possibleSolutions);
 		duplicateFile.delete();
 
@@ -229,11 +231,12 @@ public abstract class QModelFixer implements ModelFixer {
 
 	/**
 	 * Logs all encountered unsupported errors with a warning and removes them from the errorsToFix.
+	 * @param model 
 	 */
-	private void handleUnsupportedErrors() {
+	private void handleUnsupportedErrors(Model model) {
 		List<Error> unsupported = new ArrayList<>();
 		for (Error e : errorsToFix) {
-			if (unsupportedErrorCodes.contains(e.getCode())) {
+			if (model.getModelType().doesNotSupportError(e.getCode())) {
 				logger.warning(
 						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
 				unsupported.add(e);
@@ -318,7 +321,7 @@ public abstract class QModelFixer implements ModelFixer {
 		int step = 0;
 
 		while (step < numberOfSteps) {
-			while (!errorsToFix.isEmpty() && unsupportedErrorCodes.contains(errorsToFix.get(0).getCode())) {
+			while (!errorsToFix.isEmpty() && episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
@@ -330,7 +333,7 @@ public abstract class QModelFixer implements ModelFixer {
 				} catch (UnsupportedErrorException e) {
 					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: "
 							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
-					unsupportedErrorCodes.add(e.getErrorCode());
+					episodeModel.getModelType().addUnsupportedErrorCode(e.getErrorCode());
 					errorsToFix.remove(0);
 				}
 				step++;
@@ -397,15 +400,16 @@ public abstract class QModelFixer implements ModelFixer {
 			}
 		}
 
+		rewardCalculator.initializePreferencesBeforeChoosingAction(episodeModel);
 		Action action = chooseAction(currentErrorToFix);
 		logger.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
 				+ action.getWeight());
-		int sizeBefore = errorsToFix.size();
+//		int sizeBefore = errorsToFix.size();
 		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
-		reward = rewardCalculator.calculateRewardFor(currentErrorToFix, action);
+		reward = rewardCalculator.calculateRewardFor(episodeModel, currentErrorToFix, action);
 		// Insert stuff into sequence
 		sequence.setId(episode);
 		List<AppliedAction> appliedActions = sequence.getSequence();
@@ -415,8 +419,8 @@ public abstract class QModelFixer implements ModelFixer {
 
 		int code = action.getHierarchy();
 
-		reward = rewardCalculator.updateBasedOnNumberOfErrors(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
-				code, action);
+//		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
+//				code, action);
 
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
@@ -434,7 +438,7 @@ public abstract class QModelFixer implements ModelFixer {
 				}
 			}
 
-			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
+//			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
 
 			nextErrorToFix = errorsToFix.get(0);
 			Action a;
@@ -541,8 +545,6 @@ public abstract class QModelFixer implements ModelFixer {
 	 *         list is empty.
 	 */
 	private Solution findSolutionWithHighestWeight(List<Solution> solutions) {
-		rewardCalculator.rewardBasedOnSequenceLength(solutions);
-
 		Solution highWeightSolution = initializeSolution();
 		if (!solutions.isEmpty()) {
 			highWeightSolution = solutions.get(0);

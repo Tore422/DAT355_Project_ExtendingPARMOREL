@@ -15,13 +15,14 @@ import org.eclipse.emf.ecore.util.Diagnostician;
 
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
+import hvl.projectparmorel.general.ModelType;
 
 public class EcoreErrorExtractor implements ErrorExtractor {
 
 	private Set<Integer> unsuportedErrorCodes;
 
-	public EcoreErrorExtractor(Set<Integer> unsuportedErrorCodes) {
-		this.unsuportedErrorCodes = unsuportedErrorCodes;
+	public EcoreErrorExtractor() {
+		this.unsuportedErrorCodes = ModelType.ECORE.getUnsupportedErrorCodes();
 	}
 
 	@Override

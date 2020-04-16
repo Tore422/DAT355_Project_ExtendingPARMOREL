@@ -39,19 +39,15 @@ import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.reward.RewardCalculator;
 
 public class EcoreModelProcessor implements ModelProcessor {
 	private Knowledge knowledge;
 	private List<Error> errors;
-	private RewardCalculator rewardCalculator;
 	private ErrorExtractor errorExtractor;
 
-	public EcoreModelProcessor(Knowledge knowledge, RewardCalculator rewardCalculator,
-			Set<Integer> unsupportedErrorCodes) {
+	public EcoreModelProcessor(Knowledge knowledge) {
 		this.knowledge = knowledge;
-		this.rewardCalculator = rewardCalculator;
-		errorExtractor = new EcoreErrorExtractor(unsupportedErrorCodes);
+		errorExtractor = new EcoreErrorExtractor();
 	}
 
 	@Override
@@ -211,20 +207,20 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private boolean errorStillExists(List<Error> newErrors, Error error) {
 		int errorCode = error.getCode();
 		int numberOfErrorCodeOriginally = 0;
-		
-		for(Error e : errors) {
-			if(e.getCode() == errorCode) {
+
+		for (Error e : errors) {
+			if (e.getCode() == errorCode) {
 				numberOfErrorCodeOriginally++;
 			}
 		}
-		
+
 		int numberOfErrorCodeNow = 0;
 		for (Error e : newErrors) {
 			if (e.getCode() == errorCode) {
 				numberOfErrorCodeNow++;
 			}
 		}
-		
+
 		return numberOfErrorCodeNow >= numberOfErrorCodeOriginally;
 	}
 
@@ -429,8 +425,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 		int contextId = action.getContextId();
 
 		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
-			double weight = rewardCalculator.initializeWeightFor(action);
-			action.setWeight(weight);
+			action.setWeight(0);
 			actionDirectory.setAction(error.getCode(), contextId, action);
 		}
 	}

@@ -13,6 +13,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 class ActionMap {
 	private final String XML_NODE_NAME = "action";
@@ -144,7 +145,7 @@ class ActionMap {
 	 * @param factor
 	 * @param preferences
 	 */
-	protected void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	protected void influenceWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
 		for (Action action : actions.values()) {
 			action.influenceWeightFromPreferencesBy(factor, preferences);
 		}

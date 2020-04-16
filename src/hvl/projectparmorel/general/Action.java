@@ -15,6 +15,7 @@ import org.w3c.dom.Node;
 
 import hvl.projectparmorel.knowledge.PreferenceWeightMap;
 import hvl.projectparmorel.modelrepair.SerializableMethod;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 /**
  * 
@@ -114,8 +115,8 @@ public class Action implements Comparable<Action> {
 	}
 
 	public void savePreferenceWeights() {
-		for (Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
-			preferenceMap.combineAndSavePreference(preferenceId);
+		for (PreferenceOption preference : preferenceMap.getAllPreferenceIds()) {
+			preferenceMap.combineAndSavePreference(preference);
 		}
 
 	}
@@ -193,10 +194,10 @@ public class Action implements Comparable<Action> {
 	 * @param factor
 	 * @param preferences
 	 */
-	public void influenceWeightFromPreferencesBy(double factor, List<Integer> preferences) {
-		for (Integer preferenceId : preferenceMap.getAllPreferenceIds()) {
-			if (preferences.contains(preferenceId)) {
-				int oldPreferenceValue = preferenceMap.getWeightFor(preferenceId);
+	public void influenceWeightFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
+		for (PreferenceOption preference : preferenceMap.getAllPreferenceIds()) {
+			if (preferences.contains(preference)) {
+				int oldPreferenceValue = preferenceMap.getWeightFor(preference);
 				weight += oldPreferenceValue * factor;
 			}
 		}

@@ -8,6 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.reward.PreferenceOption;
 
 public class HashErrorContextActionDirectory implements ErrorContextActionDirectory {
 	private ErrorMap errors;
@@ -71,7 +72,7 @@ public class HashErrorContextActionDirectory implements ErrorContextActionDirect
 	}
 
 	@Override
-	public void influenceWeightsFromPreferencesBy(double factor, List<Integer> preferences) {
+	public void influenceWeightsFromPreferencesBy(double factor, List<PreferenceOption> preferences) {
 		errors.influenceActionWeightsFromPreferencesBy(factor, preferences);
 	}
 }
