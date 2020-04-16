@@ -166,7 +166,7 @@ public abstract class QModelFixer implements ModelFixer {
 		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
-			throw new NoErrorsInModelException("No errors where found in " + modelFile.getAbsolutePath());
+			throw new NoErrorsInModelException("No supported errors where found in " + modelFile.getAbsolutePath());
 		}
 		
 		setInitialErrors(errorsToFix);
