@@ -149,7 +149,7 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	@Override
-	public Solution fixModel(File modelFile) throws NoErrorsInModelException {		
+	public Solution fixModel(File modelFile) throws NoErrorsInModelException {
 		long startTime = System.currentTimeMillis();
 		logger.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
@@ -168,7 +168,7 @@ public abstract class QModelFixer implements ModelFixer {
 			duplicateFile.delete();
 			throw new NoErrorsInModelException("No supported errors where found in " + modelFile.getAbsolutePath());
 		}
-		
+
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
@@ -178,8 +178,9 @@ public abstract class QModelFixer implements ModelFixer {
 		} else {
 			numberOfSteps = MIN_EPISODE_STEPS;
 		}
-		logger.info("Initial number of errors in model: " + errorsToFix.size() + "\nMaximum number of steps per episode: "
-				+ numberOfSteps + "\nErrors to fix: " + errorsToFix.toString());
+		logger.info(
+				"Initial number of errors in model: " + errorsToFix.size() + "\nMaximum number of steps per episode: "
+						+ numberOfSteps + "\nErrors to fix: " + errorsToFix.toString());
 		logger.info("Initializing Q-table for the errors.");
 		Set<Integer> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
 		for (Integer errorCode : unsupportedErrors) {
@@ -230,8 +231,10 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	/**
-	 * Logs all encountered unsupported errors with a warning and removes them from the errorsToFix.
-	 * @param model 
+	 * Logs all encountered unsupported errors with a warning and removes them from
+	 * the errorsToFix.
+	 * 
+	 * @param model
 	 */
 	private void handleUnsupportedErrors(Model model) {
 		List<Error> unsupported = new ArrayList<>();
@@ -321,7 +324,8 @@ public abstract class QModelFixer implements ModelFixer {
 		int step = 0;
 
 		while (step < numberOfSteps) {
-			while (!errorsToFix.isEmpty() && episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
+			while (!errorsToFix.isEmpty()
+					&& episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
@@ -354,7 +358,7 @@ public abstract class QModelFixer implements ModelFixer {
 		solution.setOriginal(originalModel);
 		solution.setRewardCalculator(rewardCalculator);
 
-		if (!errorOcurred && uniqueSequence(solution) && !solution.getSequence().isEmpty()) {
+		if (!errorOcurred && isUnique(solution) && !solution.getSequence().isEmpty()) {
 			possibleSolutions.add(solution);
 		} else {
 			discardedSequences++;
@@ -486,26 +490,24 @@ public abstract class QModelFixer implements ModelFixer {
 		return reward;
 	}
 
-	private boolean uniqueSequence(Solution sequence) {
-		boolean check = true;
-		int same = 0;
-		for (Solution otherSequence : possibleSolutions) {
-			if (otherSequence.getWeight() == sequence.getWeight()) {
-				for (AppliedAction ea : sequence.getSequence()) {
-					for (AppliedAction ea2 : otherSequence.getSequence()) {
-						if (ea.equals(ea2)) {
-							same++;
-						}
+	/**
+	 * Checks if a solution is equal to any other with respect to the other potential soluions.
+	 * 
+	 * @param solution
+	 * @return true if the solution is unique, false otherwise
+	 */
+	private boolean isUnique(Solution solution) {
+		for (Solution otherSolution : possibleSolutions) {
+			if (solution.getSequence().size() == otherSolution.getSequence().size()) {
+				for (AppliedAction action : solution.getSequence()) {
+					if (!otherSolution.getSequence().contains(action)) {
+						logger.info("Solution " + solution.getSequence().toString() +  " already exists.");
+						return false;
 					}
-				} // for ea
-					// if all elements in list are the same
-				if (same == sequence.getSequence().size()) {
-					check = false;
-					break;
 				}
-			} // if weight
-		} // for
-		return check;
+			}
+		}
+		return true;
 	}
 
 	private int checkForLoopsIn(List<AppliedAction> performedActions) {
