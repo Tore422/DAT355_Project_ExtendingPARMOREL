@@ -319,7 +319,6 @@ public abstract class QModelFixer implements ModelFixer {
 	 */
 	private Solution handleEpisode(Model episodeModel, int episode) {
 		Solution solution = initializeSolution();
-		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
 
@@ -358,9 +357,11 @@ public abstract class QModelFixer implements ModelFixer {
 		solution.setOriginal(originalModel);
 		solution.setRewardCalculator(rewardCalculator);
 
-		if (!errorOcurred && isUnique(solution) && !solution.getSequence().isEmpty()) {
+		if (isUnique(solution) && !solution.getSequence().isEmpty()) {
 			possibleSolutions.add(solution);
+			logger.info("Solution added to possible solitons: " + solution.getSequence().toString());
 		} else {
+			logger.info("Solution discarded.");
 			discardedSequences++;
 			solution = null;
 		}
