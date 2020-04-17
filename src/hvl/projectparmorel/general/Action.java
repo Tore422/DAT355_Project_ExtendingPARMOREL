@@ -87,8 +87,13 @@ public class Action implements Comparable<Action> {
 	public boolean equals(Object other) {
 		if (other instanceof Action) {
 			Action otherAction = (Action) other;
-			return otherAction.getCode() == code && otherAction.getMessage().equals(message)
-					&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy;
+			if (method == null && otherAction.getMethod() == null) {
+				return otherAction.getCode() == code && otherAction.getMessage().equals(message)
+						&& otherAction.getHierarchy() == hierarchy;
+			} else if (method != null && otherAction.getMethod() != null) {
+				return otherAction.getCode() == code && otherAction.getMessage().equals(message)
+						&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy;
+			}
 		}
 		return false;
 	}
@@ -202,7 +207,7 @@ public class Action implements Comparable<Action> {
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks if the action is a delete action
 	 * 

@@ -499,11 +499,18 @@ public abstract class QModelFixer implements ModelFixer {
 	private boolean isUnique(Solution solution) {
 		for (Solution otherSolution : possibleSolutions) {
 			if (solution.getSequence().size() == otherSolution.getSequence().size()) {
-				for (AppliedAction action : solution.getSequence()) {
-					if (!otherSolution.getSequence().contains(action)) {
-						logger.info("Solution " + solution.getSequence().toString() +  " already exists.");
-						return false;
+				List<AppliedAction> solutionSequence = solution.getSequence();
+				List<AppliedAction> otherSequence = otherSolution.getSequence();
+				
+				boolean solutionsAreEqual = true;
+				for(int i = 0; i < solution.getSequence().size() && solutionsAreEqual; i++) {
+					if(!solutionSequence.get(i).getAction().equals(otherSequence.get(i).getAction())) {
+						solutionsAreEqual = false;
 					}
+				}
+				if(solutionsAreEqual) {
+					logger.info("Solution " + solution.getSequence().toString() +  " already exists.");
+					return false;
 				}
 			}
 		}
