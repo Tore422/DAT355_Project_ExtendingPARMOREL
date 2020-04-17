@@ -195,15 +195,27 @@ public abstract class QModelFixer implements ModelFixer {
 					originalModel.getParent() + "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 
 			Model episodeModel = getModel(episodeModelFile);
-			Solution sequence = handleEpisode(episodeModel, episode);
+			Solution solution = handleEpisode(episodeModel, episode);
+			solution.setModel(episodeModelFile);
+			
+			double totalReward = solution.getWeight();
+			totalReward += rewardCalculator.calculateRewardFor(episodeModel, solution);
+			solution.setWeight(totalReward);
+			solution.setRewardCalculator(rewardCalculator);
 
-			if (sequence != null) {
+			if (isUnique(solution) && !solution.getSequence().isEmpty()) {
+				possibleSolutions.add(solution);
 				episodeModel.save();
 				episodeModelFile.deleteOnExit();
-				sequence.setModel(episodeModelFile);
+				logger.info("Solution added to possible solitons: " + solution.getSequence().toString());
 			} else {
+				logger.info("Solution discarded.");
+				discardedSequences++;
+				solution = null;
 				episodeModelFile.delete();
 			}
+
+			logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward + "\n\n\n");
 
 			// RESET initial model and extract actions + errors
 			errorsToFix.clear();
@@ -352,21 +364,8 @@ public abstract class QModelFixer implements ModelFixer {
 				totalReward -= val * 1000;
 			}
 		}
-
-		solution.setWeight(totalReward);
 		solution.setOriginal(originalModel);
-		solution.setRewardCalculator(rewardCalculator);
-
-		if (isUnique(solution) && !solution.getSequence().isEmpty()) {
-			possibleSolutions.add(solution);
-			logger.info("Solution added to possible solitons: " + solution.getSequence().toString());
-		} else {
-			logger.info("Solution discarded.");
-			discardedSequences++;
-			solution = null;
-		}
-
-		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward + "\n\n\n");
+		solution.setWeight(totalReward);
 		return solution;
 	}
 
@@ -420,7 +419,7 @@ public abstract class QModelFixer implements ModelFixer {
 		List<AppliedAction> appliedActions = sequence.getSequence();
 		appliedActions.add(new AppliedAction(currentErrorToFix, action));
 
-		sequence.setSequence(appliedActions);
+//		sequence.setSequence(appliedActions);
 
 		int code = action.getHierarchy();
 

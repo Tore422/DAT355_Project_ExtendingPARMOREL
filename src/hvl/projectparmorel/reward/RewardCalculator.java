@@ -50,6 +50,9 @@ public class RewardCalculator {
 			case REWARD_MODIFICATION_OF_MODEL:
 				prefs.add(new RewardModificationOfModelPreference(filePreferences.getWeightRewardModificationOfTheOriginalModel()));
 				break;
+			case PREFER_CLOSE_DISTANCE_TO_ORIGINAL:
+				prefs.add(new PreferCloseDinstanceToOriginalPreference());
+				break;
 			default:
 				throw new UnsupportedOperationException("This operation is not yet implemented.");
 			}
@@ -94,12 +97,6 @@ public class RewardCalculator {
 			}
 			reward += rewardFromPreference;
 		}
-		
-		
-
-		if (!preferenceOptions.contains(PreferenceOption.REPAIR_HIGH_IN_CONTEXT_HIERARCHY) && !preferenceOptions.contains(PreferenceOption.REPAIR_LOW_IN_CONTEXT_HIERARCHY) && !preferenceOptions.contains(PreferenceOption.PUNISH_DELETION)) {
-			reward += 30;
-		}
 
 		return reward;
 	}
@@ -117,6 +114,28 @@ public class RewardCalculator {
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
 		QTable qTable = knowledge.getQTable();
 		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
+	}
+	
+	/**
+	 * Calculates rewards for the completed solution
+	 * 
+	 * @param episodeModel
+	 * @param solution
+	 * @return reward for solution
+	 */
+	public int calculateRewardFor(Model episodeModel, Solution solution) {
+		QTable qTable = knowledge.getQTable();
+		
+		int reward = 0;
+		if(solution != null) {
+			for (Preference preference : preferences) {
+				if(preference instanceof SolutionPreference) {
+					SolutionPreference pref = (SolutionPreference) preference;
+					reward += pref.rewarcalculateRewardFor(solution, episodeModel, qTable);
+				}
+			}
+		}
+		return reward;
 	}
 
 	/**
