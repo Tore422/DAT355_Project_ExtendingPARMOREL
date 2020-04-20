@@ -50,7 +50,7 @@ public abstract class QModelFixer implements ModelFixer {
 	protected RewardCalculator rewardCalculator;
 
 	private double randomFactor = 0.25;
-	private int numberOfEpisodes = 25;
+	private int numberOfEpisodes = 75;
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
@@ -125,7 +125,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (success) {
 			knowledge.clearWeights();
 			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
-			numberOfEpisodes = 12;
+			numberOfEpisodes = 50;
 			randomFactor = 0.15;
 		}
 	}
@@ -252,8 +252,8 @@ public abstract class QModelFixer implements ModelFixer {
 		List<Error> unsupported = new ArrayList<>();
 		for (Error e : errorsToFix) {
 			if (model.getModelType().doesNotSupportError(e.getCode())) {
-				logger.warning(
-						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+//				logger.warning(
+//						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
 				unsupported.add(e);
 			}
 		}
