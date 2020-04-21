@@ -197,6 +197,7 @@ public abstract class QModelFixer implements ModelFixer {
 			Model episodeModel = getModel(episodeModelFile);
 			Solution solution = handleEpisode(episodeModel, episode);
 			solution.setModel(episodeModelFile);
+			episodeModel.save();
 			
 			double totalReward = solution.getWeight();
 			totalReward += rewardCalculator.calculateRewardFor(episodeModel, solution);
@@ -205,7 +206,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 			if (isUnique(solution) && !solution.getSequence().isEmpty()) {
 				possibleSolutions.add(solution);
-				episodeModel.save();
+//				episodeModel.save();
 				episodeModelFile.deleteOnExit();
 				logger.info("Solution added to possible solitons: " + solution.getSequence().toString());
 			} else {
@@ -235,9 +236,9 @@ public abstract class QModelFixer implements ModelFixer {
 				+ bestSequence.getSequence().size() + " actions.");
 //		removeSolutionsWithSameResult(solvingMap);
 
-		if (bestSequence.getSequence().size() != 0) {
-			bestSequence.reward(false);
-		}
+//		if (bestSequence.getSequence().size() != 0) {
+//			bestSequence.reward(false);
+//		}
 		saveKnowledge();
 		return bestSequence;
 	}
