@@ -78,25 +78,37 @@ public abstract class QModelFixer implements ModelFixer {
 		loadKnowledge();
 		actionExtractor = initializeActionExtractor();
 		errorExtractor = initializeErrorExtractor();
+		modelProcessor = initializeModelProcessor();
 
 		logger = Logger.getLogger(LOGGER_NAME);
 	}
 
 	/**
-	 * Gets an {@link ActionExtractor} that allows the
-	 * algorithm to extract actions that can be used on the model.
+	 * Gets an {@link ActionExtractor} that allows the algorithm to extract actions
+	 * that can be used on the model.
 	 * 
-	 * @return a meta model specific ActionExtractor that can extract actions that can be applied to the model
+	 * @return a meta model specific ActionExtractor that can extract actions that
+	 *         can be applied to the model
 	 */
 	protected abstract ActionExtractor initializeActionExtractor();
 
 	/**
-	 * Gets an {@link ErrorExtractor} that allows the algorithm to extract errors from the model.
+	 * Gets an {@link ErrorExtractor} that allows the algorithm to extract errors
+	 * from the model.
 	 * 
-	 * @return a meta model specific ErrorExtractor that can get errors from the model.
+	 * @return a meta model specific ErrorExtractor that can get errors from the
+	 *         model.
 	 */
 	protected abstract ErrorExtractor initializeErrorExtractor();
-	
+
+	/**
+	 * Gets a {@link ModelProcessor} that can be used to process and apply actions
+	 * to the model.
+	 * 
+	 * @return a meta model specific ModelProcessor.
+	 */
+	protected abstract ModelProcessor initializeModelProcessor();
+
 	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
