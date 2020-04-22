@@ -442,8 +442,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 		Object[] values = getDefaultValues(extractParameterTypes(action.getMethod().getMethod(), error));
 		// if input needs a date
 		if (values.length != 0 && eObject instanceof EAttributeImpl
-				&& action.getMethod().getMethod().getName().contains("DefaultValue") && error.getCode() != 40
-				&& ((ETypedElement) eObject).getEType() != null
+				&& action.getMethod().getMethod().getName().contains("DefaultValue") && error.getCode() != 38
+				&& error.getCode() != 40 && ((ETypedElement) eObject).getEType() != null
 				&& ((ETypedElement) eObject).getEType().toString().contains("Date")) {
 
 			invokeMethod(action.getMethod().getMethod(), eObject, new Date());
@@ -576,12 +576,12 @@ public class EcoreModelProcessor implements ModelProcessor {
 			if (method.getName().contentEquals("setEClassifier") || method.getName().contains("SetEGenericType")
 					|| (error.getCode() == 401 && method.getName().contentEquals("setEType"))) {
 				argsClass.add(parameterTypes[i].getName() + "CLASS");
+			} else if (method.getName().contentEquals("setTransient")) {
+				argsClass.add(parameterTypes[i].getName() + "TRUE");
+			} else if (method.getName().contains("Literal")) {
+				argsClass.add("Literal");
 			} else {
-				if (method.getName().contentEquals("setTransient")) {
-					argsClass.add(parameterTypes[i].getName() + "TRUE");
-				} else {
-					argsClass.add(parameterTypes[i].getName());
-				}
+				argsClass.add(parameterTypes[i].getName());
 			}
 		}
 		return argsClass;
@@ -678,6 +678,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 			}
 			if (list.get(i).contains("Reference")) {
 				values.add(EcorePackage.Literals.EREFERENCE__EREFERENCE_TYPE);
+			}
+			if (list.get(i).contains("Literal")) {
+				values.add(null);
 			}
 		}
 		Object[] val = new Object[values.size()];

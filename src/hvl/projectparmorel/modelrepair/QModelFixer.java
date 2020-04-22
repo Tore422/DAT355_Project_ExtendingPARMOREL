@@ -50,7 +50,7 @@ public abstract class QModelFixer implements ModelFixer {
 	protected RewardCalculator rewardCalculator;
 
 	private double randomFactor = 0.25;
-	private int numberOfEpisodes = 75;
+	private int numberOfEpisodes = 25;
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
@@ -125,7 +125,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (success) {
 			knowledge.clearWeights();
 			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
-			numberOfEpisodes = 50;
+			numberOfEpisodes = 12;
 			randomFactor = 0.15;
 		}
 	}
