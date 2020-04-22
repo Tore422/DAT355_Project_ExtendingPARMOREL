@@ -77,18 +77,26 @@ public abstract class QModelFixer implements ModelFixer {
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 		actionExtractor = initializeActionExtractor();
+		errorExtractor = initializeErrorExtractor();
 
 		logger = Logger.getLogger(LOGGER_NAME);
 	}
 
 	/**
-	 * Gets an {@link hvl.projectparmorel.general.ActionExtractor} that allows the
+	 * Gets an {@link ActionExtractor} that allows the
 	 * algorithm to extract actions that can be used on the model.
 	 * 
 	 * @return a meta model specific ActionExtractor that can extract actions that can be applied to the model
 	 */
 	protected abstract ActionExtractor initializeActionExtractor();
 
+	/**
+	 * Gets an {@link ErrorExtractor} that allows the algorithm to extract errors from the model.
+	 * 
+	 * @return a meta model specific ErrorExtractor that can get errors from the model.
+	 */
+	protected abstract ErrorExtractor initializeErrorExtractor();
+	
 	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
