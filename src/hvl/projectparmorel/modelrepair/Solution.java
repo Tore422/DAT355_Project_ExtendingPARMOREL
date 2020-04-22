@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import hvl.projectparmorel.exceptions.DistanceUnavailableException;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.reward.RewardCalculator;
 
@@ -39,8 +40,9 @@ public abstract class Solution implements Comparable<Solution> {
 	 * Calculates the difference between the solution and the original model.
 	 * 
 	 * @return the calculated distance. Returns -1 if the distance could not be calculated.
+	 * @throws DistanceUnavailableException if something goes wrong with the calculation or if the method is not implemented.
 	 */
-	public abstract double calculateDistanceFromOriginal();
+	public abstract double calculateDistanceFromOriginal()throws DistanceUnavailableException;
 	
 	/**
 	 * Deletes the associated file;
