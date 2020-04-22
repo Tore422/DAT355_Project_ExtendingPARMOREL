@@ -76,9 +76,18 @@ public abstract class QModelFixer implements ModelFixer {
 		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
+		actionExtractor = initializeActionExtractor();
 
 		logger = Logger.getLogger(LOGGER_NAME);
 	}
+
+	/**
+	 * Gets an {@link hvl.projectparmorel.general.ActionExtractor} that allows the
+	 * algorithm to extract actions that can be used on the model.
+	 * 
+	 * @return a meta model specific ActionExtractor that can extract actions that can be applied to the model
+	 */
+	protected abstract ActionExtractor initializeActionExtractor();
 
 	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
@@ -198,7 +207,7 @@ public abstract class QModelFixer implements ModelFixer {
 			Solution solution = handleEpisode(episodeModel, episode);
 			solution.setModel(episodeModelFile);
 			episodeModel.save();
-			
+
 			double totalReward = solution.getWeight();
 			totalReward += rewardCalculator.calculateRewardFor(episodeModel, solution);
 			solution.setWeight(totalReward);
@@ -394,7 +403,7 @@ public abstract class QModelFixer implements ModelFixer {
 			logger.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
 					+ ", does not exist in Q-table. Attempting to solve...");
 			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy(), false);
-			actionExtractor.extractActionsFor(errorsToFix);
+			actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errorsToFix);
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 				logger.info("Action for error code not found.");
@@ -434,7 +443,7 @@ public abstract class QModelFixer implements ModelFixer {
 				logger.info("Error " + nextErrorToFix.getCode() + ", " + nextErrorToFix.getMessage()
 						+ ", does not exist in Q-table. Attempting to solve...");
 				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation(), false);
-				actionExtractor.extractActionsFor(errorsToFix);
+				actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errorsToFix);
 				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
 					logger.info("Action for error code not found.");
@@ -492,7 +501,8 @@ public abstract class QModelFixer implements ModelFixer {
 	}
 
 	/**
-	 * Checks if a solution is equal to any other with respect to the other potential soluions.
+	 * Checks if a solution is equal to any other with respect to the other
+	 * potential soluions.
 	 * 
 	 * @param solution
 	 * @return true if the solution is unique, false otherwise
@@ -502,15 +512,15 @@ public abstract class QModelFixer implements ModelFixer {
 			if (solution.getSequence().size() == otherSolution.getSequence().size()) {
 				List<AppliedAction> solutionSequence = solution.getSequence();
 				List<AppliedAction> otherSequence = otherSolution.getSequence();
-				
+
 				boolean solutionsAreEqual = true;
-				for(int i = 0; i < solution.getSequence().size() && solutionsAreEqual; i++) {
-					if(!solutionSequence.get(i).getAction().equals(otherSequence.get(i).getAction())) {
+				for (int i = 0; i < solution.getSequence().size() && solutionsAreEqual; i++) {
+					if (!solutionSequence.get(i).getAction().equals(otherSequence.get(i).getAction())) {
 						solutionsAreEqual = false;
 					}
 				}
-				if(solutionsAreEqual) {
-					logger.info("Solution " + solution.getSequence().toString() +  " already exists.");
+				if (solutionsAreEqual) {
+					logger.info("Solution " + solution.getSequence().toString() + " already exists.");
 					return false;
 				}
 			}

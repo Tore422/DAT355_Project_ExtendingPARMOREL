@@ -72,8 +72,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private Set<Integer> initializeQTableForErrorsInModel(EcoreModel model) {
 		errors = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false);
 
-		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
-		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
+		ActionExtractor actionExtractor = new EcoreActionExtractor();
+		List<Action> possibleActions = actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errors);
 
 		Set<Integer> unsupportedErrors = new HashSet<>();
 

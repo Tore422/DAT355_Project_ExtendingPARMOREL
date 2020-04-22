@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.modelrepair.QModelFixer;
 import hvl.projectparmorel.modelrepair.Solution;
@@ -25,7 +26,6 @@ public class EcoreQModelFixer extends QModelFixer {
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
 		EcorePackage.eINSTANCE.eClass();
-		actionExtractor = new EcoreActionExtractor(knowledge);
 		errorExtractor = new EcoreErrorExtractor();
 		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
@@ -35,7 +35,6 @@ public class EcoreQModelFixer extends QModelFixer {
 		resourceSet = new ResourceSetImpl();
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore",
 				new EcoreResourceFactoryImpl());
-		actionExtractor = new EcoreActionExtractor(knowledge);
 		errorExtractor = new EcoreErrorExtractor();
 		modelProcessor = new EcoreModelProcessor(knowledge);
 	}
@@ -68,5 +67,10 @@ public class EcoreQModelFixer extends QModelFixer {
 	@Override
 	protected Solution initializeSolution() {
 		return new EcoreSolution();
+	}
+
+	@Override
+	protected ActionExtractor initializeActionExtractor() {
+		return new EcoreActionExtractor();
 	}
 }
