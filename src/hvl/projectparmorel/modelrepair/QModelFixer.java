@@ -191,7 +191,7 @@ public abstract class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		int episode = 0;
 
-		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentation(), true);
 		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
@@ -422,7 +422,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			logger.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
 					+ ", does not exist in Q-table. Attempting to solve...");
-			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy(), false);
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation(), false);
 			actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errorsToFix);
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
