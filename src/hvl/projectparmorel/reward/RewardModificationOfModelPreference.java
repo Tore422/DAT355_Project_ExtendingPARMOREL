@@ -6,7 +6,7 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 
-public class RewardModificationOfModelPreference extends Preference implements ResultBasedPreference {
+public class RewardModificationOfModelPreference extends Preference implements InitializablePreference {
 
 	private int numbersOfErrorsBeforeApplyingAction;
 	private ErrorExtractor errorExtractor;

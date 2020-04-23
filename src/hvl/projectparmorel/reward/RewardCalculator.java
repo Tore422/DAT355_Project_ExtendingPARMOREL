@@ -70,8 +70,8 @@ public class RewardCalculator {
 	 */
 	public void initializePreferencesBeforeChoosingAction(Model model) {
 		for (Preference preference : preferences) {
-			if (preference instanceof ResultBasedPreference) {
-				ResultBasedPreference pref = (ResultBasedPreference) preference;
+			if (preference instanceof InitializablePreference) {
+				InitializablePreference pref = (InitializablePreference) preference;
 				pref.initializeBeforeApplyingAction(model);
 			}
 		}
