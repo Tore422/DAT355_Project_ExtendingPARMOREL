@@ -18,9 +18,6 @@ class PunishModificationOfModelPreference extends Preference implements Initiali
 
 	@Override
 	public void initializeBeforeApplyingAction(Model model) {
-		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false)
-				.size();
-		
 		switch (model.getModelType()) {
 		case ECORE:
 			errorExtractor = new EcoreErrorExtractor();
@@ -28,6 +25,9 @@ class PunishModificationOfModelPreference extends Preference implements Initiali
 		default:
 			throw new UnsupportedOperationException("This preference is not yet implemented for this model type.");
 		}
+
+		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false)
+				.size();
 	}
 
 	@Override
