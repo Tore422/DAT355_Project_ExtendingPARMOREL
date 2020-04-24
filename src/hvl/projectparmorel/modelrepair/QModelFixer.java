@@ -40,12 +40,13 @@ public abstract class QModelFixer implements ModelFixer {
 	/**
 	 * The learning rate of the algorithm
 	 */
-	public static final double ALPHA = 1.0;
-//	private final double MIN_ALPHA = 0.06; // Learning rate
-	public static final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
+	protected static final double ALPHA = 1.0;
+	/**
+	 * Eagerness. 0 looks in the near future, 1 looks in the distant future
+	 */
+	protected static final double GAMMA = 1.0;
 	private static Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 	private final int MIN_EPISODE_STEPS = 20;
-//	private final double[] ALPHAS;
 
 	protected Knowledge knowledge;
 	private QTable qTable;
@@ -76,7 +77,6 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-//		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 		actionExtractor = initializeActionExtractor();
@@ -114,14 +114,6 @@ public abstract class QModelFixer implements ModelFixer {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
 	}
-
-//	private double[] linspace(double min, double max, int points) {
-//		double[] d = new double[points];
-//		for (int i = 0; i < points; i++) {
-//			d[i] = min + i * (max - min) / (points - 1);
-//		}
-//		return d;
-//	}
 
 	@Override
 	public void setPreferences(List<PreferenceOption> preferences) {
@@ -236,7 +228,6 @@ public abstract class QModelFixer implements ModelFixer {
 
 			if (isUnique(solution) && !solution.getSequence().isEmpty()) {
 				possibleSolutions.add(solution);
-//				episodeModel.save();
 				episodeModelFile.deleteOnExit();
 				LOGGER.info("Solution added to possible solitons: " + solution.getSequence().toString());
 			} else {
@@ -264,11 +255,7 @@ public abstract class QModelFixer implements ModelFixer {
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence + " with "
 				+ bestSequence.getSequence().size() + " actions.");
-//		removeSolutionsWithSameResult(solvingMap);
 
-//		if (bestSequence.getSequence().size() != 0) {
-//			bestSequence.reward(false);
-//		}
 		saveKnowledge();
 		return bestSequence;
 	}
@@ -439,24 +426,16 @@ public abstract class QModelFixer implements ModelFixer {
 		Action action = chooseAction(currentErrorToFix);
 		LOGGER.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
 				+ action.getWeight());
-//		int sizeBefore = errorsToFix.size();
-//		double ALPHA = ALPHAS[episode];
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
 		reward = rewardCalculator.calculateRewardFor(episodeModel, currentErrorToFix, action);
-		// Insert stuff into sequence
+
 		sequence.setId(episode);
 		List<AppliedAction> appliedActions = sequence.getSequence();
 		appliedActions.add(new AppliedAction(currentErrorToFix, action));
-
-//		sequence.setSequence(appliedActions);
-
-		int code = action.getHierarchy();
-
-//		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
-//				code, action);
-
+		
+		int context = action.getHierarchy();
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
 			LOGGER.info("Next error code: " + nextErrorToFix.getCode());
@@ -472,51 +451,37 @@ public abstract class QModelFixer implements ModelFixer {
 					LOGGER.info("Action for error code found and added to Q-table.");
 				}
 			}
-
-//			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
-
+			
 			nextErrorToFix = errorsToFix.get(0);
 			Action a;
 			try {
 				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
 				int code2 = a.getHierarchy();
-				double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
+				double value = qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode())
 						+ ALPHA * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode())
-								- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
+								- qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()));
 
 				LOGGER.info("Calculating new Q-value:\nOld Q-value: "
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: " + ALPHA
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + "\nAlpha: " + ALPHA
 						+ "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\nNext optimal action Q-value: "
 						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + "\n"
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + ALPHA + " * ("
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + " + " + ALPHA + " * ("
 						+ reward + " + " + GAMMA + " * "
 						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + " - "
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = " + value);
-				qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + ") = " + value);
+				qTable.setWeight(currentErrorToFix.getCode(), context, action.getCode(), value);
 				LOGGER.info(
-						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action "
+						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + context + ", action "
 								+ action.getCode() + " " + action.getMessage() + " to new weight " + value + "\n\n");
 			} catch (UnsupportedErrorException e) {
 				// next error is not in the Q-table
 			}
 
 			currentErrorToFix = nextErrorToFix;
-		} // it has reached the end
+		}
 
 		else {
-			updateQTable(qTable, currentErrorToFix.getCode(), code, action.getCode(), reward);
-//			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-//					+ ALPHA * (reward + GAMMA - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
-//
-//			LOGGER.info("Calculating new Q-value:\nOld Q-value: "
-//					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: " + ALPHA + "\n"
-//					+ "\nReward: " + reward + "\n"
-//					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + ALPHA + " * ("
-//					+ reward + " - " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = "
-//					+ value);
-//			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-//			LOGGER.info("Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action "
-//					+ +action.getCode() + " " + action.getMessage() + " to new weight " + value);
+			updateQTable(qTable, currentErrorToFix.getCode(), context, action.getCode(), reward);
 		}
 
 		return reward;
