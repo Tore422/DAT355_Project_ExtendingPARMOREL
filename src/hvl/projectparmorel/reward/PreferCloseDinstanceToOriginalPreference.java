@@ -34,10 +34,9 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 			double distance = solution.calculateDistanceFromOriginal();
 			long measureTime = System.currentTimeMillis() - startTime;
 			log.info("Time to measure distance: " + measureTime + " ms");
-			double reward = (200 - distance);
+			int reward = (int)(200 - distance);
 			for (AppliedAction appliedAction : solution.getSequence()) {
-				Action action = appliedAction.getAction();
-				qTable.setWeight(appliedAction.getError().getCode(), action.getHierarchy(), action.getCode(), reward);
+				QModelFixer.updateQTable(qTable, appliedAction.getError().getCode(), appliedAction.getAction().getContextId(), appliedAction.getAction().getCode(), reward);
 			}
 			return (int) (reward * solution.getSequence().size());
 		} catch (DistanceUnavailableException e) {
