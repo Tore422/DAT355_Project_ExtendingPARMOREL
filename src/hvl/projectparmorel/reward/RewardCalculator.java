@@ -144,10 +144,12 @@ public class RewardCalculator {
 	 * @param possibleSolutions
 	 */
 	public void rewardPostRepair(List<Solution> possibleSolutions) {
+		QTable qTable = knowledge.getQTable();
+		
 		for (Preference preference : preferences) {
 			if (preference instanceof PostRepairPreference) {
 				PostRepairPreference comparingPreference = (PostRepairPreference) preference;
-				comparingPreference.rewardPostRepair(possibleSolutions, knowledge);
+				comparingPreference.rewardPostRepair(possibleSolutions, qTable);
 			}
 		}
 	}
