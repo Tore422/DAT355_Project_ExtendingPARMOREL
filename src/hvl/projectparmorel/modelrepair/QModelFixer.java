@@ -424,7 +424,7 @@ public abstract class QModelFixer implements ModelFixer {
 
 		rewardCalculator.initializePreferencesBeforeChoosingAction(episodeModel);
 		Action action = chooseAction(currentErrorToFix);
-		LOGGER.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
+		LOGGER.info("Chose action " + action.getName() + " in context " + action.getContextId() + " with weight "
 				+ action.getWeight());
 
 		errorsToFix.clear();
@@ -435,7 +435,7 @@ public abstract class QModelFixer implements ModelFixer {
 		List<AppliedAction> appliedActions = sequence.getSequence();
 		appliedActions.add(new AppliedAction(currentErrorToFix, action));
 		
-		int context = action.getHierarchy();
+		int context = action.getContextId();
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
 			LOGGER.info("Next error code: " + nextErrorToFix.getCode());
@@ -456,7 +456,7 @@ public abstract class QModelFixer implements ModelFixer {
 			Action a;
 			try {
 				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
-				int code2 = a.getHierarchy();
+				int code2 = a.getContextId();
 				double value = qTable.getWeight(currentErrorToFix.getCode(), context, action.getId())
 						+ ALPHA * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId())
 								- qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()));
@@ -472,7 +472,7 @@ public abstract class QModelFixer implements ModelFixer {
 				qTable.setWeight(currentErrorToFix.getCode(), context, action.getId(), value);
 				LOGGER.info(
 						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + context + ", action "
-								+ action.getId() + " " + action.getMessage() + " to new weight " + value + "\n\n");
+								+ action.getId() + " " + action.getName() + " to new weight " + value + "\n\n");
 			} catch (UnsupportedErrorException e) {
 				// next error is not in the Q-table
 			}

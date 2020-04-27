@@ -53,8 +53,8 @@ public class AppliedAction {
 
 	@Override
 	public String toString() {
-		return "ErrorAction [Error: " + error.getCode() + " " + error.getMessage() + ", Action: " + action.getMessage()
-				+ ", Error hierarchy: " + action.getHierarchy() + "]" + System.getProperty("line.separator");
+		return "ErrorAction [Error: " + error.getCode() + " " + error.getMessage() + ", Action: " + action.getName()
+				+ ", Error hierarchy: " + action.getContextId() + "]" + System.getProperty("line.separator");
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class AppliedAction {
 			AppliedAction otherAplpiedAction = (AppliedAction) other;
 			if (this.getAction().getId() == otherAplpiedAction.getAction().getId()
 					&& this.getError().getCode() == otherAplpiedAction.getError().getCode()
-					&& this.getAction().getHierarchy() == otherAplpiedAction.getAction().getHierarchy()) {
+					&& this.getAction().getContextId() == otherAplpiedAction.getAction().getContextId()) {
 				return true;
 			}
 		}

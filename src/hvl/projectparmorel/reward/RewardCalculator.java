@@ -88,7 +88,7 @@ public class RewardCalculator {
 	public int calculateRewardFor(Model model, Error currentErrorToFix, Action action) {
 		int reward = 0;
 
-		int contextId = action.getHierarchy();
+		int contextId = action.getContextId();
 		for (Preference preference : preferences) {
 			int rewardFromPreference = preference.rewardActionForError(model, currentErrorToFix, action);
 			if (rewardFromPreference != 0) {
@@ -163,7 +163,7 @@ public class RewardCalculator {
 	public void rewardSolution(Solution solution) {
 		QTable qTable = knowledge.getQTable();
 		for (AppliedAction appliedAction : solution.getSequence()) {
-			int contextId = appliedAction.getAction().getHierarchy();
+			int contextId = appliedAction.getAction().getContextId();
 			int errorCode = appliedAction.getError().getCode();
 			int actionId = appliedAction.getAction().getId();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);

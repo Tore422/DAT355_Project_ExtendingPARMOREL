@@ -13,13 +13,13 @@ public class PreferRepairingLowInContextHierarchyPreference extends Preference {
 	@Override
 	public int rewardActionForError(Model model, Error error, Action action) {
 		int reward = 0;
-		if (action.getHierarchy() == 1) {
+		if (action.getContextId() == 1) {
 			reward -= 74 / 100 * weight;
 		}
-		if (action.getHierarchy() == 2) {
+		if (action.getContextId() == 2) {
 			reward += weight * 2 / 3;
 		}
-		if (action.getHierarchy() > 2) {
+		if (action.getContextId() > 2) {
 			reward += weight;
 		}
 		return reward;

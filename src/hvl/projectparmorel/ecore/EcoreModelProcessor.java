@@ -90,7 +90,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error)) {
 										actionForErrorFound = true;
-										Action newAction = new Action(action.getId(), action.getMessage(),
+										Action newAction = new Action(action.getId(), action.getName(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
 									}
@@ -137,7 +137,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	@Override
 	public List<Error> tryApplyAction(Error error, Action action, Model model) {
 		if (model instanceof EcoreModel) {
-			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getHierarchy());
+			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getContextId());
 		}
 		throw new IllegalArgumentException("The model needs to be of type org.eclipse.emf.ecore.resource.Resource");
 	}
@@ -457,7 +457,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 		} else {
 			// if dealing with opposite references
 			if (values.length == action.getMethod().getMethod().getParameterCount()) {
-				if (error.getCode() == 14 && action.getMessage().contains("setEOpposite")
+				if (error.getCode() == 14 && action.getName().contains("setEOpposite")
 						&& eObject instanceof EReferenceImpl) {
 					values[0] = findOpposite((EReferenceImpl) eObject, error);
 				}
@@ -564,7 +564,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getContexts().get(0);
 		genericType.getETypeArguments().add(genericType);
 		action.setId(88888);
-		action.setMessage("getETypeArguments().add(genericType)");
+		action.setName("getETypeArguments().add(genericType)");
 	}
 
 	/**
