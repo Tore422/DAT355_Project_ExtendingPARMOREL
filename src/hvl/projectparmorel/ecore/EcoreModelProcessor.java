@@ -155,13 +155,19 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 *         otherwise
 	 */
 	private List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
-		EPackage ePackage = (EPackage) model.getContents().get(0);
+		EPackage ePackage = (EPackage) model.getContents().get(error.getPackageIndex());
 		EObject object = (EObject) error.getContexts().get(hierarchy);
 
 		if (object != null) {
 			boolean success = false;
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
 				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
+			}
+			for(int i = 0; i < ePackage.getESubpackages().size() && !success; i++) {
+				EPackage epa = ePackage.getESubpackages().get(i);
+				for (int j = 0; j < epa.getEClassifiers().size() && !success; j++) {
+					success = identifyObjectTypeAndApplyAction(error, action, object, epa.getEClassifiers().get(j));
+				}
 			}
 			List<Error> newErrors = errorExtractor.extractErrorsFrom(model, false);
 			return newErrors;
