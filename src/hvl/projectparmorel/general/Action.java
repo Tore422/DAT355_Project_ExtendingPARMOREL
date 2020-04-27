@@ -33,7 +33,7 @@ public class Action implements Comparable<Action> {
 	private final String XML_PREFERENCEMAP_NAME = "preferenceMap";
 
 	private PreferenceWeightMap preferenceMap;
-	private int code;
+	private int id;
 	private String message;
 	private SerializableMethod method;
 	private int hierarchy;
@@ -49,15 +49,15 @@ public class Action implements Comparable<Action> {
 	/**
 	 * Creates an action with all the parameters, except weight, set.
 	 * 
-	 * @param code
+	 * @param id
 	 * @param message
 	 * @param method
 	 * @param hierarchy
 	 * @param subHierarchy
 	 */
-	public Action(int code, String message, SerializableMethod method, int hierarchy) {
+	public Action(int id, String message, SerializableMethod method, int hierarchy) {
 		this();
-		this.code = code;
+		this.id = id;
 		this.message = message;
 		this.method = method;
 		this.hierarchy = hierarchy;
@@ -66,7 +66,7 @@ public class Action implements Comparable<Action> {
 	public Action(Element action) throws IOException {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
 			Element actionElement = action;
-			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
+			id = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
 			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
 			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
 			hierarchy = Integer
@@ -80,7 +80,7 @@ public class Action implements Comparable<Action> {
 
 	@Override
 	public String toString() {
-		return "Action" + code + ", msg=" + message + "." + System.getProperty("line.separator");
+		return "Action" + id + ", msg=" + message + "." + System.getProperty("line.separator");
 	}
 
 	@Override
@@ -88,10 +88,10 @@ public class Action implements Comparable<Action> {
 		if (other instanceof Action) {
 			Action otherAction = (Action) other;
 			if (method == null && otherAction.getMethod() == null) {
-				return otherAction.getCode() == code && otherAction.getMessage().equals(message)
+				return otherAction.getId() == id && otherAction.getMessage().equals(message)
 						&& otherAction.getHierarchy() == hierarchy;
 			} else if (method != null && otherAction.getMethod() != null) {
-				return otherAction.getCode() == code && otherAction.getMessage().equals(message)
+				return otherAction.getId() == id && otherAction.getMessage().equals(message)
 						&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy;
 			}
 		}
@@ -116,7 +116,7 @@ public class Action implements Comparable<Action> {
 	 * @return true if the action handles it, false otherwise
 	 */
 	public boolean handlesMissingArgumentForGenericType(Error error) {
-		return String.valueOf(code).startsWith("888") && error.getCode() == 4;
+		return String.valueOf(id).startsWith("888") && error.getCode() == 4;
 	}
 
 	public void savePreferenceWeights() {
@@ -128,7 +128,7 @@ public class Action implements Comparable<Action> {
 
 	public void saveTo(Document document, Element action) {
 		Attr code = document.createAttribute(XML_CODE_NAME);
-		code.setValue("" + this.code);
+		code.setValue("" + this.id);
 		action.setAttributeNode(code);
 
 		Element weight = document.createElement(XML_WEIGHT_NAME);
@@ -214,7 +214,7 @@ public class Action implements Comparable<Action> {
 	 * @return true if the action is a delete action, false otherwise
 	 */
 	public boolean isDelete() {
-		return String.valueOf(code).startsWith("9999");
+		return String.valueOf(id).startsWith("9999");
 	}
 
 	/**
@@ -234,8 +234,8 @@ public class Action implements Comparable<Action> {
 		this.weight = weight;
 	}
 
-	public int getCode() {
-		return code;
+	public int getId() {
+		return id;
 	}
 
 	public String getMessage() {
@@ -250,8 +250,8 @@ public class Action implements Comparable<Action> {
 		return hierarchy;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public void setMessage(String message) {

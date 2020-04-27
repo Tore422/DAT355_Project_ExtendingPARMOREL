@@ -113,7 +113,7 @@ public class RewardCalculator {
 	 */
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
 		QTable qTable = knowledge.getQTable();
-		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
+		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getId(), tagId, value);
 	}
 	
 	/**
@@ -165,7 +165,7 @@ public class RewardCalculator {
 		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getHierarchy();
 			int errorCode = appliedAction.getError().getCode();
-			int actionId = appliedAction.getAction().getCode();
+			int actionId = appliedAction.getAction().getId();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);

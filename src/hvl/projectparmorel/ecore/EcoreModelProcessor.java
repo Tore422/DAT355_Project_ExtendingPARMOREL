@@ -90,7 +90,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error)) {
 										actionForErrorFound = true;
-										Action newAction = new Action(action.getCode(), action.getMessage(),
+										Action newAction = new Action(action.getId(), action.getMessage(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
 									}
@@ -430,7 +430,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 
 		int contextId = action.getContextId();
 
-		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
+		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getId())) {
 			action.setWeight(0);
 			actionDirectory.setAction(error.getCode(), contextId, action);
 		}
@@ -465,7 +465,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 				try {
 					invokeMethod(action.getMethod().getMethod(), eObject, values);
 
-					if (error.getCode() == 40 && action.getCode() == 591449609) { // sometimes this action in that error
+					if (error.getCode() == 40 && action.getId() == 591449609) { // sometimes this action in that error
 																					// is problematic
 						EAttributeImpl attribute = (EAttributeImpl) eObject;
 						if (!attribute.isSetEGenericType()) {
@@ -563,7 +563,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private void addTypeArguments(Error error, Action action) {
 		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getContexts().get(0);
 		genericType.getETypeArguments().add(genericType);
-		action.setCode(88888);
+		action.setId(88888);
 		action.setMessage("getETypeArguments().add(genericType)");
 	}
 

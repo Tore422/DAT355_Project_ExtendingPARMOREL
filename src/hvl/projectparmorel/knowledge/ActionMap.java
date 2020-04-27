@@ -28,7 +28,7 @@ class ActionMap {
 
 	protected ActionMap(Action action) {
 		this();
-		actions.put(action.getCode(), action);
+		actions.put(action.getId(), action);
 	}
 
 	protected ActionMap(Element context) throws IOException {
@@ -39,7 +39,7 @@ class ActionMap {
 			if (actionNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element actionElement = (Element) actionNode;
 				Action action = new Action(actionElement);
-				actions.put(action.getCode(), action);
+				actions.put(action.getId(), action);
 			} else {
 				throw new IOException("Could not instantiate action map from node " + actionNode.getNodeName());
 			}
@@ -101,7 +101,7 @@ class ActionMap {
 	 * @param action
 	 */
 	protected void addAction(Action action) {
-		actions.put(action.getCode(), action);
+		actions.put(action.getId(), action);
 	}
 
 	/**

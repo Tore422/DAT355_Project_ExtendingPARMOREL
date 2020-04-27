@@ -457,22 +457,22 @@ public abstract class QModelFixer implements ModelFixer {
 			try {
 				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
 				int code2 = a.getHierarchy();
-				double value = qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode())
-						+ ALPHA * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode())
-								- qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()));
+				double value = qTable.getWeight(currentErrorToFix.getCode(), context, action.getId())
+						+ ALPHA * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId())
+								- qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()));
 
 				LOGGER.info("Calculating new Q-value:\nOld Q-value: "
-						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + "\nAlpha: " + ALPHA
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + "\nAlpha: " + ALPHA
 						+ "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\nNext optimal action Q-value: "
-						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + "\n"
-						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + " + " + ALPHA + " * ("
+						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId()) + "\n"
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + " + " + ALPHA + " * ("
 						+ reward + " + " + GAMMA + " * "
-						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + " - "
-						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getCode()) + ") = " + value);
-				qTable.setWeight(currentErrorToFix.getCode(), context, action.getCode(), value);
+						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId()) + " - "
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + ") = " + value);
+				qTable.setWeight(currentErrorToFix.getCode(), context, action.getId(), value);
 				LOGGER.info(
 						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + context + ", action "
-								+ action.getCode() + " " + action.getMessage() + " to new weight " + value + "\n\n");
+								+ action.getId() + " " + action.getMessage() + " to new weight " + value + "\n\n");
 			} catch (UnsupportedErrorException e) {
 				// next error is not in the Q-table
 			}
@@ -481,7 +481,7 @@ public abstract class QModelFixer implements ModelFixer {
 		}
 
 		else {
-			updateQTable(qTable, currentErrorToFix.getCode(), context, action.getCode(), reward);
+			updateQTable(qTable, currentErrorToFix.getCode(), context, action.getId(), reward);
 		}
 
 		return reward;

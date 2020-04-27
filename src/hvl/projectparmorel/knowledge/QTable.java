@@ -151,7 +151,7 @@ public class QTable {
 
 	public void updateReward(AppliedAction errorAction, int contextId) {
 		int errorCode = errorAction.getError().getCode();
-		int actionId = errorAction.getAction().getCode();
+		int actionId = errorAction.getAction().getId();
 		
 		if(qTable.containsValueForErrorAndContext(errorCode, contextId, actionId)) {
 			Action actionToUpdate = errorAction.getAction();

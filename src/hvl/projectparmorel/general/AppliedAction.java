@@ -61,7 +61,7 @@ public class AppliedAction {
 	public boolean equals(Object other) {
 		if (other instanceof AppliedAction) {
 			AppliedAction otherAplpiedAction = (AppliedAction) other;
-			if (this.getAction().getCode() == otherAplpiedAction.getAction().getCode()
+			if (this.getAction().getId() == otherAplpiedAction.getAction().getId()
 					&& this.getError().getCode() == otherAplpiedAction.getError().getCode()
 					&& this.getAction().getHierarchy() == otherAplpiedAction.getAction().getHierarchy()) {
 				return true;

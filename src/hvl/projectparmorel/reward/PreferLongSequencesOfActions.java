@@ -57,7 +57,7 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getHierarchy();
 			int errorCode = appliedAction.getError().getCode();
-			int actionId = appliedAction.getAction().getCode();
+			int actionId = appliedAction.getAction().getId();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);
