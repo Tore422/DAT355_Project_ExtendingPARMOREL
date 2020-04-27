@@ -40,14 +40,14 @@ class ActionTest {
 	
 	@Test
 	public void methodIsDeleteIfStartsWith9999() {
-		action1.setCode(99991);
+		action1.setId(99991);
 		assertTrue(action1.isDelete());
 	}
 
 
 	@Test
 	public void methodIsNotDeleteIfOnlyStartsWith999() {
-		action1.setCode(9991);
+		action1.setId(9991);
 		assertFalse(action1.isDelete());
 	}
 }

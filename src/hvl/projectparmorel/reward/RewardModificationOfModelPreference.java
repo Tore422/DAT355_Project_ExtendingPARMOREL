@@ -6,19 +6,27 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 
-public class RewardModificationOfModelPreference extends Preference implements ResultBasedPreference {
+public class RewardModificationOfModelPreference extends Preference implements InitializablePreference {
 
 	private int numbersOfErrorsBeforeApplyingAction;
 	private ErrorExtractor errorExtractor;
 
 	public RewardModificationOfModelPreference(int weight) {
 		super(weight, PreferenceOption.REWARD_MODIFICATION_OF_MODEL);
-		errorExtractor = new EcoreErrorExtractor();
 	}
 
 	@Override
 	public void initializeBeforeApplyingAction(Model model) {
-		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false).size();
+		switch (model.getModelType()) {
+		case ECORE:
+			errorExtractor = new EcoreErrorExtractor();
+			break;
+		default:
+			throw new UnsupportedOperationException("This preference is not yet implemented for this model type.");
+		}
+
+		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false)
+				.size();
 	}
 
 	@Override

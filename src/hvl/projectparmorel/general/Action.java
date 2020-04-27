@@ -33,10 +33,10 @@ public class Action implements Comparable<Action> {
 	private final String XML_PREFERENCEMAP_NAME = "preferenceMap";
 
 	private PreferenceWeightMap preferenceMap;
-	private int code;
-	private String message;
+	private int id;
+	private String name;
 	private SerializableMethod method;
-	private int hierarchy;
+	private int contextId;
 	private double weight;
 
 	/**
@@ -49,27 +49,26 @@ public class Action implements Comparable<Action> {
 	/**
 	 * Creates an action with all the parameters, except weight, set.
 	 * 
-	 * @param code
-	 * @param message
+	 * @param id
+	 * @param name
 	 * @param method
 	 * @param hierarchy
-	 * @param subHierarchy
 	 */
-	public Action(int code, String message, SerializableMethod method, int hierarchy) {
+	public Action(int id, String name, SerializableMethod method, int hierarchy) {
 		this();
-		this.code = code;
-		this.message = message;
+		this.id = id;
+		this.name = name;
 		this.method = method;
-		this.hierarchy = hierarchy;
+		this.contextId = hierarchy;
 	}
 
 	public Action(Element action) throws IOException {
 		if (action.getNodeType() == Node.ELEMENT_NODE) {
 			Element actionElement = action;
-			code = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
+			id = Integer.parseInt(actionElement.getAttribute(XML_CODE_NAME));
 			weight = Double.parseDouble(actionElement.getElementsByTagName(XML_WEIGHT_NAME).item(0).getTextContent());
-			message = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
-			hierarchy = Integer
+			name = actionElement.getElementsByTagName(XML_MESSAGE_NAME).item(0).getTextContent();
+			contextId = Integer
 					.parseInt(actionElement.getElementsByTagName(XML_HIERARCHY_NAME).item(0).getTextContent());
 			method = getMethodFromString(actionElement.getElementsByTagName(XML_METHOD_NAME).item(0).getTextContent());
 			preferenceMap = new PreferenceWeightMap(actionElement.getElementsByTagName(XML_PREFERENCEMAP_NAME));
@@ -80,15 +79,20 @@ public class Action implements Comparable<Action> {
 
 	@Override
 	public String toString() {
-		return "Action" + code + ", msg=" + message + "." + System.getProperty("line.separator");
+		return "Action" + id + ", msg=" + name + "." + System.getProperty("line.separator");
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Action) {
 			Action otherAction = (Action) other;
-			return otherAction.getCode() == code && otherAction.getMessage().equals(message)
-					&& otherAction.getMethod().equals(method) && otherAction.getHierarchy() == hierarchy;
+			if (method == null && otherAction.getMethod() == null) {
+				return otherAction.getId() == id && otherAction.getName().equals(name)
+						&& otherAction.getContextId() == contextId;
+			} else if (method != null && otherAction.getMethod() != null) {
+				return otherAction.getId() == id && otherAction.getName().equals(name)
+						&& otherAction.getMethod().equals(method) && otherAction.getContextId() == contextId;
+			}
 		}
 		return false;
 	}
@@ -111,7 +115,7 @@ public class Action implements Comparable<Action> {
 	 * @return true if the action handles it, false otherwise
 	 */
 	public boolean handlesMissingArgumentForGenericType(Error error) {
-		return String.valueOf(code).startsWith("888") && error.getCode() == 4;
+		return String.valueOf(id).startsWith("888") && error.getCode() == 4;
 	}
 
 	public void savePreferenceWeights() {
@@ -123,7 +127,7 @@ public class Action implements Comparable<Action> {
 
 	public void saveTo(Document document, Element action) {
 		Attr code = document.createAttribute(XML_CODE_NAME);
-		code.setValue("" + this.code);
+		code.setValue("" + this.id);
 		action.setAttributeNode(code);
 
 		Element weight = document.createElement(XML_WEIGHT_NAME);
@@ -131,11 +135,11 @@ public class Action implements Comparable<Action> {
 		action.appendChild(weight);
 
 		Element message = document.createElement(XML_MESSAGE_NAME);
-		message.appendChild(document.createTextNode(this.message));
+		message.appendChild(document.createTextNode(this.name));
 		action.appendChild(message);
 
 		Element hierarchy = document.createElement(XML_HIERARCHY_NAME);
-		hierarchy.appendChild(document.createTextNode("" + this.hierarchy));
+		hierarchy.appendChild(document.createTextNode("" + this.contextId));
 		action.appendChild(hierarchy);
 
 		Element method = document.createElement(XML_METHOD_NAME);
@@ -202,23 +206,14 @@ public class Action implements Comparable<Action> {
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks if the action is a delete action
 	 * 
 	 * @return true if the action is a delete action, false otherwise
 	 */
 	public boolean isDelete() {
-		return String.valueOf(code).startsWith("9999");
-	}
-
-	/**
-	 * Gets the context id
-	 * 
-	 * @return the context ID
-	 */
-	public int getContextId() {
-		return hierarchy;
+		return String.valueOf(id).startsWith("9999");
 	}
 
 	public double getWeight() {
@@ -229,28 +224,28 @@ public class Action implements Comparable<Action> {
 		this.weight = weight;
 	}
 
-	public int getCode() {
-		return code;
+	public int getId() {
+		return id;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getName() {
+		return name;
 	}
 
 	public SerializableMethod getMethod() {
 		return method;
 	}
 
-	public int getHierarchy() {
-		return hierarchy;
+	public int getContextId() {
+		return contextId;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public PreferenceWeightMap getPreferenceMap() {

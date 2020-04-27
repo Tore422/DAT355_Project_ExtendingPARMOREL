@@ -37,10 +37,16 @@ public abstract class QModelFixer implements ModelFixer {
 	 * The name of the {@link java.util.logging.Logger} used.
 	 */
 	public static final String LOGGER_NAME = "MyLog";
-	private final double MIN_ALPHA = 0.06; // Learning rate
-	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
+	/**
+	 * The learning rate of the algorithm
+	 */
+	protected static final double ALPHA = 1.0;
+	/**
+	 * Eagerness. 0 looks in the near future, 1 looks in the distant future
+	 */
+	protected static final double GAMMA = 1.0;
+	private static Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 	private final int MIN_EPISODE_STEPS = 20;
-	private final double[] ALPHAS;
 
 	protected Knowledge knowledge;
 	private QTable qTable;
@@ -54,8 +60,6 @@ public abstract class QModelFixer implements ModelFixer {
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
-
-	private Logger logger;
 
 	private int reward = 0;
 	private int numberOfSteps;
@@ -73,24 +77,42 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
-
-		logger = Logger.getLogger(LOGGER_NAME);
+		actionExtractor = initializeActionExtractor();
+		errorExtractor = initializeErrorExtractor();
+		modelProcessor = initializeModelProcessor();
 	}
+
+	/**
+	 * Gets an {@link ActionExtractor} that allows the algorithm to extract actions
+	 * that can be used on the model.
+	 * 
+	 * @return a meta model specific ActionExtractor that can extract actions that
+	 *         can be applied to the model
+	 */
+	protected abstract ActionExtractor initializeActionExtractor();
+
+	/**
+	 * Gets an {@link ErrorExtractor} that allows the algorithm to extract errors
+	 * from the model.
+	 * 
+	 * @return a meta model specific ErrorExtractor that can get errors from the
+	 *         model.
+	 */
+	protected abstract ErrorExtractor initializeErrorExtractor();
+
+	/**
+	 * Gets a {@link ModelProcessor} that can be used to process and apply actions
+	 * to the model.
+	 * 
+	 * @return a meta model specific ModelProcessor.
+	 */
+	protected abstract ModelProcessor initializeModelProcessor();
 
 	public QModelFixer(List<PreferenceOption> preferences) {
 		this();
 		rewardCalculator = new RewardCalculator(knowledge, preferences);
-	}
-
-	private double[] linspace(double min, double max, int points) {
-		double[] d = new double[points];
-		for (int i = 0; i < points; i++) {
-			d[i] = min + i * (max - min) / (points - 1);
-		}
-		return d;
 	}
 
 	@Override
@@ -140,35 +162,35 @@ public abstract class QModelFixer implements ModelFixer {
 	 */
 	private Action chooseAction(Error error) throws UnsupportedErrorException {
 		if (Math.random() < randomFactor) {
-			logger.info("Choosing random action.");
+			LOGGER.info("Choosing random action.");
 			return knowledge.getQTable().getRandomActionForError(error.getCode());
 		} else {
-			logger.info("Choosing optimal action");
+			LOGGER.info("Choosing optimal action");
 			return knowledge.getOptimalActionForErrorCode(error.getCode());
 		}
 	}
 
 	@Override
-	public Solution fixModel(File modelFile) throws NoErrorsInModelException {		
+	public Solution fixModel(File modelFile) throws NoErrorsInModelException {
 		long startTime = System.currentTimeMillis();
-		logger.info("Repairing " + modelFile.getName());
+		LOGGER.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
 		Model model = initializeModelFromFile();
 
 		File duplicateFile = createDuplicateFile();
 
-		logger.info("Running with preferences " + rewardCalculator.getPreferences().toString());
+		LOGGER.info("Running with preferences " + rewardCalculator.getPreferences().toString());
 
 		discardedSequences = 0;
 		int episode = 0;
 
-		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentation(), true);
 		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
 			throw new NoErrorsInModelException("No supported errors where found in " + modelFile.getAbsolutePath());
 		}
-		
+
 		setInitialErrors(errorsToFix);
 		possibleSolutions.clear();
 		originalErrors.clear();
@@ -178,31 +200,44 @@ public abstract class QModelFixer implements ModelFixer {
 		} else {
 			numberOfSteps = MIN_EPISODE_STEPS;
 		}
-		logger.info("Initial number of errors in model: " + errorsToFix.size() + "\nMaximum number of steps per episode: "
-				+ numberOfSteps + "\nErrors to fix: " + errorsToFix.toString());
-		logger.info("Initializing Q-table for the errors.");
+		LOGGER.info(
+				"Initial number of errors in model: " + errorsToFix.size() + "\nMaximum number of steps per episode: "
+						+ numberOfSteps + "\nErrors to fix: " + errorsToFix.toString());
+		LOGGER.info("Initializing Q-table for the errors.");
 		Set<Integer> unsupportedErrors = modelProcessor.initializeQTableForErrorsInModel(model);
 		for (Integer errorCode : unsupportedErrors) {
-			logger.warning(
+			LOGGER.warning(
 					"Encountered error that could not be resolved. Adding to unsupported errors.\nCode: " + errorCode);
 			model.getModelType().addUnsupportedErrorCode(errorCode);
 		}
 
-		logger.info("Number of episodes: " + numberOfEpisodes);
+		LOGGER.info("Number of episodes: " + numberOfEpisodes);
 		while (episode < numberOfEpisodes) {
 			File episodeModelFile = createDuplicateFile(duplicateFile,
 					originalModel.getParent() + "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 
 			Model episodeModel = getModel(episodeModelFile);
-			Solution sequence = handleEpisode(episodeModel, episode);
+			Solution solution = handleEpisode(episodeModel, episode);
+			solution.setModel(episodeModelFile);
+			episodeModel.save();
 
-			if (sequence != null) {
-				episodeModel.save();
+			double totalReward = solution.getWeight();
+			totalReward += rewardCalculator.calculateRewardFor(episodeModel, solution);
+			solution.setWeight(totalReward);
+			solution.setRewardCalculator(rewardCalculator);
+
+			if (isUnique(solution) && !solution.getSequence().isEmpty()) {
+				possibleSolutions.add(solution);
 				episodeModelFile.deleteOnExit();
-				sequence.setModel(episodeModelFile);
+				LOGGER.info("Solution added to possible solitons: " + solution.getSequence().toString());
 			} else {
+				LOGGER.info("Solution discarded.");
+				discardedSequences++;
+				solution = null;
 				episodeModelFile.delete();
 			}
+
+			LOGGER.info("EPISODE " + episode + " TOTAL REWARD " + totalReward + "\n\n\n");
 
 			// RESET initial model and extract actions + errors
 			errorsToFix.clear();
@@ -215,30 +250,28 @@ public abstract class QModelFixer implements ModelFixer {
 
 		long endTime = System.currentTimeMillis();
 		long executionTime = (endTime - startTime);
-		logger.info("Time repairing model: " + executionTime + " ms");
-		logger.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
+		LOGGER.info("Time repairing model: " + executionTime + " ms");
+		LOGGER.info("\n-----------------ALL SEQUENCES FOUND-------------------" + "\nSIZE: " + possibleSolutions.size()
 				+ "\nDISCARDED SEQUENCES: " + discardedSequences
 				+ "\n--------::::B E S T   S E Q U E N C E   I S::::---------\n" + bestSequence + " with "
 				+ bestSequence.getSequence().size() + " actions.");
-//		removeSolutionsWithSameResult(solvingMap);
 
-		if (bestSequence.getSequence().size() != 0) {
-			bestSequence.reward(false);
-		}
 		saveKnowledge();
 		return bestSequence;
 	}
 
 	/**
-	 * Logs all encountered unsupported errors with a warning and removes them from the errorsToFix.
-	 * @param model 
+	 * Logs all encountered unsupported errors with a warning and removes them from
+	 * the errorsToFix.
+	 * 
+	 * @param model
 	 */
 	private void handleUnsupportedErrors(Model model) {
 		List<Error> unsupported = new ArrayList<>();
 		for (Error e : errorsToFix) {
 			if (model.getModelType().doesNotSupportError(e.getCode())) {
-				logger.warning(
-						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
+//				logger.warning(
+//						"The error code " + e.getCode() + " for the error " + e.getMessage() + " is not supported.");
 				unsupported.add(e);
 			}
 		}
@@ -316,22 +349,22 @@ public abstract class QModelFixer implements ModelFixer {
 	 */
 	private Solution handleEpisode(Model episodeModel, int episode) {
 		Solution solution = initializeSolution();
-		boolean errorOcurred = false;
 		int totalReward = 0;
 		int step = 0;
 
 		while (step < numberOfSteps) {
-			while (!errorsToFix.isEmpty() && episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
+			while (!errorsToFix.isEmpty()
+					&& episodeModel.getModelType().doesNotSupportError(errorsToFix.get(0).getCode())) {
 				errorsToFix.remove(0);
 			}
 			if (!errorsToFix.isEmpty()) {
 				Error currentErrorToFix = errorsToFix.get(0);
 				try {
-					logger.info("EPISODE " + episode + ", STEP " + step + ", Fixing error "
+					LOGGER.info("EPISODE " + episode + ", STEP " + step + ", Fixing error "
 							+ currentErrorToFix.getCode() + ": " + currentErrorToFix.getMessage());
 					totalReward += handleStep(episodeModel, solution, episode, currentErrorToFix);
 				} catch (UnsupportedErrorException e) {
-					logger.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: "
+					LOGGER.warning("Encountered error that could not be resolved. Adding to unsupported errors.\nCode: "
 							+ currentErrorToFix.getCode() + "\nMessage: " + currentErrorToFix.getMessage());
 					episodeModel.getModelType().addUnsupportedErrorCode(e.getErrorCode());
 					errorsToFix.remove(0);
@@ -349,19 +382,8 @@ public abstract class QModelFixer implements ModelFixer {
 				totalReward -= val * 1000;
 			}
 		}
-
-		solution.setWeight(totalReward);
 		solution.setOriginal(originalModel);
-		solution.setRewardCalculator(rewardCalculator);
-
-		if (!errorOcurred && uniqueSequence(solution) && !solution.getSequence().isEmpty()) {
-			possibleSolutions.add(solution);
-		} else {
-			discardedSequences++;
-			solution = null;
-		}
-
-		logger.info("EPISODE " + episode + " TOTAL REWARD " + totalReward + "\n\n\n");
+		solution.setWeight(totalReward);
 		return solution;
 	}
 
@@ -386,126 +408,135 @@ public abstract class QModelFixer implements ModelFixer {
 	private int handleStep(Model episodeModel, Solution sequence, int episode, Error currentErrorToFix)
 			throws UnsupportedErrorException {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
-			logger.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
+			LOGGER.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
 					+ ", does not exist in Q-table. Attempting to solve...");
-			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentationCopy(), false);
-			actionExtractor.extractActionsFor(errorsToFix);
+			errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation(), false);
+			actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errorsToFix);
 			modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 			if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
-				logger.info("Action for error code not found.");
+				LOGGER.info("Action for error code not found.");
 				throw new UnsupportedErrorException("No action found for error code " + currentErrorToFix.getCode(),
 						currentErrorToFix.getCode());
 			} else {
-				logger.info("Action for error code found and added to Q-table.");
+				LOGGER.info("Action for error code found and added to Q-table.");
 			}
 		}
 
 		rewardCalculator.initializePreferencesBeforeChoosingAction(episodeModel);
 		Action action = chooseAction(currentErrorToFix);
-		logger.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
+		LOGGER.info("Chose action " + action.getName() + " in context " + action.getContextId() + " with weight "
 				+ action.getWeight());
-//		int sizeBefore = errorsToFix.size();
-		double alpha = ALPHAS[episode];
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
 		reward = rewardCalculator.calculateRewardFor(episodeModel, currentErrorToFix, action);
-		// Insert stuff into sequence
+
 		sequence.setId(episode);
 		List<AppliedAction> appliedActions = sequence.getSequence();
 		appliedActions.add(new AppliedAction(currentErrorToFix, action));
-
-		sequence.setSequence(appliedActions);
-
-		int code = action.getHierarchy();
-
-//		reward = rewardCalculator.rewardPostApplyingAction(reward, sizeBefore, errorsToFix.size(), currentErrorToFix,
-//				code, action);
-
+		
+		int context = action.getContextId();
 		if (!errorsToFix.isEmpty()) {
 			Error nextErrorToFix = errorsToFix.get(0);
-			logger.info("Next error code: " + nextErrorToFix.getCode());
+			LOGGER.info("Next error code: " + nextErrorToFix.getCode());
 			if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
-				logger.info("Error " + nextErrorToFix.getCode() + ", " + nextErrorToFix.getMessage()
+				LOGGER.info("Error " + nextErrorToFix.getCode() + ", " + nextErrorToFix.getMessage()
 						+ ", does not exist in Q-table. Attempting to solve...");
 				errorsToFix = errorExtractor.extractErrorsFrom(episodeModel.getRepresentation(), false);
-				actionExtractor.extractActionsFor(errorsToFix);
+				actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errorsToFix);
 				modelProcessor.initializeQTableForErrorsInModel(episodeModel);
 				if (!qTable.containsErrorCode(nextErrorToFix.getCode())) {
-					logger.info("Action for error code not found.");
+					LOGGER.info("Action for error code not found.");
 				} else {
-					logger.info("Action for error code found and added to Q-table.");
+					LOGGER.info("Action for error code found and added to Q-table.");
 				}
 			}
-
-//			reward = rewardCalculator.updateIfNewErrorIsIntroduced(reward, initialErrorCodes, nextErrorToFix);
-
+			
 			nextErrorToFix = errorsToFix.get(0);
 			Action a;
 			try {
 				a = knowledge.getOptimalActionForErrorCode(nextErrorToFix.getCode());
-				int code2 = a.getHierarchy();
-				double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-						+ alpha * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode())
-								- qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
+				int code2 = a.getContextId();
+				double value = qTable.getWeight(currentErrorToFix.getCode(), context, action.getId())
+						+ ALPHA * (reward + GAMMA * qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId())
+								- qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()));
 
-				logger.info("Calculating new Q-value:\nOld Q-value: "
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: " + alpha
+				LOGGER.info("Calculating new Q-value:\nOld Q-value: "
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + "\nAlpha: " + ALPHA
 						+ "\n" + "Gamma: " + GAMMA + "\nReward: " + reward + "\nNext optimal action Q-value: "
-						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + "\n"
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * ("
+						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId()) + "\n"
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + " + " + ALPHA + " * ("
 						+ reward + " + " + GAMMA + " * "
-						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getCode()) + " - "
-						+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = " + value);
-				qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-				logger.info(
-						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action "
-								+ action.getCode() + " " + action.getMessage() + " to new weight " + value + "\n\n");
+						+ qTable.getWeight(nextErrorToFix.getCode(), code2, a.getId()) + " - "
+						+ qTable.getWeight(currentErrorToFix.getCode(), context, action.getId()) + ") = " + value);
+				qTable.setWeight(currentErrorToFix.getCode(), context, action.getId(), value);
+				LOGGER.info(
+						"Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + context + ", action "
+								+ action.getId() + " " + action.getName() + " to new weight " + value + "\n\n");
 			} catch (UnsupportedErrorException e) {
 				// next error is not in the Q-table
 			}
 
 			currentErrorToFix = nextErrorToFix;
-		} // it has reached the end
+		}
 
 		else {
-			double value = qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode())
-					+ alpha * (reward - qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()));
-
-			logger.info("Calculating new Q-value:\nOld Q-value: "
-					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + "\nAlpha: " + alpha + "\n"
-					+ "\nReward: " + reward + "\n"
-					+ qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + " + " + alpha + " * ("
-					+ reward + " - " + qTable.getWeight(currentErrorToFix.getCode(), code, action.getCode()) + ") = "
-					+ value);
-			qTable.setWeight(currentErrorToFix.getCode(), code, action.getCode(), value);
-			logger.info("Updated Q-table for error " + currentErrorToFix.getCode() + ", context " + code + ", action "
-					+ +action.getCode() + " " + action.getMessage() + " to new weight " + value);
+			updateQTable(qTable, currentErrorToFix.getCode(), context, action.getId(), reward);
 		}
 
 		return reward;
 	}
 
-	private boolean uniqueSequence(Solution sequence) {
-		boolean check = true;
-		int same = 0;
-		for (Solution otherSequence : possibleSolutions) {
-			if (otherSequence.getWeight() == sequence.getWeight()) {
-				for (AppliedAction ea : sequence.getSequence()) {
-					for (AppliedAction ea2 : otherSequence.getSequence()) {
-						if (ea.equals(ea2)) {
-							same++;
-						}
+	/**
+	 * Updates the specified Q-Table for the given error, context and action with
+	 * the new weight. The new weight will be calculated based on the old weight and
+	 * on the new. This calculation is used when rewarding actions post repair.
+	 * 
+	 * @param qTable
+	 * @param errorCode
+	 * @param contextId
+	 * @param actionCode
+	 * @param weight
+	 */
+	public static void updateQTable(QTable qTable, int errorCode, int contextId, int actionCode, int weight) {
+		double value = qTable.getWeight(errorCode, contextId, actionCode)
+				+ ALPHA * (weight + GAMMA - qTable.getWeight(errorCode, contextId, actionCode));
+
+		LOGGER.info("Calculating new Q-value:\nOld Q-value: " + qTable.getWeight(errorCode, contextId, actionCode)
+				+ "\nAlpha: " + ALPHA + "\nGamma:" +  GAMMA + "\n" + "\nReward: " + weight + "\n"
+				+ qTable.getWeight(errorCode, contextId, actionCode) + " + " + ALPHA + " * (" + weight + " + " + GAMMA + " - "
+				+ qTable.getWeight(errorCode, contextId, actionCode) + ") = " + value);
+		qTable.setWeight(errorCode, contextId, actionCode, value);
+		LOGGER.info("Updated Q-table for error " + errorCode + ", context " + contextId + ", action " + actionCode
+				+ " to new weight " + value);
+	}
+
+	/**
+	 * Checks if a solution is equal to any other with respect to the other
+	 * potential soluions.
+	 * 
+	 * @param solution
+	 * @return true if the solution is unique, false otherwise
+	 */
+	private boolean isUnique(Solution solution) {
+		for (Solution otherSolution : possibleSolutions) {
+			if (solution.getSequence().size() == otherSolution.getSequence().size()) {
+				List<AppliedAction> solutionSequence = solution.getSequence();
+				List<AppliedAction> otherSequence = otherSolution.getSequence();
+
+				boolean solutionsAreEqual = true;
+				for (int i = 0; i < solution.getSequence().size() && solutionsAreEqual; i++) {
+					if (!solutionSequence.get(i).getAction().equals(otherSequence.get(i).getAction())) {
+						solutionsAreEqual = false;
 					}
-				} // for ea
-					// if all elements in list are the same
-				if (same == sequence.getSequence().size()) {
-					check = false;
-					break;
 				}
-			} // if weight
-		} // for
-		return check;
+				if (solutionsAreEqual) {
+					LOGGER.info("Solution " + solution.getSequence().toString() + " already exists.");
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private int checkForLoopsIn(List<AppliedAction> performedActions) {

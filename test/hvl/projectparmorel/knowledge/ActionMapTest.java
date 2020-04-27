@@ -25,11 +25,11 @@ class ActionMapTest {
 		action3 = new Action();
 		action4 = new Action();
 		action5 = new Action();
-		action1.setCode(1);
-		action2.setCode(2);
-		action3.setCode(3);
-		action4.setCode(4);
-		action5.setCode(5);
+		action1.setId(1);
+		action2.setId(2);
+		action3.setId(3);
+		action4.setId(4);
+		action5.setId(5);
 		actionMap.addAction(action1);
 		actionMap.addAction(action2);
 		actionMap.addAction(action3);

@@ -7,7 +7,6 @@ import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.QModelFixer;
 import hvl.projectparmorel.modelrepair.Solution;
@@ -25,7 +24,7 @@ class PreferShortSequencesOfActions extends Preference implements PostRepairPref
 	 * Rewards the best shortest sequence in the specified list of sequences
 	 */
 	@Override
-	public void rewardPostRepair(List<Solution> possibleSolutions, Knowledge knowledge) {
+	public void rewardPostRepair(List<Solution> possibleSolutions, QTable qTable) {
 		Solution optimalSequence = null;
 		int smallestSequenceSize = 9999;
 
@@ -41,7 +40,7 @@ class PreferShortSequencesOfActions extends Preference implements PostRepairPref
 		}
 		if (optimalSequence != null) {
 			optimalSequence.setWeight(optimalSequence.getWeight() + weight);
-			rewardSolution(optimalSequence, knowledge);
+			rewardSolution(optimalSequence, qTable);
 			logger.info("Rewarded solution " + optimalSequence.getId() + " with a weight of " + weight
 					+ " because of preferences to reward shorter sequences.");
 		}
@@ -53,12 +52,11 @@ class PreferShortSequencesOfActions extends Preference implements PostRepairPref
 	 * @param solution
 	 * @param knowledge
 	 */
-	private void rewardSolution(Solution solution, Knowledge knowledge) {
-		QTable qTable = knowledge.getQTable();
+	private void rewardSolution(Solution solution, QTable qTable) {
 		for (AppliedAction appliedAction : solution.getSequence()) {
-			int contextId = appliedAction.getAction().getHierarchy();
+			int contextId = appliedAction.getAction().getContextId();
 			int errorCode = appliedAction.getError().getCode();
-			int actionId = appliedAction.getAction().getCode();
+			int actionId = appliedAction.getAction().getId();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);

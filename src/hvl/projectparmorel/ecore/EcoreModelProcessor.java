@@ -72,8 +72,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private Set<Integer> initializeQTableForErrorsInModel(EcoreModel model) {
 		errors = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false);
 
-		ActionExtractor actionExtractor = new EcoreActionExtractor(knowledge);
-		List<Action> possibleActions = actionExtractor.extractActionsFor(errors);
+		ActionExtractor actionExtractor = new EcoreActionExtractor();
+		List<Action> possibleActions = actionExtractor.extractActionsNotInQTableFor(knowledge.getQTable(), errors);
 
 		Set<Integer> unsupportedErrors = new HashSet<>();
 
@@ -90,7 +90,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error)) {
 										actionForErrorFound = true;
-										Action newAction = new Action(action.getCode(), action.getMessage(),
+										Action newAction = new Action(action.getId(), action.getName(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
 									}
@@ -137,7 +137,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 	@Override
 	public List<Error> tryApplyAction(Error error, Action action, Model model) {
 		if (model instanceof EcoreModel) {
-			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getHierarchy());
+			return tryApplyAction(error, action, (Resource) model.getRepresentation(), action.getContextId());
 		}
 		throw new IllegalArgumentException("The model needs to be of type org.eclipse.emf.ecore.resource.Resource");
 	}
@@ -155,13 +155,19 @@ public class EcoreModelProcessor implements ModelProcessor {
 	 *         otherwise
 	 */
 	private List<Error> tryApplyAction(Error error, Action action, Resource model, int hierarchy) {
-		EPackage ePackage = (EPackage) model.getContents().get(0);
+		EPackage ePackage = (EPackage) model.getContents().get(error.getPackageIndex());
 		EObject object = (EObject) error.getContexts().get(hierarchy);
 
 		if (object != null) {
 			boolean success = false;
 			for (int i = 0; i < ePackage.getEClassifiers().size() && !success; i++) {
 				success = identifyObjectTypeAndApplyAction(error, action, object, ePackage.getEClassifiers().get(i));
+			}
+			for(int i = 0; i < ePackage.getESubpackages().size() && !success; i++) {
+				EPackage epa = ePackage.getESubpackages().get(i);
+				for (int j = 0; j < epa.getEClassifiers().size() && !success; j++) {
+					success = identifyObjectTypeAndApplyAction(error, action, object, epa.getEClassifiers().get(j));
+				}
 			}
 			List<Error> newErrors = errorExtractor.extractErrorsFrom(model, false);
 			return newErrors;
@@ -424,7 +430,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 
 		int contextId = action.getContextId();
 
-		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getCode())) {
+		if (!actionDirectory.containsActionForErrorAndContext(error.getCode(), contextId, action.getId())) {
 			action.setWeight(0);
 			actionDirectory.setAction(error.getCode(), contextId, action);
 		}
@@ -442,8 +448,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 		Object[] values = getDefaultValues(extractParameterTypes(action.getMethod().getMethod(), error));
 		// if input needs a date
 		if (values.length != 0 && eObject instanceof EAttributeImpl
-				&& action.getMethod().getMethod().getName().contains("DefaultValue") && error.getCode() != 40
-				&& ((ETypedElement) eObject).getEType() != null
+				&& action.getMethod().getMethod().getName().contains("DefaultValue") && error.getCode() != 38
+				&& error.getCode() != 40 && ((ETypedElement) eObject).getEType() != null
 				&& ((ETypedElement) eObject).getEType().toString().contains("Date")) {
 
 			invokeMethod(action.getMethod().getMethod(), eObject, new Date());
@@ -451,7 +457,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 		} else {
 			// if dealing with opposite references
 			if (values.length == action.getMethod().getMethod().getParameterCount()) {
-				if (error.getCode() == 14 && action.getMessage().contains("setEOpposite")
+				if (error.getCode() == 14 && action.getName().contains("setEOpposite")
 						&& eObject instanceof EReferenceImpl) {
 					values[0] = findOpposite((EReferenceImpl) eObject, error);
 				}
@@ -459,7 +465,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 				try {
 					invokeMethod(action.getMethod().getMethod(), eObject, values);
 
-					if (error.getCode() == 40 && action.getCode() == 591449609) { // sometimes this action in that error
+					if (error.getCode() == 40 && action.getId() == 591449609) { // sometimes this action in that error
 																					// is problematic
 						EAttributeImpl attribute = (EAttributeImpl) eObject;
 						if (!attribute.isSetEGenericType()) {
@@ -557,8 +563,8 @@ public class EcoreModelProcessor implements ModelProcessor {
 	private void addTypeArguments(Error error, Action action) {
 		EGenericTypeImpl genericType = (EGenericTypeImpl) error.getContexts().get(0);
 		genericType.getETypeArguments().add(genericType);
-		action.setCode(88888);
-		action.setMessage("getETypeArguments().add(genericType)");
+		action.setId(88888);
+		action.setName("getETypeArguments().add(genericType)");
 	}
 
 	/**
@@ -576,12 +582,12 @@ public class EcoreModelProcessor implements ModelProcessor {
 			if (method.getName().contentEquals("setEClassifier") || method.getName().contains("SetEGenericType")
 					|| (error.getCode() == 401 && method.getName().contentEquals("setEType"))) {
 				argsClass.add(parameterTypes[i].getName() + "CLASS");
+			} else if (method.getName().contentEquals("setTransient")) {
+				argsClass.add(parameterTypes[i].getName() + "TRUE");
+			} else if (method.getName().contains("Literal")) {
+				argsClass.add("Literal");
 			} else {
-				if (method.getName().contentEquals("setTransient")) {
-					argsClass.add(parameterTypes[i].getName() + "TRUE");
-				} else {
-					argsClass.add(parameterTypes[i].getName());
-				}
+				argsClass.add(parameterTypes[i].getName());
 			}
 		}
 		return argsClass;
@@ -678,6 +684,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 			}
 			if (list.get(i).contains("Reference")) {
 				values.add(EcorePackage.Literals.EREFERENCE__EREFERENCE_TYPE);
+			}
+			if (list.get(i).contains("Literal")) {
+				values.add(null);
 			}
 		}
 		Object[] val = new Object[values.size()];
