@@ -124,7 +124,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * Updates the dependencies after reward calculator has changed.
 	 */
 	protected abstract void updateRewardCalculator();
-
+ 
 	/**
 	 * Saves the knowledge
 	 */
@@ -146,11 +146,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (success) {
 			knowledge.clearWeights();
 			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
-<<<<<<< HEAD
-			numberOfEpisodes = 8;
-=======
 			numberOfEpisodes = 12;
->>>>>>> 35ded344e9d163080a60a8209c38b5c1e8eafecb
 			randomFactor = 0.15;
 		}
 	}
@@ -429,11 +425,9 @@ public abstract class QModelFixer implements ModelFixer {
 		Action action = chooseAction(currentErrorToFix);
 		LOGGER.info("Chose action " + action.getName() + " in context " + action.getContextId() + " with weight "
 				+ action.getWeight());
-<<<<<<< HEAD
-//		int sizeBefore = errorsToFix.size();
+
 		double alpha = 1.0;
-=======
->>>>>>> 35ded344e9d163080a60a8209c38b5c1e8eafecb
+
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
