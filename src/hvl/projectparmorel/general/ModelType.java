@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public enum ModelType {
-	ECORE(new HashSet<Integer>(Arrays.asList(1, 4))); // 6
+	ECORE(new HashSet<Integer>(Arrays.asList(1, 4)));
 
 	private Set<Integer> unsupportedErrorCodes;
 

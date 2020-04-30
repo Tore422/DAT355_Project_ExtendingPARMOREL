@@ -85,8 +85,8 @@ public class RewardCalculator {
 	 */
 	public void initializePreferencesBeforeChoosingAction(Model model) {
 		for (Preference preference : preferences) {
-			if (preference instanceof ResultBasedPreference) {
-				ResultBasedPreference pref = (ResultBasedPreference) preference;
+			if (preference instanceof InitializablePreference) {
+				InitializablePreference pref = (InitializablePreference) preference;
 				pref.initializeBeforeApplyingAction(model);
 			}
 		}
@@ -103,7 +103,7 @@ public class RewardCalculator {
 	public int calculateRewardFor(Model model, Error currentErrorToFix, Action action) {
 		int reward = 0;
 
-		int contextId = action.getHierarchy();
+		int contextId = action.getContextId();
 		for (Preference preference : preferences) {
 			int rewardFromPreference = preference.rewardActionForError(model, currentErrorToFix, action);
 			if (rewardFromPreference != 0) {
@@ -128,7 +128,7 @@ public class RewardCalculator {
 	 */
 	private void addTagMap(Error error, int contextId, Action action, int tagId, int value) {
 		QTable qTable = knowledge.getQTable();
-		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getCode(), tagId, value);
+		qTable.setTagValueInTagDictionary(error.getCode(), contextId, action.getId(), tagId, value);
 	}
 	
 	/**
@@ -159,10 +159,12 @@ public class RewardCalculator {
 	 * @param possibleSolutions
 	 */
 	public void rewardPostRepair(List<Solution> possibleSolutions) {
+		QTable qTable = knowledge.getQTable();
+		
 		for (Preference preference : preferences) {
 			if (preference instanceof PostRepairPreference) {
 				PostRepairPreference comparingPreference = (PostRepairPreference) preference;
-				comparingPreference.rewardPostRepair(possibleSolutions, knowledge);
+				comparingPreference.rewardPostRepair(possibleSolutions, qTable);
 			}
 		}
 	}
@@ -176,9 +178,9 @@ public class RewardCalculator {
 	public void rewardSolution(Solution solution) {
 		QTable qTable = knowledge.getQTable();
 		for (AppliedAction appliedAction : solution.getSequence()) {
-			int contextId = appliedAction.getAction().getHierarchy();
+			int contextId = appliedAction.getAction().getContextId();
 			int errorCode = appliedAction.getError().getCode();
-			int actionId = appliedAction.getAction().getCode();
+			int actionId = appliedAction.getAction().getId();
 			double oldWeight = qTable.getWeight(errorCode, contextId, actionId);
 
 			qTable.setWeight(errorCode, contextId, actionId, oldWeight + 300);

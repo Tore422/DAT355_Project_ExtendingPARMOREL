@@ -11,22 +11,20 @@ import org.eclipse.emf.ecore.impl.EPackageImpl;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.knowledge.Knowledge;
+import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.SerializableMethod;
 
 public class EcoreActionExtractor implements ActionExtractor {
-	private Knowledge knowledge;
 	
-	public EcoreActionExtractor(Knowledge knowledge) {
-		this.knowledge = knowledge;
+	public EcoreActionExtractor() {
 	}
 	
 	@Override
-	public List<Action> extractActionsFor(List<Error> errors) {
+	public List<Action> extractActionsNotInQTableFor(QTable qTable, List<Error> errors) {
 		Map<Integer, Action> actionsFound = new HashMap<Integer, Action>();
 
 		for (Error error : errors) {
-			if (!knowledge.getQTable().containsErrorCode(error.getCode())) {
+			if (!qTable.containsErrorCode(error.getCode())) {
 				List<?> contexts = error.getContexts();
 				actionsFound = addMethodsFromContextList(actionsFound, contexts);
 			}
