@@ -14,5 +14,5 @@ interface SolutionPreference {
 	 * @param qTable
 	 * @return the 
 	 */
-	int rewarcalculateRewardFor(Solution solution, Model model, QTable qTable);
+	int rewardcalculateRewardFor(Solution solution, Model model, QTable qTable);
 }

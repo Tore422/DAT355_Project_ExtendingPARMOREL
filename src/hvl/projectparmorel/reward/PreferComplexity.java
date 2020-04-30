@@ -10,12 +10,12 @@ import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.QModelFixer;
 import hvl.projectparmorel.modelrepair.Solution;
 
-public class PreferCloseDinstanceToOriginalPreference extends Preference implements SolutionPreference {
+public class PreferComplexity extends Preference implements SolutionPreference {
 
 	private Logger log;
 	
-	PreferCloseDinstanceToOriginalPreference() {
-		super(-1, PreferenceOption.PREFER_CLOSE_DISTANCE_TO_ORIGINAL);
+	PreferComplexity() {
+		super(-1, PreferenceOption.PREFER_COMPLEXITY);
 		log = Logger.getLogger(QModelFixer.LOGGER_NAME);
 	}
 
@@ -27,11 +27,11 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 	@Override
 	public int rewardcalculateRewardFor(Solution solution, Model model, QTable qTable) {
 		long startTime = System.currentTimeMillis();
-		double distance = solution.calculateDistanceFromOriginal();
+		double metric = solution.calculateComplexity();
 		long measureTime = System.currentTimeMillis() - startTime;
-		log.info("Time to measure distance: " + measureTime + " ms");
-		if(distance >= 0) {
-			double reward = (200 - distance);
+		log.info("Time to get metric: " + measureTime + " ms");
+		if(metric > -1) {
+			double reward = (100 - metric);
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				Action action = appliedAction.getAction();
 				qTable.setWeight(appliedAction.getError().getCode(), action.getHierarchy(), action.getCode(), reward);

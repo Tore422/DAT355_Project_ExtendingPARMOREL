@@ -43,6 +43,19 @@ public abstract class Solution implements Comparable<Solution> {
 	public abstract double calculateDistanceFromOriginal();
 	
 	/**
+	 * Calculates the following metrics: maintainability, understandability, complexity,
+	 * reuse and relaxation index.
+	 * 
+	 * @return the calculated metric. Returns -1 if the metric could not be calculated.
+	 */
+	
+	public abstract double calculateMaintainability();
+	public abstract double calculateUnderstandability();
+	public abstract double calculateComplexity();
+	public abstract double calculateReuse();
+	public abstract double calculateRelaxation();
+	
+	/**
 	 * Deletes the associated file;
 	 */
 	public void discard() {

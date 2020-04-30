@@ -53,6 +53,21 @@ public class RewardCalculator {
 			case PREFER_CLOSE_DISTANCE_TO_ORIGINAL:
 				prefs.add(new PreferCloseDinstanceToOriginalPreference());
 				break;
+			case PREFER_MAINTAINABILITY:
+				prefs.add(new PreferMaintainability());
+				break;
+			case PREFER_UNDERSTANDABILITY:
+				prefs.add(new PreferUnderstandability());
+				break;
+			case PREFER_COMPLEXITY:
+				prefs.add(new PreferComplexity());
+				break;
+			case PREFER_REUSE:
+				prefs.add(new PreferReuse());
+				break;
+			case PREFER_RELAXATION:
+				prefs.add(new PreferRelaxation());
+				break;
 			default:
 				throw new UnsupportedOperationException("This operation is not yet implemented.");
 			}
@@ -131,7 +146,7 @@ public class RewardCalculator {
 			for (Preference preference : preferences) {
 				if(preference instanceof SolutionPreference) {
 					SolutionPreference pref = (SolutionPreference) preference;
-					reward += pref.rewarcalculateRewardFor(solution, episodeModel, qTable);
+					reward += pref.rewardcalculateRewardFor(solution, episodeModel, qTable);
 				}
 			}
 		}

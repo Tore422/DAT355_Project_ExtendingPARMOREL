@@ -37,10 +37,10 @@ public abstract class QModelFixer implements ModelFixer {
 	 * The name of the {@link java.util.logging.Logger} used.
 	 */
 	public static final String LOGGER_NAME = "MyLog";
-	private final double MIN_ALPHA = 0.06; // Learning rate
+	private final double MIN_ALPHA = 1.0; // Learning rate
 	private final double GAMMA = 1.0; // Eagerness - 0 looks in the near future, 1 looks in the distant future
-	private final int MIN_EPISODE_STEPS = 20;
-	private final double[] ALPHAS;
+	private final int MIN_EPISODE_STEPS = 12;
+	//private final double[] ALPHAS;
 
 	protected Knowledge knowledge;
 	private QTable qTable;
@@ -50,7 +50,7 @@ public abstract class QModelFixer implements ModelFixer {
 	protected RewardCalculator rewardCalculator;
 
 	private double randomFactor = 0.25;
-	private int numberOfEpisodes = 75;
+	private int numberOfEpisodes = 25;
 
 	private List<Error> errorsToFix;
 	private int discardedSequences;
@@ -73,7 +73,7 @@ public abstract class QModelFixer implements ModelFixer {
 		initialErrorCodes = new ArrayList<Integer>();
 		possibleSolutions = new ArrayList<Solution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
-		ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
+		//ALPHAS = linspace(1.0, MIN_ALPHA, numberOfEpisodes);
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
 
@@ -125,7 +125,7 @@ public abstract class QModelFixer implements ModelFixer {
 		if (success) {
 			knowledge.clearWeights();
 			rewardCalculator.influenceWeightsFromPreferencesBy(0.2);
-			numberOfEpisodes = 50;
+			numberOfEpisodes = 8;
 			randomFactor = 0.15;
 		}
 	}
@@ -162,7 +162,7 @@ public abstract class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		int episode = 0;
 
-		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), true);
+		errorsToFix = errorExtractor.extractErrorsFrom(model.getRepresentation(), true);
 		handleUnsupportedErrors(model);
 		if (errorsToFix.isEmpty()) {
 			duplicateFile.delete();
@@ -409,7 +409,7 @@ public abstract class QModelFixer implements ModelFixer {
 		logger.info("Chose action " + action.getMessage() + " in context " + action.getHierarchy() + " with weight "
 				+ action.getWeight());
 //		int sizeBefore = errorsToFix.size();
-		double alpha = ALPHAS[episode];
+		double alpha = 1.0;
 
 		errorsToFix.clear();
 		errorsToFix = modelProcessor.tryApplyAction(currentErrorToFix, action, episodeModel);
