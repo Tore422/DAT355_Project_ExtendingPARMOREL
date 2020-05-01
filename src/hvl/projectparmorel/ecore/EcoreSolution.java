@@ -57,6 +57,7 @@ public class EcoreSolution extends Solution {
 		distanceFromOriginal = -1;
 	}
 
+	// TODO: Fix so the method retrieves the metrics as numbers, and does not read from console.
 	private List<Double> calculateMetrics() {
 		final String qualityModel = String.format("././model/quality.model", 2);
 		ConsoleOutputCapturer c = new ConsoleOutputCapturer();
@@ -73,11 +74,20 @@ public class EcoreSolution extends Solution {
 		double d = 0.0;
 		String metric = new String();
 		String[] arrOfStr = s.split("\r\n", 20);
-
-		for (int i = 9; i < 14; i++) {
-			metric = arrOfStr[i].substring(arrOfStr[i].indexOf(":") + 2, arrOfStr[i].length());
-			d = Double.valueOf(metric);
-			metrics.add(d);
+		if(arrOfStr.length == 1) { // Mac
+			arrOfStr = s.split("\n", 20);
+			
+			for (int i = 10; i < 15; i++) {
+				metric = arrOfStr[i].substring(arrOfStr[i].indexOf(":") + 2, arrOfStr[i].length());
+				d = Double.valueOf(metric);
+				metrics.add(d);
+			}
+		} else { // Windows
+			for (int i = 9; i < 14; i++) {
+				metric = arrOfStr[i].substring(arrOfStr[i].indexOf(":") + 2, arrOfStr[i].length());
+				d = Double.valueOf(metric);
+				metrics.add(d);
+			}
 		}
 		return metrics;
 	}
