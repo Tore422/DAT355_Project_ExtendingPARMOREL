@@ -3,13 +3,13 @@ package hvl.projectparmorel.reward;
 import java.util.ArrayList;
 import java.util.List;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.AppliedAction;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.AppliedAction;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.QSolution;
 
 public class RewardCalculator {
 	private Knowledge knowledge;
@@ -134,7 +134,7 @@ public class RewardCalculator {
 	 * @param solution
 	 * @return reward for solution
 	 */
-	public int calculateRewardFor(Model episodeModel, Solution solution) {
+	public int calculateRewardFor(Model episodeModel, QSolution solution) {
 		QTable qTable = knowledge.getQTable();
 		
 		int reward = 0;
@@ -154,7 +154,7 @@ public class RewardCalculator {
 	 * 
 	 * @param possibleSolutions
 	 */
-	public void rewardPostRepair(List<Solution> possibleSolutions) {
+	public void rewardPostRepair(List<QSolution> possibleSolutions) {
 		QTable qTable = knowledge.getQTable();
 		
 		for (Preference preference : preferences) {
@@ -171,7 +171,7 @@ public class RewardCalculator {
 	 * @param solution
 	 * @param preferenceId
 	 */
-	public void rewardSolution(Solution solution) {
+	public void rewardSolution(QSolution solution) {
 		QTable qTable = knowledge.getQTable();
 		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getContextId();
@@ -192,7 +192,7 @@ public class RewardCalculator {
 	 * @param preferenceId
 	 * @param shouldSave
 	 */
-	public void rewardSolution(Solution solution, boolean shouldSave) {
+	public void rewardSolution(QSolution solution, boolean shouldSave) {
 		rewardSolution(solution);
 		if (shouldSave) {
 			knowledge.save();

@@ -6,7 +6,7 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.qlearning.Action;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 public interface ErrorContextActionDirectory {

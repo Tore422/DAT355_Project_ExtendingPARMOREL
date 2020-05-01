@@ -5,8 +5,8 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.AppliedAction;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.AppliedAction;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 public class QTable {

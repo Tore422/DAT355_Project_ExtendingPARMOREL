@@ -14,7 +14,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import hvl.projectparmorel.ecore.EcoreAction;
-import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.qlearning.Action;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 class ActionMap {

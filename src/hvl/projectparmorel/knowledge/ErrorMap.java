@@ -11,7 +11,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.qlearning.Action;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 import org.w3c.dom.Node;

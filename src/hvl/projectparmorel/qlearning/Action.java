@@ -1,4 +1,4 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel.qlearning;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,7 +14,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import hvl.projectparmorel.knowledge.PreferenceWeightMap;
-import hvl.projectparmorel.modelrepair.SerializableMethod;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 /**

@@ -8,11 +8,11 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.SerializableMethod;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.ActionExtractor;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.SerializableMethod;
 
 public class EcoreActionExtractor implements ActionExtractor {
 	

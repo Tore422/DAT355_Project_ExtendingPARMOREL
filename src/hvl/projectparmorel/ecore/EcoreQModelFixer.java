@@ -10,12 +10,12 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
-import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.general.ErrorExtractor;
-import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.general.ModelProcessor;
-import hvl.projectparmorel.general.Solution;
-import hvl.projectparmorel.modelrepair.QModelFixer;
+import hvl.projectparmorel.qlearning.ActionExtractor;
+import hvl.projectparmorel.qlearning.ErrorExtractor;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.ModelProcessor;
+import hvl.projectparmorel.qlearning.QModelFixer;
+import hvl.projectparmorel.qlearning.QSolution;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 public class EcoreQModelFixer extends QModelFixer {
@@ -63,7 +63,7 @@ public class EcoreQModelFixer extends QModelFixer {
 	}
 
 	@Override
-	protected Solution initializeSolution() {
+	protected QSolution initializeSolution() {
 		return new EcoreSolution();
 	}
 

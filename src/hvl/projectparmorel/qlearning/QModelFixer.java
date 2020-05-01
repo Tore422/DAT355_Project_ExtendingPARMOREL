@@ -1,4 +1,4 @@
-package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.qlearning;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,14 +11,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.general.AppliedAction;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.ErrorExtractor;
-import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelFixer;
-import hvl.projectparmorel.general.ModelProcessor;
 import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
@@ -66,7 +59,7 @@ public abstract class QModelFixer implements ModelFixer {
 	protected File originalModel;
 	private List<Error> originalErrors;
 	private List<Integer> initialErrorCodes;
-	private List<Solution> possibleSolutions;
+	private List<QSolution> possibleSolutions;
 
 	public QModelFixer() {
 		errorsToFix = new ArrayList<Error>();
@@ -75,7 +68,7 @@ public abstract class QModelFixer implements ModelFixer {
 		discardedSequences = 0;
 		originalErrors = new ArrayList<Error>();
 		initialErrorCodes = new ArrayList<Integer>();
-		possibleSolutions = new ArrayList<Solution>();
+		possibleSolutions = new ArrayList<QSolution>();
 		rewardCalculator = new RewardCalculator(knowledge, new ArrayList<>());
 		numberOfSteps = MIN_EPISODE_STEPS;
 		loadKnowledge();
@@ -217,7 +210,7 @@ public abstract class QModelFixer implements ModelFixer {
 					originalModel.getParent() + "parmorel_temp_solution_" + episode + "_" + originalModel.getName());
 
 			Model episodeModel = getModel(episodeModelFile);
-			Solution solution = handleEpisode(episodeModel, episode);
+			QSolution solution = handleEpisode(episodeModel, episode);
 			solution.setModel(episodeModelFile);
 			episodeModel.save();
 
@@ -245,7 +238,7 @@ public abstract class QModelFixer implements ModelFixer {
 			episode++;
 		}
 		rewardCalculator.rewardPostRepair(possibleSolutions);
-		Solution bestSequence = findSolutionWithHighestWeight(possibleSolutions);
+		QSolution bestSequence = findSolutionWithHighestWeight(possibleSolutions);
 		duplicateFile.delete();
 
 		long endTime = System.currentTimeMillis();
@@ -347,8 +340,8 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @param episodeModel
 	 * @param episode
 	 */
-	private Solution handleEpisode(Model episodeModel, int episode) {
-		Solution solution = initializeSolution();
+	private QSolution handleEpisode(Model episodeModel, int episode) {
+		QSolution solution = initializeSolution();
 		int totalReward = 0;
 		int step = 0;
 
@@ -392,7 +385,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * 
 	 * @return a new initializes solution
 	 */
-	protected abstract Solution initializeSolution();
+	protected abstract QSolution initializeSolution();
 
 	/**
 	 * Handles a single step
@@ -405,7 +398,7 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @throws UnsupportedErrorException if the error code is not in the Q-table,
 	 *                                   and cannot be added
 	 */
-	private int handleStep(Model episodeModel, Solution sequence, int episode, Error currentErrorToFix)
+	private int handleStep(Model episodeModel, QSolution sequence, int episode, Error currentErrorToFix)
 			throws UnsupportedErrorException {
 		if (!qTable.containsErrorCode(currentErrorToFix.getCode())) {
 			LOGGER.info("Error " + currentErrorToFix.getCode() + ", " + currentErrorToFix.getMessage()
@@ -518,8 +511,8 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @param solution
 	 * @return true if the solution is unique, false otherwise
 	 */
-	private boolean isUnique(Solution solution) {
-		for (Solution otherSolution : possibleSolutions) {
+	private boolean isUnique(QSolution solution) {
+		for (QSolution otherSolution : possibleSolutions) {
 			if (solution.getSequence().size() == otherSolution.getSequence().size()) {
 				List<AppliedAction> solutionSequence = solution.getSequence();
 				List<AppliedAction> otherSequence = otherSolution.getSequence();
@@ -575,8 +568,8 @@ public abstract class QModelFixer implements ModelFixer {
 	 * @return the solution with the highest weight, or an empty solution if the
 	 *         list is empty.
 	 */
-	private Solution findSolutionWithHighestWeight(List<Solution> solutions) {
-		Solution highWeightSolution = initializeSolution();
+	private QSolution findSolutionWithHighestWeight(List<QSolution> solutions) {
+		QSolution highWeightSolution = initializeSolution();
 		if (!solutions.isEmpty()) {
 			highWeightSolution = solutions.get(0);
 

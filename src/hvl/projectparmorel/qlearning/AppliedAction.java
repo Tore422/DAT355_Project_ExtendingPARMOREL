@@ -1,4 +1,4 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel.qlearning;
 
 /**
  * @author Angela Barriga Rodriguez - 2019 abar@hvl.no Western Norway University

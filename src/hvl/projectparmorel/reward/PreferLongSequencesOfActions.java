@@ -3,13 +3,13 @@ package hvl.projectparmorel.reward;
 import java.util.List;
 import java.util.logging.Logger;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.AppliedAction;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.QModelFixer;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.AppliedAction;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.QModelFixer;
+import hvl.projectparmorel.qlearning.QSolution;
 
 class PreferLongSequencesOfActions extends Preference implements PostRepairPreference {
 
@@ -24,11 +24,11 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 	 * Rewards the best longest sequence in the specified list of sequences
 	 */
 	@Override
-	public void rewardPostRepair(List<Solution> possibleSolutions, QTable qTable) {
-		Solution optimalSequence = null;
+	public void rewardPostRepair(List<QSolution> possibleSolutions, QTable qTable) {
+		QSolution optimalSequence = null;
 		int largestSequenceSize = 0;
 
-		for (Solution sequence : possibleSolutions) {
+		for (QSolution sequence : possibleSolutions) {
 			if (sequence.getSequence().size() > largestSequenceSize && sequence.getWeight() > 0) {
 				largestSequenceSize = sequence.getSequence().size();
 				optimalSequence = sequence;
@@ -53,7 +53,7 @@ class PreferLongSequencesOfActions extends Preference implements PostRepairPrefe
 	 * @param solution
 	 * @param knowledge
 	 */
-	private void rewardSolution(Solution solution, QTable qTable) {
+	private void rewardSolution(QSolution solution, QTable qTable) {
 		for (AppliedAction appliedAction : solution.getSequence()) {
 			int contextId = appliedAction.getAction().getContextId();
 			int errorCode = appliedAction.getError().getCode();

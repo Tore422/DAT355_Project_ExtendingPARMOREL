@@ -31,15 +31,15 @@ import org.eclipse.emf.ecore.impl.EReferenceImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.ActionExtractor;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.ErrorExtractor;
-import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.general.ModelProcessor;
-import hvl.projectparmorel.general.ModelType;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.ActionExtractor;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.ErrorExtractor;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.ModelProcessor;
+import hvl.projectparmorel.qlearning.ModelType;
 
 public class EcoreModelProcessor implements ModelProcessor {
 	private Knowledge knowledge;

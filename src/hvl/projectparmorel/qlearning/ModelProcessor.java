@@ -1,4 +1,4 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel.qlearning;
 
 import java.util.List;
 import java.util.Set;

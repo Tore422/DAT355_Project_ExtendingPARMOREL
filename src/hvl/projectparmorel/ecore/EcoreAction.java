@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.w3c.dom.Element;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.modelrepair.SerializableMethod;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.SerializableMethod;
 
 public class EcoreAction extends Action {
 	

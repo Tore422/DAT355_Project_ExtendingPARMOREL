@@ -1,6 +1,6 @@
 package hvl.projectparmorel.reward;
 
-import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.qlearning.Model;
 
 public interface InitializablePreference {
 	/**
