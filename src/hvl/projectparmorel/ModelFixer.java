@@ -1,4 +1,4 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel;
 
 import java.io.File;
 import java.util.List;

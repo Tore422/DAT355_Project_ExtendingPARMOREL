@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import hvl.projectparmorel.general.Solution;
+import hvl.projectparmorel.Solution;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 public abstract class QSolution extends Solution  implements Comparable<QSolution> {

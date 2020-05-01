@@ -9,10 +9,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import hvl.projectparmorel.ModelFixer;
+import hvl.projectparmorel.Solution;
 import hvl.projectparmorel.exceptions.NoErrorsInModelException;
 import hvl.projectparmorel.exceptions.UnsupportedErrorException;
-import hvl.projectparmorel.general.ModelFixer;
-import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.PreferenceOption;
