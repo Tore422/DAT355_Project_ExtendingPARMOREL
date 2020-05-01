@@ -19,6 +19,7 @@ import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelFixer;
 import hvl.projectparmorel.general.ModelProcessor;
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.reward.PreferenceOption;

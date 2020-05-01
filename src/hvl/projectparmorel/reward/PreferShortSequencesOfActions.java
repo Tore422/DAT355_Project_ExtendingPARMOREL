@@ -7,9 +7,9 @@ import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.QTable;
 import hvl.projectparmorel.modelrepair.QModelFixer;
-import hvl.projectparmorel.modelrepair.Solution;
 
 class PreferShortSequencesOfActions extends Preference implements PostRepairPreference {
 

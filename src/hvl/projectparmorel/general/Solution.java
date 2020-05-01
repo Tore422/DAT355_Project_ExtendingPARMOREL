@@ -1,11 +1,10 @@
-package hvl.projectparmorel.modelrepair;
+package hvl.projectparmorel.general;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import hvl.projectparmorel.exceptions.DistanceUnavailableException;
-import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.reward.RewardCalculator;
 
 /**

@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import org.junit.platform.commons.util.ExceptionUtils;
 
 import hvl.projectparmorel.exceptions.DistanceUnavailableException;
-import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.general.Solution;
 import it.cs.gssi.similaritymetamodels.EComparator;
 import it.gssi.cs.quality.ConsoleOutputCapturer;
 import it.gssi.cs.quality.QualityEvalEngine;

@@ -3,11 +3,11 @@ package hvl.projectparmorel.reward;
 import java.util.ArrayList;
 import java.util.List;
 
-import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
 import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 

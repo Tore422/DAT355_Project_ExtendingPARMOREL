@@ -2,8 +2,8 @@ package hvl.projectparmorel.reward;
 
 import java.util.List;
 
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.Solution;
 
 interface PostRepairPreference {
 

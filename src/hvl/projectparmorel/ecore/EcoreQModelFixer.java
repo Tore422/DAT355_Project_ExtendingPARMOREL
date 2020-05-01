@@ -14,8 +14,8 @@ import hvl.projectparmorel.general.ActionExtractor;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelProcessor;
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.modelrepair.QModelFixer;
-import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 public class EcoreQModelFixer extends QModelFixer {

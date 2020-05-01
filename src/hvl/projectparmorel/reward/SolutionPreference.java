@@ -1,8 +1,8 @@
 package hvl.projectparmorel.reward;
 
 import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.general.Solution;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.Solution;
 
 interface SolutionPreference {
 	
