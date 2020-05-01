@@ -9,9 +9,11 @@ import java.util.Set;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import hvl.projectparmorel.ecore.EcoreAction;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.reward.PreferenceOption;
 
@@ -37,8 +39,19 @@ class ActionMap {
 		for (int i = 0; i < actionList.getLength(); i++) {
 			Node actionNode = actionList.item(i);
 			if (actionNode.getNodeType() == Node.ELEMENT_NODE) {
+				NamedNodeMap attributes = actionNode.getAttributes();
+				Node type = attributes.getNamedItem(Action.XML_ACTION_TYPE);
+				
 				Element actionElement = (Element) actionNode;
-				Action action = new Action(actionElement);
+				Action action;
+				switch (type.getNodeValue()) {
+				case EcoreAction.TYPE:
+					action = new EcoreAction(actionElement);
+					break;
+				default:
+					throw new UnsupportedOperationException(
+							"This action type does not have an deserializeable definition.");
+				}
 				actions.put(action.getId(), action);
 			} else {
 				throw new IOException("Could not instantiate action map from node " + actionNode.getNodeName());

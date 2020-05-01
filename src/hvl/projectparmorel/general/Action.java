@@ -24,19 +24,22 @@ import hvl.projectparmorel.reward.PreferenceOption;
  * 
  *         Western Norway University of Applied Sciences Bergen - Norway
  */
-public class Action implements Comparable<Action> {
+public abstract class Action implements Comparable<Action> {
+	public final  static String XML_ACTION_TYPE = "type";
+	
+	protected int id;
+	protected String name;
+	protected SerializableMethod method;
+	protected int contextId;
+	
 	private final String XML_CODE_NAME = "code";
 	private final String XML_WEIGHT_NAME = "weight";
 	private final String XML_MESSAGE_NAME = "message";
 	private final String XML_HIERARCHY_NAME = "hierarchy";
 	private final String XML_METHOD_NAME = "method";
 	private final String XML_PREFERENCEMAP_NAME = "preferenceMap";
-
+	
 	private PreferenceWeightMap preferenceMap;
-	private int id;
-	private String name;
-	private SerializableMethod method;
-	private int contextId;
 	private double weight;
 
 	/**
@@ -52,14 +55,14 @@ public class Action implements Comparable<Action> {
 	 * @param id
 	 * @param name
 	 * @param method
-	 * @param hierarchy
+	 * @param contextId
 	 */
-	public Action(int id, String name, SerializableMethod method, int hierarchy) {
+	public Action(int id, String name, SerializableMethod method, int contextId) {
 		this();
 		this.id = id;
 		this.name = name;
 		this.method = method;
-		this.contextId = hierarchy;
+		this.contextId = contextId;
 	}
 
 	public Action(Element action) throws IOException {
@@ -124,11 +127,19 @@ public class Action implements Comparable<Action> {
 		}
 
 	}
+	
+	/**
+	 * Gets the action type as string
+	 * 
+	 * @return the action type
+	 */
+	protected abstract String getActionType();
 
 	public void saveTo(Document document, Element action) {
 		Attr code = document.createAttribute(XML_CODE_NAME);
 		code.setValue("" + this.id);
 		action.setAttributeNode(code);
+		action.setAttribute(XML_ACTION_TYPE, getActionType());
 
 		Element weight = document.createElement(XML_WEIGHT_NAME);
 		weight.appendChild(document.createTextNode("" + this.weight));
@@ -212,9 +223,7 @@ public class Action implements Comparable<Action> {
 	 * 
 	 * @return true if the action is a delete action, false otherwise
 	 */
-	public boolean isDelete() {
-		return String.valueOf(id).startsWith("9999");
-	}
+	public abstract boolean isDelete();
 
 	public double getWeight() {
 		return weight;

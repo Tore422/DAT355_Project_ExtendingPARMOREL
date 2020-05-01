@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import hvl.projectparmorel.ecore.EcoreAction;
 import hvl.projectparmorel.general.Action;
 
 class HashErrorContextActionDirectoryTest {
@@ -22,17 +23,17 @@ class HashErrorContextActionDirectoryTest {
 	
 	@Test
 	public void addActionAddsAnActionToTheDirectory() {
-		directory.addAction(1, 1, new Action());
+		directory.addAction(1, 1, new EcoreAction());
 		assertFalse(directory.getAllErrorCodes().isEmpty());
 	}
 	
 	@Test
 	public void addActionWithCodeThatAllreadyExistsUpdatesTheAction() {
 		assertEquals(0, directory.getAllErrorCodes().size());
-		Action action1 = new Action(10, "Hello", null, 1);
+		Action action1 = new EcoreAction(10, "Hello", null, 1);
 		directory.addAction(1, 1, action1);
 		assertEquals(1, directory.getAllErrorCodes().size());
-		Action action2 = new Action(10, "Updated", null, 2);
+		Action action2 = new EcoreAction(10, "Updated", null, 2);
 		directory.addAction(1, 1, action2);
 		assertEquals(1, directory.getAllErrorCodes().size());
 	}
@@ -40,10 +41,10 @@ class HashErrorContextActionDirectoryTest {
 	@Test
 	public void addActionWithCodeThatAllreadyButDifferentErrorCodeExistsAddsTheAction() {
 		assertEquals(0, directory.getAllErrorCodes().size());
-		Action action1 = new Action(10, "Hello", null, 1);
+		Action action1 = new EcoreAction(10, "Hello", null, 1);
 		directory.addAction(1, 1, action1);
 		assertEquals(1, directory.getAllErrorCodes().size());
-		Action action2 = new Action(10, "Updated", null, 2);
+		Action action2 = new EcoreAction(10, "Updated", null, 2);
 		directory.addAction(2, 1, action2);
 		assertEquals(2, directory.getAllErrorCodes().size());
 	}

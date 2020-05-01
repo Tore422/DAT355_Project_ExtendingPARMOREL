@@ -93,7 +93,7 @@ public class EcoreModelProcessor implements ModelProcessor {
 								if (newErrors != null) {
 									if (!errorStillExists(newErrors, error)) {
 										actionForErrorFound = true;
-										Action newAction = new Action(action.getId(), action.getName(),
+										Action newAction = new EcoreAction(action.getId(), action.getName(),
 												action.getMethod(), i);
 										initializeQTableForAction(error, newAction);
 									}

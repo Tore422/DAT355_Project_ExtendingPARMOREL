@@ -66,14 +66,14 @@ public class EcoreActionExtractor implements ActionExtractor {
 			Method[] methods = context.getMethods();
 			for (Method method : methods) {
 				if (methodCanPerformChange(method) && !actions.containsKey(method.hashCode())) {
-					Action action = new Action(method.hashCode(), method.getName(), new SerializableMethod(method),
+					Action action = new EcoreAction(method.hashCode(), method.getName(), new SerializableMethod(method),
 							hierarchy + 1);
 					actions.put(method.hashCode(), action);
 				}
 			}
 
 			if (!actions.containsKey(99999)) {
-				Action a = new Action(99999, "delete", null, hierarchy + 1);
+				Action a = new EcoreAction(99999, "delete", null, hierarchy + 1);
 				actions.put(99999, a);
 			}
 		}
