@@ -1,10 +1,9 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel;
 
 import java.io.File;
 import java.util.List;
 
 import hvl.projectparmorel.exceptions.NoErrorsInModelException;
-import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.reward.PreferenceOption;
 
 public interface ModelFixer {

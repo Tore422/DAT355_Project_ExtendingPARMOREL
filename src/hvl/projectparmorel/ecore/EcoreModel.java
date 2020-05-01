@@ -9,8 +9,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 
-import hvl.projectparmorel.general.Model;
-import hvl.projectparmorel.general.ModelType;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.ModelType;
 
 public class EcoreModel implements Model {
 	private Resource model;

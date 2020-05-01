@@ -1,10 +1,10 @@
 package hvl.projectparmorel.reward;
 
 import hvl.projectparmorel.ecore.EcoreErrorExtractor;
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.ErrorExtractor;
-import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.ErrorExtractor;
+import hvl.projectparmorel.qlearning.Model;
 
 public class RewardModificationOfModelPreference extends Preference implements InitializablePreference {
 
@@ -14,9 +14,9 @@ public class RewardModificationOfModelPreference extends Preference implements I
 	public RewardModificationOfModelPreference(int weight) {
 		super(weight, PreferenceOption.REWARD_MODIFICATION_OF_MODEL);
 	}
-
+	
 	@Override
-	public void initializeBeforeApplyingAction(Model model) {
+	public void initializePreference(Model model) {
 		switch (model.getModelType()) {
 		case ECORE:
 			errorExtractor = new EcoreErrorExtractor();
@@ -24,7 +24,10 @@ public class RewardModificationOfModelPreference extends Preference implements I
 		default:
 			throw new UnsupportedOperationException("This preference is not yet implemented for this model type.");
 		}
+	}
 
+	@Override
+	public void initializeBeforeApplyingAction(Model model) {
 		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false)
 				.size();
 	}
@@ -42,5 +45,4 @@ public class RewardModificationOfModelPreference extends Preference implements I
 		}
 		return reward;
 	}
-
 }

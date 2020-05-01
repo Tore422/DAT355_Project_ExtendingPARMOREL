@@ -1,4 +1,4 @@
-package hvl.projectparmorel.general;
+package hvl.projectparmorel.qlearning;
 
 public interface Model {
 	/**

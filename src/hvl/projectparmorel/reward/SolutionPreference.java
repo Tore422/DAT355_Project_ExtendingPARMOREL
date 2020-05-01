@@ -1,8 +1,8 @@
 package hvl.projectparmorel.reward;
 
-import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.QSolution;
 
 interface SolutionPreference {
 	
@@ -14,5 +14,5 @@ interface SolutionPreference {
 	 * @param qTable
 	 * @return the 
 	 */
-	int rewardcalculateRewardFor(Solution solution, Model model, QTable qTable);
+	int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable);
 }

@@ -3,7 +3,7 @@ package hvl.projectparmorel.reward;
 import java.util.List;
 
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.qlearning.QSolution;
 
 interface PostRepairPreference {
 
@@ -15,5 +15,5 @@ interface PostRepairPreference {
 	 * @param possibleSolutions
 	 * @param qTable
 	 */
-	void rewardPostRepair(List<Solution> possibleSolutions, QTable qTable);
+	void rewardPostRepair(List<QSolution> possibleSolutions, QTable qTable);
 }

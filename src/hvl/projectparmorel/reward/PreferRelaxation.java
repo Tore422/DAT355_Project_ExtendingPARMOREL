@@ -2,13 +2,13 @@ package hvl.projectparmorel.reward;
 
 import java.util.logging.Logger;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.AppliedAction;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.knowledge.QTable;
-import hvl.projectparmorel.modelrepair.QModelFixer;
-import hvl.projectparmorel.modelrepair.Solution;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.AppliedAction;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.Model;
+import hvl.projectparmorel.qlearning.QModelFixer;
+import hvl.projectparmorel.qlearning.QSolution;
 
 public class PreferRelaxation extends Preference implements SolutionPreference {
 
@@ -25,7 +25,7 @@ public class PreferRelaxation extends Preference implements SolutionPreference {
 	}
 
 	@Override
-	public int rewardcalculateRewardFor(Solution solution, Model model, QTable qTable) {
+	public int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable) {
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateRelaxation();
 		long measureTime = System.currentTimeMillis() - startTime;

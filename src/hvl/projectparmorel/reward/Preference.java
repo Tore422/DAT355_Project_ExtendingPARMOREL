@@ -1,8 +1,8 @@
 package hvl.projectparmorel.reward;
 
-import hvl.projectparmorel.general.Action;
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.Model;
+import hvl.projectparmorel.qlearning.Action;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.Model;
 
 abstract class Preference {
 	protected int weight;

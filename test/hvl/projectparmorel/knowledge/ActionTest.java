@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.ecore.EcoreAction;
+import hvl.projectparmorel.qlearning.Action;
 
 class ActionTest {
 	Action action1;
@@ -13,8 +14,8 @@ class ActionTest {
 	
 	@BeforeEach
 	public void setUp() {
-		action1 = new Action();
-		action2 = new Action();
+		action1 = new EcoreAction();
+		action2 = new EcoreAction();
 	}
 
 	@Test

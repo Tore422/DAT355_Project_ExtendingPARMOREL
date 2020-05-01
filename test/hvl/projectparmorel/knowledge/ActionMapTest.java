@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import hvl.projectparmorel.general.Action;
+import hvl.projectparmorel.ecore.EcoreAction;
+import hvl.projectparmorel.qlearning.Action;
 
 class ActionMapTest {
 	
@@ -20,11 +21,11 @@ class ActionMapTest {
 	@BeforeEach
 	public void setUp() {
 		actionMap = new ActionMap();
-		action1 = new Action();
-		action2 = new Action();
-		action3 = new Action();
-		action4 = new Action();
-		action5 = new Action();
+		action1 = new EcoreAction();
+		action2 = new EcoreAction();
+		action3 = new EcoreAction();
+		action4 = new EcoreAction();
+		action5 = new EcoreAction();
 		action1.setId(1);
 		action2.setId(2);
 		action3.setId(3);

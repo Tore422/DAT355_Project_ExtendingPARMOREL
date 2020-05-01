@@ -13,9 +13,9 @@ import org.eclipse.emf.ecore.impl.EReferenceImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 
-import hvl.projectparmorel.general.Error;
-import hvl.projectparmorel.general.ErrorExtractor;
-import hvl.projectparmorel.general.ModelType;
+import hvl.projectparmorel.qlearning.Error;
+import hvl.projectparmorel.qlearning.ErrorExtractor;
+import hvl.projectparmorel.qlearning.ModelType;
 
 public class EcoreErrorExtractor implements ErrorExtractor {
 
