@@ -10,31 +10,13 @@
 package it.gssi.cs.quality;
 
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.epsilon.common.util.StringProperties;
-import org.eclipse.epsilon.emc.emf.EmfMetaModel;
-import org.eclipse.epsilon.emc.emf.EmfUtil;
 import org.eclipse.epsilon.eol.EolModule;
 import org.eclipse.epsilon.eol.IEolModule;
-import org.eclipse.epsilon.eol.dom.Operation;
-import org.eclipse.epsilon.eol.exceptions.EolRuntimeException;
-import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
 import org.eclipse.epsilon.eol.models.IModel;
-import org.eclipse.epsilon.eol.models.IRelativePathResolver;
 import it.gssi.cs.quality.EpsilonStandaloneExample;
- 
-import org.eclipse.m2m.atl.emftvm.EmftvmPackage;
-import org.eclipse.m2m.atl.emftvm.trace.TracePackage;
 
 public class QualityEvalEngine extends EpsilonStandaloneExample {
 	
@@ -58,10 +40,6 @@ public class QualityEvalEngine extends EpsilonStandaloneExample {
 	@Override
 	public List<IModel> getModels( String MM, String qualityModel) throws Exception {
 		List<IModel> models = new ArrayList<IModel>();
-
-		// EPackage.Registry.INSTANCE.put(EmftvmPackage.eNS_URI,
-		// EmftvmPackage.eINSTANCE);
-		
 
 		models.add(createEmfModelByURI("MM", MM,
 				EcorePackage.eNS_URI, true, false));
