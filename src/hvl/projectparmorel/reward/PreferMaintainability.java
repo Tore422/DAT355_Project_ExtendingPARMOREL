@@ -35,7 +35,7 @@ public class PreferMaintainability extends Preference implements SolutionPrefere
 			double reward = (100 - metric);
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				Action action = appliedAction.getAction();
-				qTable.setWeight(appliedAction.getError().getCode(), action.getHierarchy(), action.getCode(), reward);
+				qTable.setWeight(appliedAction.getError().getCode(), action.getContextId(), action.getId(), reward);
 			}
 			return (int) (reward * solution.getSequence().size());
 		} else {

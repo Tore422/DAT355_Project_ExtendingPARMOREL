@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.junit.platform.commons.util.ExceptionUtils;
+
 import hvl.projectparmorel.exceptions.DistanceUnavailableException;
 import hvl.projectparmorel.modelrepair.Solution;
 import it.cs.gssi.similaritymetamodels.EComparator;
