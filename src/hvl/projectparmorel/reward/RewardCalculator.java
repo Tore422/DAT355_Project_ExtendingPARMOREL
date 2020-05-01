@@ -3,7 +3,6 @@ package hvl.projectparmorel.reward;
 import java.util.ArrayList;
 import java.util.List;
 
-import hvl.projectparmorel.modelrepair.Preferences;
 import hvl.projectparmorel.modelrepair.Solution;
 import hvl.projectparmorel.general.Action;
 import hvl.projectparmorel.general.AppliedAction;
@@ -23,32 +22,30 @@ public class RewardCalculator {
 		this.preferences = initializeFrom(preferences);
 	}
 
-	private List<Preference> initializeFrom(List<PreferenceOption> preferences) {
-		Preferences filePreferences = new Preferences();
-		
+	private List<Preference> initializeFrom(List<PreferenceOption> preferences) {		
 		List<Preference> prefs = new ArrayList<>();
 		for (PreferenceOption preference : preferences) {
 			switch (preference) {
 			case SHORT_SEQUENCES_OF_ACTIONS:
-				prefs.add(new PreferShortSequencesOfActions(filePreferences.getWeightRewardShorterSequencesOfActions()));
+				prefs.add(new PreferShortSequencesOfActions(2000));
 				break;
 			case LONG_SEQUENCES_OF_ACTIONS:
-				prefs.add(new PreferLongSequencesOfActions(filePreferences.getWeightRewardLongerSequencesOfActions()));
+				prefs.add(new PreferLongSequencesOfActions(2000));
 				break;
 			case PUNISH_DELETION:
-				prefs.add(new PunishDeletionPreference(filePreferences.getWeightPunishDeletion()));
+				prefs.add(new PunishDeletionPreference(1000));
 				break;
 			case REPAIR_HIGH_IN_CONTEXT_HIERARCHY:
-				prefs.add(new PreferRepairingHighInContextHierarchyPreference(filePreferences.getWeightRewardRepairingHighInErrorHierarchies()));
+				prefs.add(new PreferRepairingHighInContextHierarchyPreference(150));
 				break;
 			case REPAIR_LOW_IN_CONTEXT_HIERARCHY:
-				prefs.add(new PreferRepairingLowInContextHierarchyPreference(filePreferences.getWeightRewardRepairingLowInErrorHierarchies()));
+				prefs.add(new PreferRepairingLowInContextHierarchyPreference(150));
 				break;
 			case PUNISH_MODIFICATION_OF_MODEL:
-				prefs.add(new PunishModificationOfModelPreference(filePreferences.getWeightPunishModificationOfTheOriginalModel()));
+				prefs.add(new PunishModificationOfModelPreference(150));
 				break;
 			case REWARD_MODIFICATION_OF_MODEL:
-				prefs.add(new RewardModificationOfModelPreference(filePreferences.getWeightRewardModificationOfTheOriginalModel()));
+				prefs.add(new RewardModificationOfModelPreference(150));
 				break;
 			case PREFER_CLOSE_DISTANCE_TO_ORIGINAL:
 				prefs.add(new PreferCloseDinstanceToOriginalPreference());
@@ -72,7 +69,6 @@ public class RewardCalculator {
 				throw new UnsupportedOperationException("This operation is not yet implemented.");
 			}
 		}
-		filePreferences.saveToFile();
 		return prefs;
 	}
 
