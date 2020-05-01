@@ -37,6 +37,7 @@ import hvl.projectparmorel.general.Error;
 import hvl.projectparmorel.general.ErrorExtractor;
 import hvl.projectparmorel.general.Model;
 import hvl.projectparmorel.general.ModelProcessor;
+import hvl.projectparmorel.general.ModelType;
 import hvl.projectparmorel.knowledge.Knowledge;
 import hvl.projectparmorel.knowledge.QTable;
 
@@ -78,7 +79,9 @@ public class EcoreModelProcessor implements ModelProcessor {
 		Set<Integer> unsupportedErrors = new HashSet<>();
 
 		for (Error error : errors) {
-			if (!knowledge.getQTable().containsErrorCode(error.getCode())
+			if(ModelType.ECORE.doesNotSupportError(error.getCode())) {
+				unsupportedErrors.add(error.getCode());
+			} else if (!knowledge.getQTable().containsErrorCode(error.getCode())
 					&& !unsupportedErrors.contains(error.getCode())) {
 				boolean actionForErrorFound = false;
 				for (int i = 0; i < error.getContexts().size(); i++) {
