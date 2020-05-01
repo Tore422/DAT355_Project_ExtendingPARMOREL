@@ -73,6 +73,20 @@ public class RewardCalculator {
 	}
 
 	/**
+	 * Initializes all the preferences for the model.
+	 * 
+	 * @param model
+	 */
+	public void initializePreferencesFor(Model model) {
+		for (Preference preference : preferences) {
+			if (preference instanceof InitializablePreference) {
+				InitializablePreference pref = (InitializablePreference) preference;
+				pref.initializePreference(model);
+			}
+		}
+	}
+	
+	/**
 	 * Some preferences compare aspects of the model pre and post applying an
 	 * action. This call allows the preferences to store the required information
 	 * before choosing action.

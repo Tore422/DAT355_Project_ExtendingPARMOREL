@@ -14,9 +14,9 @@ public class RewardModificationOfModelPreference extends Preference implements I
 	public RewardModificationOfModelPreference(int weight) {
 		super(weight, PreferenceOption.REWARD_MODIFICATION_OF_MODEL);
 	}
-
+	
 	@Override
-	public void initializeBeforeApplyingAction(Model model) {
+	public void initializePreference(Model model) {
 		switch (model.getModelType()) {
 		case ECORE:
 			errorExtractor = new EcoreErrorExtractor();
@@ -24,7 +24,10 @@ public class RewardModificationOfModelPreference extends Preference implements I
 		default:
 			throw new UnsupportedOperationException("This preference is not yet implemented for this model type.");
 		}
+	}
 
+	@Override
+	public void initializeBeforeApplyingAction(Model model) {
 		numbersOfErrorsBeforeApplyingAction = errorExtractor.extractErrorsFrom(model.getRepresentationCopy(), false)
 				.size();
 	}
@@ -42,5 +45,4 @@ public class RewardModificationOfModelPreference extends Preference implements I
 		}
 		return reward;
 	}
-
 }

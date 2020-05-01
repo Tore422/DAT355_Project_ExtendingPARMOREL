@@ -170,6 +170,7 @@ public abstract class QModelFixer implements ModelFixer {
 		LOGGER.info("Repairing " + modelFile.getName());
 		originalModel = modelFile;
 		Model model = initializeModelFromFile();
+		rewardCalculator.initializePreferencesFor(model);
 
 		File duplicateFile = createDuplicateFile();
 
