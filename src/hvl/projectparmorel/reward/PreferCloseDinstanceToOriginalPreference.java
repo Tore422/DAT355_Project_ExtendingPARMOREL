@@ -34,7 +34,7 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 			double distance = solution.calculateDistanceFromOriginal();
 			long measureTime = System.currentTimeMillis() - startTime;
 			log.info("Time to measure distance: " + measureTime + " ms");
-			int reward = (int)(200 - distance);
+			int reward = (int)(distance);
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				QModelFixer.updateQTable(qTable, appliedAction.getError().getCode(), appliedAction.getAction().getContextId(), appliedAction.getAction().getId(), reward);
 			}
