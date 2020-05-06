@@ -15,4 +15,5 @@ Contact: abar@hvl.no
   `git clone --recursive <insert project URL here>` </br>
   If you are not familiar with submodules, you can have a look at [Vogella](https://www.vogella.com/tutorials/GitSubmodules/article.html) or at the [Git-documentation](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 2. Make sure you are running Eclipse Version 2018-12 (4.10.0) or a compatible version, and have installed the Eclipse Modeling Tools. Eclipse-packages can be found [here](https://www.eclipse.org/downloads/packages/).
-3. Make sure you have the Plug-in Development Environment.
+3. Make sure you are running Java 13.
+4. Make sure you have the Plug-in Development Environment.
