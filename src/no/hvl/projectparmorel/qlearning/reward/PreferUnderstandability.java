@@ -13,7 +13,7 @@ import no.hvl.projectparmorel.qlearning.knowledge.QTable;
 public class PreferUnderstandability extends Preference implements SolutionPreference {
 
 	private Logger log;
-	
+
 	PreferUnderstandability() {
 		super(-1, PreferenceOption.PREFER_UNDERSTANDABILITY);
 		log = Logger.getLogger(QModelFixer.LOGGER_NAME);
@@ -29,8 +29,8 @@ public class PreferUnderstandability extends Preference implements SolutionPrefe
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateUnderstandability();
 		long measureTime = System.currentTimeMillis() - startTime;
-		log.info("Time to get metric: " + measureTime + " ms");
-		if(metric > -1) {
+		log.info("Understandability of the metamodel: " + metric + "\nTime to get metric: " + measureTime + " ms");
+		if (metric > -1) {
 			double reward = (100 - metric);
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				Action action = appliedAction.getAction();

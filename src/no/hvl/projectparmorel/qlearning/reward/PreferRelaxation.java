@@ -13,7 +13,7 @@ import no.hvl.projectparmorel.qlearning.knowledge.QTable;
 public class PreferRelaxation extends Preference implements SolutionPreference {
 
 	private Logger log;
-	
+
 	PreferRelaxation() {
 		super(-1, PreferenceOption.PREFER_RELAXATION);
 		log = Logger.getLogger(QModelFixer.LOGGER_NAME);
@@ -29,8 +29,8 @@ public class PreferRelaxation extends Preference implements SolutionPreference {
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateRelaxation();
 		long measureTime = System.currentTimeMillis() - startTime;
-		log.info("Time to get metric: " + measureTime + " ms");
-		if(metric > -1) {
+		log.info("Relaxation Index of the metamodel: " + metric + "\nTime to get metric: " + measureTime + " ms");
+		if (metric > -1) {
 			double reward = metric;
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				Action action = appliedAction.getAction();

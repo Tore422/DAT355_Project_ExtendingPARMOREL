@@ -13,7 +13,7 @@ import no.hvl.projectparmorel.qlearning.knowledge.QTable;
 public class PreferMaintainability extends Preference implements SolutionPreference {
 
 	private Logger log;
-	
+
 	PreferMaintainability() {
 		super(-1, PreferenceOption.PREFER_MAINTAINABILITY);
 		log = Logger.getLogger(QModelFixer.LOGGER_NAME);
@@ -29,9 +29,8 @@ public class PreferMaintainability extends Preference implements SolutionPrefere
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateMaintainability();
 		long measureTime = System.currentTimeMillis() - startTime;
-		log.info("MAINTAINABILITY: "+metric);
-		log.info("Time to get metric: " + measureTime + " ms");
-		if(metric > -1) {
+		log.info("Maintainability of the metamodel: " + metric + "\nTime to get metric: " + measureTime + " ms");
+		if (metric > -1) {
 			double reward = (100 - metric);
 			for (AppliedAction appliedAction : solution.getSequence()) {
 				Action action = appliedAction.getAction();
