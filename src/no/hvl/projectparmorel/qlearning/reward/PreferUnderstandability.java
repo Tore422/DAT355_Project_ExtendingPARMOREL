@@ -25,7 +25,7 @@ public class PreferUnderstandability extends Preference implements SolutionPrefe
 	}
 
 	@Override
-	public int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable) {
+	public int rewardSolution(QSolution solution, Model model, QTable qTable) {
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateUnderstandability();
 		long measureTime = System.currentTimeMillis() - startTime;

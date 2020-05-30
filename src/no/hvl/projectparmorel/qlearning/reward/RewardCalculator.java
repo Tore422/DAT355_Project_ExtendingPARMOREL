@@ -156,7 +156,7 @@ public class RewardCalculator {
 			for (Preference preference : preferences) {
 				if(preference instanceof SolutionPreference) {
 					SolutionPreference pref = (SolutionPreference) preference;
-					reward += pref.rewardcalculateRewardFor(solution, episodeModel, qTable);
+					reward += pref.rewardSolution(solution, episodeModel, qTable);
 				}
 			}
 		}

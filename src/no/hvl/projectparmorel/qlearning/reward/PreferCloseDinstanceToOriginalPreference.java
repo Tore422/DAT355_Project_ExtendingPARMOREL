@@ -28,7 +28,7 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 	}
 
 	@Override
-	public int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable) {
+	public int rewardSolution(QSolution solution, Model model, QTable qTable) {
 		long startTime = System.currentTimeMillis();
 		try {
 			double distance = solution.calculateDistanceFromOriginal();
@@ -36,7 +36,7 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 			log.info("Time to measure distance: " + measureTime + " ms");
 			int reward = (int)(distance);
 			for (AppliedAction appliedAction : solution.getSequence()) {
-				QModelFixer.updateQTable(qTable, appliedAction.getError().getCode(), appliedAction.getAction().getContextId(), appliedAction.getAction().getId(), reward);
+				rewardAction(qTable, appliedAction.getError().getCode(), appliedAction.getAction().getContextId(), appliedAction.getAction().getId(), reward);
 			}
 			return (int) (reward * solution.getSequence().size());
 		} catch (DistanceUnavailableException e) {
@@ -46,5 +46,4 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 		}
 		return 0;
 	}
-
 }

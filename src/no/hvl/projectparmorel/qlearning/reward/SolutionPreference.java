@@ -5,14 +5,17 @@ import no.hvl.projectparmorel.qlearning.QSolution;
 import no.hvl.projectparmorel.qlearning.knowledge.QTable;
 
 interface SolutionPreference {
-	
+
 	/**
-	 * Calculates reward for the solution with the resulting model. Each action can be rewarded through the Q-Table.
+	 * Calculates reward for the solution with the resulting model. Each action
+	 * should be rewarded through the
+	 * {@link no.hvl.projectparmorel.qlearning.reward.Preference#rewardAction(QTable, int, int, int, int)
+	 * rewardAction} method.
 	 * 
 	 * @param solution
 	 * @param model
 	 * @param qTable
-	 * @return the 
+	 * @return the reward.
 	 */
-	int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable);
+	int rewardSolution(QSolution solution, Model model, QTable qTable);
 }

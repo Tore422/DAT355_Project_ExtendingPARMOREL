@@ -25,7 +25,7 @@ public class PreferMaintainability extends Preference implements SolutionPrefere
 	}
 
 	@Override
-	public int rewardcalculateRewardFor(QSolution solution, Model model, QTable qTable) {
+	public int rewardSolution(QSolution solution, Model model, QTable qTable) {
 		long startTime = System.currentTimeMillis();
 		double metric = solution.calculateMaintainability();
 		long measureTime = System.currentTimeMillis() - startTime;
