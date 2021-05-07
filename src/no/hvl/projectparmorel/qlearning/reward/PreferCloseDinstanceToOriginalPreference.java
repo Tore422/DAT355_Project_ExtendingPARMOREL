@@ -1,8 +1,10 @@
 package no.hvl.projectparmorel.qlearning.reward;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 
-import org.junit.platform.commons.util.ExceptionUtils;
+//import org.junit.platform.commons.util.ExceptionUtils;
 
 import no.hvl.projectparmorel.exceptions.DistanceUnavailableException;
 import no.hvl.projectparmorel.qlearning.Action;
@@ -40,10 +42,20 @@ public class PreferCloseDinstanceToOriginalPreference extends Preference impleme
 			}
 			return (int) (reward * solution.getSequence().size());
 		} catch (DistanceUnavailableException e) {
+			String stackTrace = getStackTraceAsString(e);
 			log.warning("Could not calculate the distance between the models because of a "
 					+ e.getCause().getClass().getName() + "\nStack trace:\n"
-					+ ExceptionUtils.readStackTrace(e.getCause()));
+					+ stackTrace);
+					//+ ExceptionUtils.readStackTrace(e.getCause())); // Does not work anymore, due to class not accessible?
 		}
 		return 0;
+	}
+
+	private String getStackTraceAsString(Exception exception) {
+		StringWriter sw = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(sw);
+		exception.printStackTrace(printWriter);
+		String stackTrace = sw.toString();
+		return stackTrace;
 	}
 }

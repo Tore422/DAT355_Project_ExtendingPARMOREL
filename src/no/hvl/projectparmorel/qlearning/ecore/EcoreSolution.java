@@ -1,11 +1,13 @@
 package no.hvl.projectparmorel.qlearning.ecore;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.junit.platform.commons.util.ExceptionUtils;
+//import org.junit.platform.commons.util.ExceptionUtils;
 
 import it.cs.gssi.similaritymetamodels.EComparator;
 import it.gssi.cs.quality.ConsoleOutputCapturer;
@@ -43,11 +45,21 @@ public class EcoreSolution extends QSolution {
 			distanceFromOriginal = comparator.execute(getOriginal().getAbsolutePath(), getModel().getAbsolutePath());
 			logger.info("Calculated the distance between the models to " + distanceFromOriginal);
 		} catch (Exception e) {
+			String stackTrace = getStackTraceAsString(e);
 			logger.warning("Could not calculate the distance between the models because of a " + e.getClass().getName()
-					+ "\nStack trace:\n" + ExceptionUtils.readStackTrace(e));
+					+ "\nStack trace:\n" + stackTrace);
+					//+ ExceptionUtils.readStackTrace(e)); // Does not work anymore, due to class not accessible?
 			throw new DistanceUnavailableException("The distance could not be calculated.", e);
 		}
 		return distanceFromOriginal;
+	}
+	
+	private String getStackTraceAsString(Exception exception) {
+		StringWriter sw = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(sw);
+		exception.printStackTrace(printWriter);
+		String stackTrace = sw.toString();
+		return stackTrace;
 	}
 	
 	/**
