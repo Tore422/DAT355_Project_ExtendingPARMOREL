@@ -19,7 +19,7 @@ import no.hvl.projectparmorel.qlearning.ModelType;
 
 public class EcoreErrorExtractor implements ErrorExtractor {
 
-	private Set<Integer> unsuportedErrorCodes;
+	protected Set<Integer> unsuportedErrorCodes;
 
 	public EcoreErrorExtractor() {
 		this.unsuportedErrorCodes = ModelType.ECORE.getUnsupportedErrorCodes();
