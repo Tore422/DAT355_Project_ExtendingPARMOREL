@@ -1,11 +1,13 @@
 package no.hvl.projectparmorel.qlearning;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public enum ModelType {
-	ECORE(new HashSet<Integer>(Arrays.asList(1, 4)));
+	ECORE(new HashSet<Integer>(Arrays.asList(1, 4))), 
+	ECORE_INSTANCE(new HashSet<>(Collections.emptyList()));
 
 	private Set<Integer> unsupportedErrorCodes;
 
