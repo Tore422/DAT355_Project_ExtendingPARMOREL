@@ -36,7 +36,7 @@ The code presented here needs to be combined with the rest of the plugin, found 
    * Repairing Ecore meta-models should work as normal, but some errors might need to be resolved before the project can be compiled.
 
 A broken instance model with some OCL constraint violations, can be found in the following repository<br>
-along with a pdf file detailing more information related to this project:
+along with a pdf file detailing more information related to this project: https://github.com/Tore422/DAT355_Project_ExtendingPARMOREL_TestingModelAndAdditionalResources
 
 
 
