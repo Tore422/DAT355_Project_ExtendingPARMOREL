@@ -13,8 +13,8 @@ import no.hvl.projectparmorel.qlearning.Model;
 import no.hvl.projectparmorel.qlearning.ModelType;
 
 public class EcoreModel implements Model {
-	private Resource model;
-	private Resource modelCopy;
+	protected Resource model;
+	protected Resource modelCopy;
 	
 	public EcoreModel(ResourceSet resourceSet, Resource model, URI destinationURI) {
 		this.model = model;
