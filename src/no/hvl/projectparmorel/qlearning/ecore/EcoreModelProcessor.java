@@ -42,9 +42,9 @@ import no.hvl.projectparmorel.qlearning.knowledge.Knowledge;
 import no.hvl.projectparmorel.qlearning.knowledge.QTable;
 
 public class EcoreModelProcessor implements ModelProcessor {
-	private Knowledge knowledge;
-	private List<Error> errors;
-	private ErrorExtractor errorExtractor;
+	protected Knowledge knowledge;
+	protected List<Error> errors;
+	protected ErrorExtractor errorExtractor;
 
 	public EcoreModelProcessor(Knowledge knowledge) {
 		this.knowledge = knowledge;
