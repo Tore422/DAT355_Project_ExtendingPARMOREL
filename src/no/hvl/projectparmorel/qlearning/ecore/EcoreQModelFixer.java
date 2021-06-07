@@ -19,8 +19,8 @@ import no.hvl.projectparmorel.qlearning.QSolution;
 import no.hvl.projectparmorel.qlearning.reward.PreferenceOption;
 
 public class EcoreQModelFixer extends QModelFixer {
-	private URI uri;
-	private ResourceSet resourceSet;
+	protected URI uri;
+	protected ResourceSet resourceSet;
 	
 	public EcoreQModelFixer() {
 		super();
